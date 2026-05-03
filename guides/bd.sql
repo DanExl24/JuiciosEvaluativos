@@ -1,0 +1,619 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict y4RhrO8u6zdILYWuwhl6qfN9PabwAHdU7rvKjSyi0FF8lD310IBj7nTJa41y7g2
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: estado_aprendiz_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.estado_aprendiz_enum AS ENUM (
+    'retiro voluntario',
+    'en formacion',
+    'traslado'
+);
+
+
+ALTER TYPE public.estado_aprendiz_enum OWNER TO postgres;
+
+--
+-- Name: estado_formacion_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.estado_formacion_enum AS ENUM (
+    'en ejecucion',
+    'finalizada',
+    'cancelada'
+);
+
+
+ALTER TYPE public.estado_formacion_enum OWNER TO postgres;
+
+--
+-- Name: juicio_estado_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.juicio_estado_enum AS ENUM (
+    'aprobado',
+    'desaprobado',
+    'por evaluar'
+);
+
+
+ALTER TYPE public.juicio_estado_enum OWNER TO postgres;
+
+--
+-- Name: modalidad_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.modalidad_enum AS ENUM (
+    'presencial',
+    'virtual',
+    'a distancia'
+);
+
+
+ALTER TYPE public.modalidad_enum OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: aprendiz; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.aprendiz (
+    id_aprendiz integer NOT NULL,
+    documento character varying(20) NOT NULL,
+    tipo_documento character varying(20) NOT NULL,
+    nombres character varying(100) NOT NULL,
+    apellidos character varying(100) NOT NULL,
+    estado public.estado_aprendiz_enum NOT NULL,
+    id_formacion integer
+);
+
+
+ALTER TABLE public.aprendiz OWNER TO postgres;
+
+--
+-- Name: aprendiz_id_aprendiz_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.aprendiz_id_aprendiz_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.aprendiz_id_aprendiz_seq OWNER TO postgres;
+
+--
+-- Name: aprendiz_id_aprendiz_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.aprendiz_id_aprendiz_seq OWNED BY public.aprendiz.id_aprendiz;
+
+
+--
+-- Name: competencia; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.competencia (
+    id_competencia integer NOT NULL,
+    codigo character varying(50) NOT NULL,
+    nombre text NOT NULL,
+    id_formacion integer NOT NULL
+);
+
+
+ALTER TABLE public.competencia OWNER TO postgres;
+
+--
+-- Name: competencia_id_competencia_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.competencia_id_competencia_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.competencia_id_competencia_seq OWNER TO postgres;
+
+--
+-- Name: competencia_id_competencia_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.competencia_id_competencia_seq OWNED BY public.competencia.id_competencia;
+
+
+--
+-- Name: formacion; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.formacion (
+    id_formacion integer NOT NULL,
+    ficha_caracterizacion character varying(100) NOT NULL,
+    estado public.estado_formacion_enum NOT NULL,
+    modalidad public.modalidad_enum,
+    id_programa integer NOT NULL
+);
+
+
+ALTER TABLE public.formacion OWNER TO postgres;
+
+--
+-- Name: formacion_id_formacion_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.formacion_id_formacion_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.formacion_id_formacion_seq OWNER TO postgres;
+
+--
+-- Name: formacion_id_formacion_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.formacion_id_formacion_seq OWNED BY public.formacion.id_formacion;
+
+
+--
+-- Name: funcionario; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.funcionario (
+    id_funcionario integer NOT NULL,
+    documento character varying(20) NOT NULL,
+    tipo_documento character varying(20) NOT NULL,
+    nombre character varying(100) NOT NULL,
+    apellido character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.funcionario OWNER TO postgres;
+
+--
+-- Name: importacion_archivo; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.importacion_archivo (
+    id_importacion_archivo integer NOT NULL,
+    nombre_archivo character varying(255) NOT NULL,
+    huella_contenido character varying(64) NOT NULL,
+    ficha_caracterizacion character varying(100) NOT NULL,
+    filas_importadas integer NOT NULL,
+    fecha_importacion timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.importacion_archivo OWNER TO postgres;
+
+--
+-- Name: importacion_archivo_id_importacion_archivo_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.importacion_archivo_id_importacion_archivo_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.importacion_archivo_id_importacion_archivo_seq OWNER TO postgres;
+
+--
+-- Name: importacion_archivo_id_importacion_archivo_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.importacion_archivo_id_importacion_archivo_seq OWNED BY public.importacion_archivo.id_importacion_archivo;
+
+--
+-- Name: funcionario_id_funcionario_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.funcionario_id_funcionario_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.funcionario_id_funcionario_seq OWNER TO postgres;
+
+--
+-- Name: funcionario_id_funcionario_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.funcionario_id_funcionario_seq OWNED BY public.funcionario.id_funcionario;
+
+
+--
+-- Name: juicios_evaluativos; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.juicios_evaluativos (
+    id_juicio integer NOT NULL,
+    id_resultado integer NOT NULL,
+    id_aprendiz integer NOT NULL,
+    estado public.juicio_estado_enum DEFAULT 'por evaluar'::public.juicio_estado_enum NOT NULL,
+    fecha timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    id_funcionario integer
+);
+
+
+ALTER TABLE public.juicios_evaluativos OWNER TO postgres;
+
+--
+-- Name: juicios_evaluativos_id_juicio_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.juicios_evaluativos_id_juicio_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.juicios_evaluativos_id_juicio_seq OWNER TO postgres;
+
+--
+-- Name: juicios_evaluativos_id_juicio_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.juicios_evaluativos_id_juicio_seq OWNED BY public.juicios_evaluativos.id_juicio;
+
+
+--
+-- Name: programa; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.programa (
+    id_programa integer NOT NULL,
+    nombre text NOT NULL,
+    codigo character varying(50) NOT NULL,
+    version character varying(20) NOT NULL
+);
+
+
+ALTER TABLE public.programa OWNER TO postgres;
+
+--
+-- Name: programa_id_programa_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.programa_id_programa_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.programa_id_programa_seq OWNER TO postgres;
+
+--
+-- Name: programa_id_programa_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.programa_id_programa_seq OWNED BY public.programa.id_programa;
+
+
+--
+-- Name: resultados_aprendizaje; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.resultados_aprendizaje (
+    id_resultado integer NOT NULL,
+    codigo character varying(50) NOT NULL,
+    detalle text NOT NULL,
+    id_competencia integer NOT NULL
+);
+
+
+ALTER TABLE public.resultados_aprendizaje OWNER TO postgres;
+
+--
+-- Name: resultados_aprendizaje_id_resultado_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.resultados_aprendizaje_id_resultado_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.resultados_aprendizaje_id_resultado_seq OWNER TO postgres;
+
+--
+-- Name: resultados_aprendizaje_id_resultado_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.resultados_aprendizaje_id_resultado_seq OWNED BY public.resultados_aprendizaje.id_resultado;
+
+
+--
+-- Name: aprendiz id_aprendiz; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.aprendiz ALTER COLUMN id_aprendiz SET DEFAULT nextval('public.aprendiz_id_aprendiz_seq'::regclass);
+
+
+--
+-- Name: competencia id_competencia; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.competencia ALTER COLUMN id_competencia SET DEFAULT nextval('public.competencia_id_competencia_seq'::regclass);
+
+
+--
+-- Name: formacion id_formacion; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.formacion ALTER COLUMN id_formacion SET DEFAULT nextval('public.formacion_id_formacion_seq'::regclass);
+
+
+--
+-- Name: funcionario id_funcionario; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funcionario ALTER COLUMN id_funcionario SET DEFAULT nextval('public.funcionario_id_funcionario_seq'::regclass);
+
+
+--
+-- Name: importacion_archivo id_importacion_archivo; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.importacion_archivo ALTER COLUMN id_importacion_archivo SET DEFAULT nextval('public.importacion_archivo_id_importacion_archivo_seq'::regclass);
+
+
+--
+-- Name: juicios_evaluativos id_juicio; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos ALTER COLUMN id_juicio SET DEFAULT nextval('public.juicios_evaluativos_id_juicio_seq'::regclass);
+
+
+--
+-- Name: programa id_programa; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.programa ALTER COLUMN id_programa SET DEFAULT nextval('public.programa_id_programa_seq'::regclass);
+
+
+--
+-- Name: resultados_aprendizaje id_resultado; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.resultados_aprendizaje ALTER COLUMN id_resultado SET DEFAULT nextval('public.resultados_aprendizaje_id_resultado_seq'::regclass);
+
+
+--
+-- Name: aprendiz aprendiz_documento_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.aprendiz
+    ADD CONSTRAINT aprendiz_documento_formacion_key UNIQUE (documento, id_formacion);
+
+
+--
+-- Name: aprendiz aprendiz_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.aprendiz
+    ADD CONSTRAINT aprendiz_pkey PRIMARY KEY (id_aprendiz);
+
+
+--
+-- Name: competencia competencia_codigo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.competencia
+    ADD CONSTRAINT competencia_codigo_formacion_key UNIQUE (codigo, id_formacion);
+
+
+--
+-- Name: competencia competencia_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.competencia
+    ADD CONSTRAINT competencia_pkey PRIMARY KEY (id_competencia);
+
+
+--
+-- Name: formacion formacion_ficha_caracterizacion_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.formacion
+    ADD CONSTRAINT formacion_ficha_caracterizacion_key UNIQUE (ficha_caracterizacion);
+
+
+--
+-- Name: formacion formacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.formacion
+    ADD CONSTRAINT formacion_pkey PRIMARY KEY (id_formacion);
+
+
+--
+-- Name: funcionario funcionario_documento_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funcionario
+    ADD CONSTRAINT funcionario_documento_key UNIQUE (documento);
+
+
+--
+-- Name: funcionario funcionario_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funcionario
+    ADD CONSTRAINT funcionario_pkey PRIMARY KEY (id_funcionario);
+
+
+--
+-- Name: importacion_archivo importacion_archivo_huella_contenido_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT importacion_archivo_huella_contenido_key UNIQUE (huella_contenido);
+
+
+--
+-- Name: importacion_archivo importacion_archivo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.importacion_archivo
+    ADD CONSTRAINT importacion_archivo_pkey PRIMARY KEY (id_importacion_archivo);
+
+
+--
+-- Name: juicios_evaluativos juicios_evaluativos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos
+    ADD CONSTRAINT juicios_evaluativos_pkey PRIMARY KEY (id_juicio);
+
+
+--
+-- Name: programa programa_codigo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.programa
+    ADD CONSTRAINT programa_codigo_key UNIQUE (codigo);
+
+
+--
+-- Name: programa programa_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.programa
+    ADD CONSTRAINT programa_pkey PRIMARY KEY (id_programa);
+
+
+--
+-- Name: resultados_aprendizaje resultados_aprendizaje_codigo_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.resultados_aprendizaje
+    ADD CONSTRAINT resultado_codigo_competencia_key UNIQUE (codigo, id_competencia);
+
+
+--
+-- Name: resultados_aprendizaje resultados_aprendizaje_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.resultados_aprendizaje
+    ADD CONSTRAINT resultados_aprendizaje_pkey PRIMARY KEY (id_resultado);
+
+
+--
+-- Name: juicios_evaluativos unique_juicio; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos
+    ADD CONSTRAINT unique_juicio UNIQUE (id_resultado, id_aprendiz);
+
+
+--
+-- Name: aprendiz fk_aprendiz_formacion; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.aprendiz
+    ADD CONSTRAINT fk_aprendiz_formacion FOREIGN KEY (id_formacion) REFERENCES public.formacion(id_formacion) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: competencia fk_competencia_formacion; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.competencia
+    ADD CONSTRAINT fk_competencia_formacion FOREIGN KEY (id_formacion) REFERENCES public.formacion(id_formacion) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: formacion fk_formacion_programa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.formacion
+    ADD CONSTRAINT fk_formacion_programa FOREIGN KEY (id_programa) REFERENCES public.programa(id_programa) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: juicios_evaluativos fk_juicio_aprendiz; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos
+    ADD CONSTRAINT fk_juicio_aprendiz FOREIGN KEY (id_aprendiz) REFERENCES public.aprendiz(id_aprendiz) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: juicios_evaluativos fk_juicio_funcionario; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos
+    ADD CONSTRAINT fk_juicio_funcionario FOREIGN KEY (id_funcionario) REFERENCES public.funcionario(id_funcionario) ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: juicios_evaluativos fk_juicio_resultado; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.juicios_evaluativos
+    ADD CONSTRAINT fk_juicio_resultado FOREIGN KEY (id_resultado) REFERENCES public.resultados_aprendizaje(id_resultado) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: resultados_aprendizaje fk_resultado_competencia; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.resultados_aprendizaje
+    ADD CONSTRAINT fk_resultado_competencia FOREIGN KEY (id_competencia) REFERENCES public.competencia(id_competencia) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict y4RhrO8u6zdILYWuwhl6qfN9PabwAHdU7rvKjSyi0FF8lD310IBj7nTJa41y7g2
+

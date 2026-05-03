@@ -1,0 +1,307 @@
+import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { pool } from './config/db.ts';
+import { importCsvPayload } from './services/csvImport.ts';
+import { getDashboardData, getFormationCompetencyCatalog, getLearnerDetail } from './services/dashboard.ts';
+import { deleteFormationByFicha } from './services/formations.ts';
+import type { CsvImportPayload, DashboardFilters } from './types.ts';
+
+dotenv.config();
+
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..', '..');
+const logsDirectory = path.join(projectRoot, 'logs');
+const apiPort = Number(process.env.PORT) || 4000;
+
+app.use(cors());
+app.use(express.json({ limit: '20mb' }));
+
+async function ensureSchemaCompatibility() {
+  await pool.query(`
+    DROP TABLE IF EXISTS importacion_archivo
+  `);
+
+  await pool.query(`
+    ALTER TABLE programa
+    ALTER COLUMN nombre TYPE TEXT
+  `);
+
+  await pool.query(`
+    ALTER TABLE competencia
+    ALTER COLUMN nombre TYPE TEXT
+  `);
+
+  await pool.query(`
+    ALTER TABLE aprendiz
+    DROP CONSTRAINT IF EXISTS aprendiz_documento_key
+  `);
+
+  await pool.query(`
+    ALTER TABLE competencia
+    DROP CONSTRAINT IF EXISTS competencia_codigo_key
+  `);
+
+  await pool.query(`
+    ALTER TABLE resultados_aprendizaje
+    DROP CONSTRAINT IF EXISTS resultados_aprendizaje_codigo_key
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'aprendiz_documento_formacion_key'
+      ) THEN
+        ALTER TABLE aprendiz
+        ADD CONSTRAINT aprendiz_documento_formacion_key UNIQUE (documento, id_formacion);
+      END IF;
+    END
+    $$;
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'competencia_codigo_formacion_key'
+      ) THEN
+        ALTER TABLE competencia
+        ADD CONSTRAINT competencia_codigo_formacion_key UNIQUE (codigo, id_formacion);
+      END IF;
+    END
+    $$;
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'resultado_codigo_competencia_key'
+      ) THEN
+        ALTER TABLE resultados_aprendizaje
+        ADD CONSTRAINT resultado_codigo_competencia_key UNIQUE (codigo, id_competencia);
+      END IF;
+    END
+    $$;
+  `);
+}
+
+function buildLogFileName(fileName: string) {
+  const safeBaseName = path
+    .basename(fileName, path.extname(fileName))
+    .replace(/[^a-zA-Z0-9-_]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  return `${safeBaseName || 'csv-log'}-${stamp}.json`;
+}
+
+function readFilters(query: Record<string, unknown>): DashboardFilters {
+  const filters: DashboardFilters = {};
+
+  if (typeof query.estado === 'string') {
+    filters.estado = query.estado;
+  }
+  if (typeof query.ficha === 'string') {
+    filters.ficha = query.ficha;
+  }
+  if (typeof query.juicio === 'string') {
+    filters.juicio = query.juicio;
+  }
+  if (typeof query.competencia === 'string') {
+    filters.competencia = query.competencia;
+  }
+  if (typeof query.resultado === 'string') {
+    filters.resultado = query.resultado;
+  }
+  if (typeof query.aprendiz === 'string') {
+    filters.aprendiz = query.aprendiz;
+  }
+
+  return filters;
+}
+
+app.get('/', async (_req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({
+      ok: true,
+      databaseTime: result.rows[0]?.now ?? null,
+      apiPort,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo consultar la base de datos.';
+    res.status(500).json({ ok: false, error: message });
+  }
+});
+
+app.get('/api/health/db', async (_req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({
+      ok: true,
+      databaseTime: result.rows[0]?.now ?? null,
+      database: process.env.DB_NAME ?? null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo conectar a la base de datos.';
+    res.status(500).json({ ok: false, error: message });
+  }
+});
+
+app.get('/api/dashboard', async (req, res) => {
+  try {
+    const dashboard = await getDashboardData(pool, readFilters(req.query));
+    res.json(dashboard);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo generar el dashboard.';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.get('/api/learners/:learnerId', async (req, res) => {
+  const learnerId = Number(req.params.learnerId);
+
+  if (!Number.isInteger(learnerId) || learnerId <= 0) {
+    res.status(400).json({ error: 'El identificador del aprendiz no es valido.' });
+    return;
+  }
+
+  try {
+    const detail = await getLearnerDetail(pool, learnerId);
+    if (!detail) {
+      res.status(404).json({ error: 'No se encontro el aprendiz solicitado.' });
+      return;
+    }
+
+    res.json(detail);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo cargar el detalle del aprendiz.';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.get('/api/formations/competencies', async (req, res) => {
+  try {
+    const catalog = await getFormationCompetencyCatalog(pool, readFilters(req.query));
+    res.json(catalog);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo cargar el catalogo de competencias y resultados.';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.post('/api/import/csv', async (req, res) => {
+  const payload = req.body as Partial<CsvImportPayload>;
+
+  if (!payload?.fileName || !payload?.summary || !Array.isArray(payload?.rows) || !payload?.metadata) {
+    res.status(400).json({ error: 'El payload JSON no tiene la estructura esperada para importar el CSV.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const summary = await importCsvPayload(client, payload as CsvImportPayload);
+    await client.query('COMMIT');
+    res.status(201).json({
+      ok: true,
+      ...summary,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    const message = error instanceof Error ? error.message : 'No se pudo importar el CSV a la base de datos.';
+    res.status(500).json({ error: message });
+  } finally {
+    client.release();
+  }
+});
+
+app.delete('/api/formations/:ficha', async (req, res) => {
+  const ficha = decodeURIComponent(req.params.ficha ?? '').trim();
+
+  if (!ficha) {
+    res.status(400).json({ error: 'La ficha a eliminar no es valida.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await deleteFormationByFicha(client, ficha);
+
+    if (!result.deleted) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ error: 'No se encontro la ficha solicitada.' });
+      return;
+    }
+
+    await client.query('COMMIT');
+    res.json({ ok: true, ficha });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    const message = error instanceof Error ? error.message : 'No se pudo eliminar la ficha seleccionada.';
+    res.status(500).json({ error: message });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/api/csv/logs', async (req, res) => {
+  const payload = req.body as Partial<CsvImportPayload>;
+
+  if (!payload?.fileName || !payload?.summary || !Array.isArray(payload?.rows)) {
+    res.status(400).json({ error: 'El payload JSON no tiene la estructura esperada.' });
+    return;
+  }
+
+  try {
+    await fs.mkdir(logsDirectory, { recursive: true });
+
+    const fileName = buildLogFileName(payload.fileName);
+    const absolutePath = path.join(logsDirectory, fileName);
+    const content = JSON.stringify(payload, null, 2);
+
+    await fs.writeFile(absolutePath, content, 'utf8');
+
+    res.status(201).json({
+      fileName,
+      savedAt: absolutePath,
+      bytes: Buffer.byteLength(content, 'utf8'),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudo guardar el log.';
+    res.status(500).json({ error: message });
+  }
+});
+
+async function startServer() {
+  try {
+    await ensureSchemaCompatibility();
+    await pool.query('SELECT NOW()');
+    app.listen(apiPort, () => {
+      console.log(`Servidor corriendo en http://localhost:${apiPort}`);
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error desconocido al conectar la base de datos.';
+    console.error('No se pudo iniciar el backend por un fallo de conexion a la base de datos.');
+    console.error(message);
+    process.exit(1);
+  }
+}
+
+void startServer();
