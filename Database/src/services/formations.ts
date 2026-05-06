@@ -54,6 +54,21 @@ export async function deleteFormationByFicha(client: PoolClient, ficha: string) 
 
   await client.query(
     `
+      DELETE FROM fases
+      WHERE id_programa IN (
+        SELECT p.id_programa
+        FROM programa p
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM formacion f
+          WHERE f.id_programa = p.id_programa
+        )
+      )
+    `,
+  );
+
+  await client.query(
+    `
       DELETE FROM programa p
       WHERE NOT EXISTS (
         SELECT 1

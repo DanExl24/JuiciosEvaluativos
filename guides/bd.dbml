@@ -1,0 +1,112 @@
+Enum estado_aprendiz_enum {
+  "retiro voluntario"
+  "en formacion"
+  "traslado"
+}
+
+Enum estado_formacion_enum {
+  "en ejecucion"
+  "finalizada"
+  "cancelada"
+}
+
+Enum juicio_estado_enum {
+  "aprobado"
+  "desaprobado"
+  "por evaluar"
+}
+
+Enum modalidad_enum {
+  "presencial"
+  "virtual"
+  "a distancia"
+}
+
+Table aprendiz {
+  id_aprendiz int [pk, increment]
+  documento varchar(20) [not null]
+  tipo_documento varchar(20) [not null]
+  nombres varchar(100) [not null]
+  apellidos varchar(100) [not null]
+  estado estado_aprendiz_enum [not null]
+  id_formacion int
+
+  Indexes {
+    (documento, id_formacion) [unique]
+  }
+}
+
+Table programa {
+  id_programa int [pk, increment]
+  nombre text [not null]
+  codigo varchar(50) [not null, unique]
+  version varchar(20) [not null]
+}
+
+Table formacion {
+  id_formacion int [pk, increment]
+  ficha_caracterizacion varchar(100) [not null, unique]
+  estado estado_formacion_enum [not null]
+  modalidad modalidad_enum
+  id_programa int [not null]
+}
+
+Table competencia {
+  id_competencia int [pk, increment]
+  codigo varchar(50) [not null]
+  nombre text [not null]
+  id_formacion int [not null]
+
+  Indexes {
+    (codigo, id_formacion) [unique]
+  }
+}
+
+Table resultados_aprendizaje {
+  id_resultado int [pk, increment]
+  codigo varchar(50) [not null]
+  detalle text [not null]
+  id_competencia int [not null]
+
+  Indexes {
+    (codigo, id_competencia) [unique]
+  }
+}
+
+Table funcionario {
+  id_funcionario int [pk, increment]
+  documento varchar(20) [not null, unique]
+  tipo_documento varchar(20) [not null]
+  nombre varchar(100) [not null]
+  apellido varchar(100) [not null]
+}
+
+Table juicios_evaluativos {
+  id_juicio int [pk, increment]
+  id_resultado int [not null]
+  id_aprendiz int [not null]
+  estado juicio_estado_enum [not null, default: "por evaluar"]
+  fecha timestamp
+  id_funcionario int
+
+  Indexes {
+    (id_resultado, id_aprendiz) [unique]
+  }
+}
+
+Table importacion_archivo {
+  id_importacion_archivo int [pk, increment]
+  nombre_archivo varchar(255) [not null]
+  huella_contenido varchar(64) [not null, unique]
+  ficha_caracterizacion varchar(100) [not null]
+  filas_importadas int [not null]
+  fecha_importacion timestamp [not null]
+}
+
+Ref: aprendiz.id_formacion > formacion.id_formacion [delete: set null, update: cascade]
+Ref: formacion.id_programa > programa.id_programa [delete: cascade, update: cascade]
+Ref: competencia.id_formacion > formacion.id_formacion [delete: cascade, update: cascade]
+Ref: resultados_aprendizaje.id_competencia > competencia.id_competencia [delete: cascade, update: cascade]
+Ref: juicios_evaluativos.id_aprendiz > aprendiz.id_aprendiz [delete: cascade, update: cascade]
+Ref: juicios_evaluativos.id_resultado > resultados_aprendizaje.id_resultado [delete: cascade, update: cascade]
+Ref: juicios_evaluativos.id_funcionario > funcionario.id_funcionario [delete: set null, update: cascade]

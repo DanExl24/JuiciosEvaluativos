@@ -494,7 +494,7 @@ onMounted(() => {
           <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Lectura general por ficha, estado, competencia y aprendiz</h2>
         </div>
         <button
-          class="rounded-2xl border border-emerald-950/10 bg-white px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+          class="rounded-xl border border-emerald-950/10 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
           type="button"
           @click="resetFilters"
         >
@@ -502,10 +502,10 @@ onMounted(() => {
         </button>
       </div>
 
-      <div class="mt-6 grid gap-4 xl:grid-cols-3">
-        <label class="grid min-w-0 gap-2">
-          <span class="text-sm font-medium text-slate-700">Estado del aprendiz</span>
-          <select v-model="filters.estado" class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500">
+      <div class="mt-6 grid gap-3 xl:grid-cols-3">
+        <label class="grid min-w-0 gap-1.5">
+          <span class="text-xs font-medium text-slate-700">Estado del aprendiz</span>
+          <select v-model="filters.estado" class="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500">
             <option value="">Todos</option>
             <option v-for="estado in dashboard?.options.estados ?? []" :key="estado" :value="estado">
               {{ prettyState(estado) }}
@@ -513,9 +513,9 @@ onMounted(() => {
           </select>
         </label>
 
-        <label class="grid min-w-0 gap-2">
-          <span class="text-sm font-medium text-slate-700">Ficha</span>
-          <select v-model="filters.ficha" class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500">
+        <label class="grid min-w-0 gap-1.5">
+          <span class="text-xs font-medium text-slate-700">Ficha</span>
+          <select v-model="filters.ficha" class="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500">
             <option value="">Todas</option>
             <option v-for="ficha in fichaOptions" :key="ficha.codigo" :value="ficha.codigo">
               {{ ficha.codigo }} · {{ ficha.nombre }}
@@ -523,11 +523,11 @@ onMounted(() => {
           </select>
         </label>
 
-        <label class="grid min-w-0 gap-2">
-          <span class="text-sm font-medium text-slate-700">Competencia</span>
+        <label class="grid min-w-0 gap-1.5">
+          <span class="text-xs font-medium text-slate-700">Competencia</span>
           <select
             v-model="filters.competencia"
-            class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+            class="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
           >
             <option value="">Todas</option>
             <option v-for="competencia in filteredCompetencyOptions" :key="`${competencia.ficha}-${competencia.codigo}`" :value="competencia.codigo">
@@ -537,12 +537,12 @@ onMounted(() => {
         </label>
       </div>
 
-      <div class="mt-4 grid items-start gap-4 xl:grid-cols-3">
-        <label class="grid min-w-0 gap-2">
-          <span class="text-sm font-medium text-slate-700">Resultado de aprendizaje</span>
+      <div class="mt-3 grid items-start gap-3 xl:grid-cols-3">
+        <label class="grid min-w-0 gap-1.5">
+          <span class="text-xs font-medium text-slate-700">Resultado de aprendizaje</span>
           <select
             v-model="filters.resultado"
-            class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+            class="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
           >
             <option value="">Todos</option>
             <option v-for="resultado in filteredResultOptions" :key="`${resultado.ficha}-${resultado.competencia_codigo}-${resultado.codigo}`" :value="resultado.codigo">
@@ -551,24 +551,24 @@ onMounted(() => {
           </select>
         </label>
 
-        <div class="grid min-w-0 gap-2 self-start">
-          <span class="text-sm font-medium text-slate-700">Buscar aprendiz</span>
+        <div class="grid min-w-0 gap-1.5 self-start">
+          <span class="text-xs font-medium text-slate-700">Buscar aprendiz</span>
           <input
             v-model="learnerSearch"
             type="text"
-            class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
             placeholder="Nombre, apellido o documento"
           />
-          <span class="min-h-[1.25rem] px-1 text-xs text-slate-500">
+          <span class="min-h-[1.25rem] px-1 text-[0.65rem] text-slate-500">
             {{ learnerMatchSummary }}
           </span>
         </div>
 
-        <label class="grid min-w-0 gap-2">
-          <span class="text-sm font-medium text-slate-700">Aprendiz</span>
+        <label class="grid min-w-0 gap-1.5">
+          <span class="text-xs font-medium text-slate-700">Aprendiz</span>
           <select
             v-model="filters.aprendiz"
-            class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+            class="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
           >
             <option value="">Todos</option>
             <option v-for="aprendiz in searchedLearnerOptions" :key="aprendiz.id" :value="String(aprendiz.id)">
@@ -617,7 +617,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Distribucion</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Estado de aprendices</h3>
         </div>
-        <div class="mt-6 h-72">
+        <div class="mt-6 h-56">
           <Doughnut :data="statusChartData" />
         </div>
       </article>
@@ -627,7 +627,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Juicios</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Comportamiento general</h3>
         </div>
-        <div class="mt-6 h-72">
+        <div class="mt-6 h-56">
           <Bar :data="judgementChartData" :options="horizontalBarOptions" />
         </div>
       </article>
@@ -639,7 +639,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Competencias</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Aprobacion por competencia</h3>
         </div>
-        <div class="mt-6 h-[22rem]">
+        <div class="mt-6 h-56">
           <Bar :data="competencyChartData" :options="competencyApprovalChartOptions" />
         </div>
       </article>
@@ -649,7 +649,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-amber-700">Cuello de botella</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Pendientes por competencia</h3>
         </div>
-        <div class="mt-6 h-[22rem]">
+        <div class="mt-6 h-56">
           <Bar :data="pendingCompetenciesChartData" :options="pendingCompetenciesChartOptions" />
         </div>
       </article>
@@ -661,7 +661,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-amber-700">Alertas</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Aprendices con mas pendientes</h3>
         </div>
-        <div class="mt-6 h-[22rem]">
+        <div class="mt-6 h-56">
           <Bar :data="pendingLearnersChartData" :options="horizontalBarOptions" />
         </div>
       </article>
@@ -671,7 +671,7 @@ onMounted(() => {
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Ranking</span>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Avance por aprendiz</h3>
         </div>
-        <div class="mt-6 h-[22rem]">
+        <div class="mt-6 h-56">
           <Bar :data="learnerProgressChartData" :options="percentHorizontalBarOptions" />
         </div>
       </article>
@@ -686,18 +686,18 @@ onMounted(() => {
         <p class="text-sm text-slate-500">La tabla refleja los mismos filtros analiticos del panel superior.</p>
       </div>
 
-      <div v-if="dashboard?.learners.length" class="overflow-x-auto">
+      <div v-if="dashboard?.learners.length" class="overflow-x-auto max-h-[400px] overflow-y-auto no-scrollbar">
         <table class="min-w-[1080px] w-full border-separate border-spacing-0">
-          <thead>
-            <tr class="bg-emerald-50/80">
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Aprendiz</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Ficha</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Estado</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Resultados</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Aprobados</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Pendientes</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Avance</th>
-              <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Detalle</th>
+          <thead class="sticky top-0 z-10">
+            <tr class="bg-emerald-50/95 backdrop-blur shadow-sm">
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Aprendiz</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Ficha</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Estado</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Resultados</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Aprobados</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Pendientes</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Avance</th>
+              <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Detalle</th>
             </tr>
           </thead>
           <tbody>

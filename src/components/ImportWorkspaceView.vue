@@ -561,19 +561,19 @@ onMounted(() => {
           @dragleave.prevent="isDragActive = false"
           @drop.prevent="handleFileDrop"
         >
-          <div class="relative flex min-h-[24rem] flex-col justify-between rounded-[1.45rem] border border-white/70 bg-[radial-gradient(circle_at_top,rgba(167,243,208,0.55),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(236,253,245,0.88))] px-6 py-6">
-            <div class="space-y-5 text-center">
-              <div class="mx-auto grid h-20 w-20 place-items-center rounded-[1.5rem] bg-gradient-to-br from-emerald-700 via-emerald-600 to-lime-500 text-lg font-black text-white shadow-[0_20px_40px_rgba(5,150,105,0.35)]">
+          <div class="relative flex min-h-[16rem] flex-col justify-between rounded-[1.45rem] border border-white/70 bg-[radial-gradient(circle_at_top,rgba(167,243,208,0.55),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(236,253,245,0.88))] px-6 py-6">
+            <div class="space-y-4 text-center">
+              <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-emerald-700 via-emerald-600 to-lime-500 text-base font-black text-white shadow-[0_20px_40px_rgba(5,150,105,0.35)]">
                 XLS
               </div>
-              <div class="space-y-2">
-                <h3 class="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Importar una ficha</h3>
-                <p class="mx-auto max-w-md text-sm leading-7 text-slate-600">
+              <div class="space-y-1">
+                <h3 class="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">Importar una ficha</h3>
+                <p class="mx-auto max-w-md text-sm leading-6 text-slate-600">
                   Arrastra el archivo o seleccionalo manualmente. El sistema acepta .csv, .xlsx y .xls, detecta metadatos, encabezados y filas antes de insertar.
                 </p>
               </div>
 
-              <label class="inline-flex cursor-pointer items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-emerald-700">
+              <label class="inline-flex cursor-pointer items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-emerald-700">
                 Seleccionar archivo
                 <input
                   accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

@@ -6,9 +6,10 @@ import CompetenciesResultsView from './CompetenciesResultsView.vue'
 import DashboardGeneralView from './DashboardGeneralView.vue'
 import ImportWorkspaceView from './ImportWorkspaceView.vue'
 import ImportsHistoryModal from './ImportsHistoryModal.vue'
+import ProjectPhasesView from './ProjectPhasesView.vue'
 import { removeImportHistoryByFicha } from '../utils/importHistory'
 
-type AppView = 'import' | 'dashboard' | 'competencies'
+type AppView = 'import' | 'dashboard' | 'competencies' | 'phases'
 
 const activeView = ref<AppView>('import')
 const isImportsModalOpen = ref(false)
@@ -71,12 +72,14 @@ function handleOpenCompetencies(payload: { learnerId: number; ficha: string }) {
     />
 
     <CompetenciesResultsView
-      v-else
+      v-else-if="activeView === 'competencies'"
       :refresh-token="refreshToken"
       :focus-learner-id="competenciesFocus.learnerId"
       :focus-ficha="competenciesFocus.ficha"
       :focus-nonce="competenciesFocus.nonce"
     />
+
+    <ProjectPhasesView v-else />
   </main>
 
   <ImportsHistoryModal :open="isImportsModalOpen" @close="isImportsModalOpen = false" />

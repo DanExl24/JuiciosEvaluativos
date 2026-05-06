@@ -26,3 +26,19 @@ export interface DashboardFilters {
   resultado?: string;
   aprendiz?: string;
 }
+
+export interface ProjectPhase {
+  name: string;
+  activity: string;
+  competencyCodes: string[];
+}
+
+export interface ProjectImportPayload {
+  projectCode: string;
+  projectName: string;
+  executionTime: string;
+  regional: string;
+  center: string;
+  programCode: string;
+  phases: ProjectPhase[];
+}

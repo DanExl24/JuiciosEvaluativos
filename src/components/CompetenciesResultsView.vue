@@ -515,16 +515,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="grid gap-6">
-    <section class="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-      <article class="rounded-[2rem] border border-emerald-950/10 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur xl:p-7">
-        <div class="flex flex-col gap-4 border-b border-slate-200/80 pb-5 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Competencias y resultados</span>
-            <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Filtros academicos de la formacion</h2>
-          </div>
+  <main class="grid w-full min-w-0 gap-6 xl:grid-cols-[1fr_300px] items-start">
+    <div class="sticky top-[7.5rem] z-30 order-1 xl:order-2 self-start w-full min-w-0">
+      <article class="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 shadow-sm backdrop-blur">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200/70">
+          <span class="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Navegación</span>
           <button
-            class="rounded-2xl border border-emerald-950/10 bg-white px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm font-semibold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700"
             type="button"
             @click="resetFilters"
           >
@@ -532,142 +530,135 @@ onMounted(() => {
           </button>
         </div>
 
-        <div class="mt-6 grid gap-4">
-          <label class="grid min-w-0 gap-2">
-            <span class="text-sm font-medium text-slate-700">Ficha</span>
-            <select
-              v-model="filters.ficha"
-              class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
-            >
-              <option value="">Todas</option>
-              <option v-for="ficha in dashboard?.options.fichas ?? []" :key="ficha" :value="ficha">
-                {{ ficha }}
-              </option>
-            </select>
-          </label>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            <label class="grid min-w-0 gap-2">
-              <span class="text-sm font-medium text-slate-700">Estado del aprendiz</span>
+        <!-- Filtros Académicos -->
+        <div class="mt-3">
+          <p class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Filtros académicos</p>
+          <div class="grid gap-2.5">
+            <label class="grid min-w-0 gap-1">
+              <span class="text-sm font-medium text-slate-600">Ficha</span>
               <select
-                v-model="filters.estado"
-                class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-                :disabled="isLearnerSelected"
+                v-model="filters.ficha"
+                class="min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
               >
-                <option value="">Todos</option>
-                <option v-for="estado in dashboard?.options.estados ?? []" :key="estado" :value="estado">
-                  {{ prettyState(estado) }}
+                <option value="">Todas</option>
+                <option v-for="ficha in dashboard?.options.fichas ?? []" :key="ficha" :value="ficha">
+                  {{ ficha }}
                 </option>
               </select>
             </label>
 
-            <label class="grid min-w-0 gap-2">
-              <span class="text-sm font-medium text-slate-700">Juicio evaluativo</span>
-              <select
-                v-model="filters.juicio"
-                class="min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
-              >
-                <option value="">Todos</option>
-                <option v-for="juicio in dashboard?.options.juicios ?? []" :key="juicio" :value="juicio">
-                  {{ prettyState(juicio) }}
-                </option>
-              </select>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="grid min-w-0 gap-1">
+                <span class="text-sm font-medium text-slate-600">Estado</span>
+                <select
+                  v-model="filters.estado"
+                  class="min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                  :disabled="isLearnerSelected"
+                >
+                  <option value="">Todos</option>
+                  <option v-for="estado in dashboard?.options.estados ?? []" :key="estado" :value="estado">
+                    {{ prettyState(estado) }}
+                  </option>
+                </select>
+              </label>
+
+              <label class="grid min-w-0 gap-1">
+                <span class="text-sm font-medium text-slate-600">Juicio</span>
+                <select
+                  v-model="filters.juicio"
+                  class="min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                >
+                  <option value="">Todos</option>
+                  <option v-for="juicio in dashboard?.options.juicios ?? []" :key="juicio" :value="juicio">
+                    {{ prettyState(juicio) }}
+                  </option>
+                </select>
+              </label>
+            </div>
+
+            <label class="grid min-w-0 gap-1">
+              <span class="text-sm font-medium text-slate-600">Buscar competencia</span>
+              <input
+                v-model="learnerSearch"
+                type="text"
+                class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                placeholder="Código, nombre o funcionario"
+              />
             </label>
           </div>
-
-          <label class="grid gap-2">
-            <span class="text-sm font-medium text-slate-700">Buscar competencia</span>
-            <input
-              v-model="learnerSearch"
-              type="text"
-              class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
-              placeholder="Codigo, nombre, resultado o funcionario"
-            />
-          </label>
-
-          <p class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Sin un aprendiz seleccionado, esta vista muestra el avance general por competencia y resultado. Si aplicas un juicio, podras abrir cada resultado y ver solo los aprendices asociados a ese estado.
-          </p>
-
-          <p v-if="isLearnerSelected" class="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-            Al seleccionar un aprendiz, el estado se sincroniza con sus datos reales y queda bloqueado. La ficha sigue disponible para navegar hacia otros grupos de aprendices.
-          </p>
         </div>
 
-        <p v-if="dashboardError" class="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-          {{ dashboardError }}
-        </p>
-      </article>
+        <!-- Divider -->
+        <div class="my-3 border-t border-slate-200/70"></div>
 
-      <article class="rounded-[2rem] border border-emerald-950/10 bg-white/85 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur xl:p-7">
-        <div class="border-b border-slate-200/80 pb-5">
-          <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Aprendiz de la formacion</span>
-          <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">
-            {{ currentFichaLabel ? `Ficha ${currentFichaLabel}` : 'Selecciona una ficha' }}
-          </h3>
-          <p class="mt-3 text-sm leading-7 text-slate-600">
-            Esta tarjeta concentra solo la busqueda y seleccion de aprendices correspondientes a la ficha filtrada.
-          </p>
-        </div>
+        <!-- Filtro de Aprendiz -->
+        <div>
+          <p class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Filtro de aprendiz</p>
+          <div class="grid gap-2.5">
+            <label class="grid min-w-0 gap-1">
+              <span class="text-sm font-medium text-slate-600">Buscar aprendiz</span>
+              <input
+                v-model="fichaLearnerSearch"
+                type="text"
+                class="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+                placeholder="Nombre, documento o programa"
+              />
+            </label>
 
-        <div class="mt-6 grid gap-4">
-          <label class="grid gap-2">
-            <span class="text-sm font-medium text-slate-700">Buscar aprendiz de la formacion</span>
-            <input
-              v-model="fichaLearnerSearch"
-              type="text"
-              class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
-              placeholder="Nombre, documento o programa"
-            />
-          </label>
+            <label class="grid min-w-0 gap-1">
+              <span class="text-sm font-medium text-slate-600">Aprendiz</span>
+              <select
+                v-model="selectedLearnerId"
+                class="min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
+              >
+                <option :value="null">Selecciona un aprendiz</option>
+                <option v-for="learner in fichaLearners" :key="learner.id" :value="learner.id">
+                  {{ learner.fullName }} - {{ learner.document }}
+                </option>
+              </select>
+            </label>
 
-          <p v-if="fichaLearnerMatchSummary" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            {{ fichaLearnerMatchSummary }}
-          </p>
+            <div v-if="selectedLearnerSummary" class="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2.5">
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Seleccionado</p>
+              <p class="mt-1 text-sm font-semibold text-slate-950">{{ selectedLearnerSummary.fullName }}</p>
+              <p class="mt-0.5 text-xs text-slate-600">
+                {{ selectedLearnerSummary.documentType }} {{ selectedLearnerSummary.document }} · {{ prettyState(selectedLearnerSummary.state) }}
+              </p>
+            </div>
 
-          <label class="grid gap-2">
-            <span class="text-sm font-medium text-slate-700">Selector de aprendices</span>
-            <select
-              v-model="selectedLearnerId"
-              class="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-500"
-            >
-              <option :value="null">Selecciona un aprendiz</option>
-              <option v-for="learner in fichaLearners" :key="learner.id" :value="learner.id">
-                {{ learner.fullName }} - {{ learner.document }}
-              </option>
-            </select>
-          </label>
-
-          <div v-if="selectedLearnerSummary" class="rounded-[1.5rem] border border-emerald-200 bg-emerald-50/70 px-4 py-4">
-            <p class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-emerald-700">Aprendiz seleccionado</p>
-            <p class="mt-2 text-sm font-semibold text-slate-950">{{ selectedLearnerSummary.fullName }}</p>
-            <p class="mt-1 text-xs text-slate-600">
-              {{ selectedLearnerSummary.documentType }} {{ selectedLearnerSummary.document }} · Estado {{ prettyState(selectedLearnerSummary.state) }}
+            <p v-if="fichaLearnerMatchSummary" class="rounded-lg bg-white/80 px-2.5 py-1.5 text-xs text-slate-500">
+              {{ fichaLearnerMatchSummary }}
             </p>
           </div>
         </div>
-      </article>
-    </section>
 
-    <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <article class="rounded-[1.75rem] border border-emerald-950/10 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-        <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Competencias de la ficha</p>
-        <p class="mt-3 text-4xl font-black tracking-tight text-slate-950">{{ formationStats.competencies }}</p>
-        <p class="mt-2 text-sm text-slate-600">
-          {{ currentFichaLabel ? `Totales para la ficha ${currentFichaLabel}.` : 'Totales para todas las formaciones visibles.' }}
+        <!-- Errors -->
+        <p v-if="dashboardError" class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+          {{ dashboardError }}
         </p>
       </article>
+    </div>
 
-      <article class="rounded-[1.75rem] border border-emerald-950/10 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-        <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Resultados de la ficha</p>
-        <p class="mt-3 text-4xl font-black tracking-tight text-slate-950">{{ formationStats.results }}</p>
-        <p class="mt-2 text-sm text-slate-600">Suma de resultados asociados a las competencias catalogadas.</p>
-      </article>
+    <div class="grid w-full min-w-0 gap-6 order-2 xl:order-1">
+      <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
+        <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Competencias de la ficha</p>
+          <p class="mt-2 text-3xl font-black tracking-tight text-slate-950">{{ formationStats.competencies }}</p>
+          <p class="mt-1 text-xs text-slate-600">
+            {{ currentFichaLabel ? `Totales para la ficha ${currentFichaLabel}.` : 'Totales para todas las formaciones visibles.' }}
+          </p>
+        </article>
+
+        <article class="rounded-[1.5rem] border border-indigo-200 bg-indigo-50 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
+          <p class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-indigo-700">Resultados de la ficha</p>
+          <p class="mt-2 text-3xl font-black tracking-tight text-indigo-950">{{ formationStats.results }}</p>
+          <p class="mt-1 text-xs text-indigo-800/70">Suma de resultados asociados a las competencias catalogadas.</p>
+        </article>
 
       <article
         v-for="card in learnerDetail ? learnerOverviewCards : formationOverviewCards"
         :key="card.label"
-        class="rounded-[1.75rem] border p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
+        class="rounded-[1.5rem] border p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
         :class="
           card.tone === 'slate'
             ? 'border-slate-200 bg-white/85'
@@ -678,8 +669,8 @@ onMounted(() => {
                 : 'border-sky-200 bg-sky-50'
         "
       >
-        <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">{{ card.label }}</p>
-        <p class="mt-3 text-4xl font-black tracking-tight text-slate-950">{{ card.value }}</p>
+        <p class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-500">{{ card.label }}</p>
+        <p class="mt-2 text-3xl font-black tracking-tight text-slate-950">{{ card.value }}</p>
       </article>
     </section>
 
@@ -708,49 +699,49 @@ onMounted(() => {
           class="overflow-hidden rounded-[1.6rem] border border-emerald-950/10 bg-white"
         >
           <button
-            class="flex w-full flex-col gap-4 bg-[linear-gradient(135deg,rgba(236,253,245,0.92),rgba(255,255,255,0.98))] px-5 py-5 text-left sm:flex-row sm:items-center sm:justify-between"
+            class="flex w-full flex-col gap-4 bg-[linear-gradient(135deg,rgba(236,253,245,0.92),rgba(255,255,255,0.98))] px-4 py-3 text-left sm:flex-row sm:items-center sm:justify-between"
             type="button"
             @click="toggleCompetency(competency.code)"
           >
             <div>
-              <p class="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-emerald-700">{{ competency.code }}</p>
-              <h4 class="mt-2 text-lg font-semibold text-slate-950">{{ competency.name }}</h4>
+              <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-emerald-700">{{ competency.code }}</p>
+              <h4 class="mt-1 text-base font-semibold text-slate-950">{{ competency.name }}</h4>
             </div>
-            <div class="grid gap-2 text-sm text-slate-600 sm:text-right">
+            <div class="grid gap-1 text-xs text-slate-600 sm:text-right">
               <p>{{ competency.approvedResults }}/{{ competency.totalResults }} aprobados</p>
               <p class="font-semibold text-slate-950">Avance de la competencia: {{ formatPercent(competency.progress) }}</p>
             </div>
           </button>
 
-          <div v-if="expandedCompetencies.includes(competency.code)" class="border-t border-slate-100 px-5 py-5">
-            <div class="mb-4 grid gap-3 md:grid-cols-4">
-              <div class="rounded-2xl bg-slate-50 px-4 py-3">
-                <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Resultados</p>
-                <p class="mt-2 text-xl font-bold text-slate-950">{{ competency.totalResults }}</p>
+          <div v-if="expandedCompetencies.includes(competency.code)" class="border-t border-slate-100 px-4 py-4">
+            <div class="mb-4 grid gap-2 md:grid-cols-4">
+              <div class="rounded-xl bg-slate-50 px-3 py-2">
+                <p class="text-[0.65rem] uppercase tracking-[0.15em] text-slate-500">Resultados</p>
+                <p class="mt-1 text-lg font-bold text-slate-950">{{ competency.totalResults }}</p>
               </div>
-              <div class="rounded-2xl bg-emerald-50 px-4 py-3">
-                <p class="text-xs uppercase tracking-[0.18em] text-emerald-700">Aprobados</p>
-                <p class="mt-2 text-xl font-bold text-slate-950">{{ competency.approvedResults }}</p>
+              <div class="rounded-xl bg-emerald-50 px-3 py-2">
+                <p class="text-[0.65rem] uppercase tracking-[0.15em] text-emerald-700">Aprobados</p>
+                <p class="mt-1 text-lg font-bold text-slate-950">{{ competency.approvedResults }}</p>
               </div>
-              <div class="rounded-2xl bg-amber-50 px-4 py-3">
-                <p class="text-xs uppercase tracking-[0.18em] text-amber-700">Pendientes</p>
-                <p class="mt-2 text-xl font-bold text-slate-950">{{ competency.pendingResults }}</p>
+              <div class="rounded-xl bg-amber-50 px-3 py-2">
+                <p class="text-[0.65rem] uppercase tracking-[0.15em] text-amber-700">Pendientes</p>
+                <p class="mt-1 text-lg font-bold text-slate-950">{{ competency.pendingResults }}</p>
               </div>
-              <div class="rounded-2xl bg-rose-50 px-4 py-3">
-                <p class="text-xs uppercase tracking-[0.18em] text-rose-700">Desaprobados</p>
-                <p class="mt-2 text-xl font-bold text-slate-950">{{ competency.disapprovedResults }}</p>
+              <div class="rounded-xl bg-rose-50 px-3 py-2">
+                <p class="text-[0.65rem] uppercase tracking-[0.15em] text-rose-700">Desaprobados</p>
+                <p class="mt-1 text-lg font-bold text-slate-950">{{ competency.disapprovedResults }}</p>
               </div>
             </div>
 
-            <div class="overflow-x-auto rounded-[1.35rem] border border-slate-200">
+            <div class="overflow-x-auto max-h-[300px] overflow-y-auto no-scrollbar rounded-xl border border-slate-200">
               <table class="min-w-[860px] w-full border-separate border-spacing-0">
-                <thead>
-                  <tr class="bg-emerald-50/80">
-                    <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Resultado</th>
-                    <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Juicio</th>
-                    <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Funcionario</th>
-                    <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Fecha y hora</th>
-                    <th class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600">Avance del resultado</th>
+                <thead class="sticky top-0 z-10">
+                  <tr class="bg-emerald-50/95 backdrop-blur shadow-sm">
+                    <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Resultado</th>
+                    <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Juicio</th>
+                    <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Funcionario</th>
+                    <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Fecha y hora</th>
+                    <th class="border-b border-slate-200 px-4 py-3 text-left text-[0.65rem] font-bold uppercase tracking-[0.2em] text-slate-600">Avance del resultado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -901,6 +892,7 @@ onMounted(() => {
         </p>
       </div>
     </section>
+    </div>
 
     <div
       v-if="selectedCatalogResult"

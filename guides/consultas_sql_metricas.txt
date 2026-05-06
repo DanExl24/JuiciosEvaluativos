@@ -1,0 +1,91 @@
+Consultas SQL para metricas de juicios evaluativos
+
+1. Total de aprendices
+
+SELECT
+  COUNT(*) AS total_aprendices
+FROM aprendiz;
+
+
+2. Total de juicios aprobados
+
+SELECT
+  COUNT(*) AS total_juicios_aprobados
+FROM juicios_evaluativos
+WHERE estado = 'aprobado';
+
+
+3. Total de juicios por evaluar
+
+SELECT
+  COUNT(*) AS total_juicios_por_evaluar
+FROM juicios_evaluativos
+WHERE estado = 'por evaluar';
+
+
+4. Porcentaje de avance por aprendiz
+
+SELECT
+  a.id_aprendiz,
+  a.documento,
+  a.tipo_documento,
+  CONCAT(a.nombres, ' ', a.apellidos) AS aprendiz,
+  f.ficha_caracterizacion AS ficha,
+  COUNT(j.id_juicio) AS total_juicios,
+  COUNT(*) FILTER (WHERE j.estado = 'aprobado') AS juicios_aprobados,
+  COUNT(*) FILTER (WHERE j.estado = 'desaprobado') AS juicios_desaprobados,
+  COUNT(*) FILTER (WHERE j.estado = 'por evaluar') AS juicios_por_evaluar,
+  ROUND(
+    (
+      COUNT(*) FILTER (WHERE j.estado = 'aprobado')::numeric
+      / NULLIF(COUNT(j.id_juicio), 0)
+    ) * 100,
+    1
+  ) AS porcentaje_avance
+FROM aprendiz a
+LEFT JOIN formacion f ON f.id_formacion = a.id_formacion
+LEFT JOIN juicios_evaluativos j ON j.id_aprendiz = a.id_aprendiz
+GROUP BY
+  a.id_aprendiz,
+  a.documento,
+  a.tipo_documento,
+  a.nombres,
+  a.apellidos,
+  f.ficha_caracterizacion
+ORDER BY
+  f.ficha_caracterizacion,
+  a.apellidos,
+  a.nombres;
+
+
+5. Porcentaje de aprobacion por competencia
+
+SELECT
+  c.id_competencia,
+  c.codigo AS codigo_competencia,
+  c.nombre AS competencia,
+  f.ficha_caracterizacion AS ficha,
+  COUNT(j.id_juicio) AS total_juicios,
+  COUNT(*) FILTER (WHERE j.estado = 'aprobado') AS juicios_aprobados,
+  COUNT(*) FILTER (WHERE j.estado = 'desaprobado') AS juicios_desaprobados,
+  COUNT(*) FILTER (WHERE j.estado = 'por evaluar') AS juicios_por_evaluar,
+  ROUND(
+    (
+      COUNT(*) FILTER (WHERE j.estado = 'aprobado')::numeric
+      / NULLIF(COUNT(j.id_juicio), 0)
+    ) * 100,
+    1
+  ) AS porcentaje_aprobacion
+FROM competencia c
+INNER JOIN formacion f ON f.id_formacion = c.id_formacion
+LEFT JOIN resultados_aprendizaje r ON r.id_competencia = c.id_competencia
+LEFT JOIN juicios_evaluativos j ON j.id_resultado = r.id_resultado
+GROUP BY
+  c.id_competencia,
+  c.codigo,
+  c.nombre,
+  f.ficha_caracterizacion
+ORDER BY
+  porcentaje_aprobacion DESC NULLS LAST,
+  f.ficha_caracterizacion,
+  c.nombre;

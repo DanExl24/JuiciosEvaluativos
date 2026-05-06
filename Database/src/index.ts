@@ -9,7 +9,8 @@ import { pool } from './config/db.ts';
 import { importCsvPayload } from './services/csvImport.ts';
 import { getDashboardData, getFormationCompetencyCatalog, getLearnerDetail } from './services/dashboard.ts';
 import { deleteFormationByFicha } from './services/formations.ts';
-import type { CsvImportPayload, DashboardFilters } from './types.ts';
+import { importProject, getProjects, getProjectPhases } from './services/projects.ts';
+import type { CsvImportPayload, DashboardFilters, ProjectImportPayload } from './types.ts';
 
 dotenv.config();
 
@@ -69,6 +70,23 @@ async function ensureSchemaCompatibility() {
   `);
 
   await pool.query(`
+    ALTER TABLE fases DROP CONSTRAINT IF EXISTS unique_nombre_fase;
+    
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fases_nombre_programa_key'
+      ) THEN
+        ALTER TABLE fases
+        ADD CONSTRAINT fases_nombre_programa_key UNIQUE (nombre, id_programa);
+      END IF;
+    END
+    $$;
+  `);
+
+  await pool.query(`
     DO $$
     BEGIN
       IF NOT EXISTS (
@@ -96,6 +114,18 @@ async function ensureSchemaCompatibility() {
       END IF;
     END
     $$;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS proyecto_formativo (
+        id_proyecto SERIAL PRIMARY KEY,
+        codigo_proyecto VARCHAR(50) NOT NULL UNIQUE,
+        nombre TEXT NOT NULL,
+        tiempo_ejecucion VARCHAR(100),
+        regional VARCHAR(100),
+        centro_formacion VARCHAR(200),
+        id_programa INTEGER NOT NULL UNIQUE REFERENCES programa(id_programa) ON DELETE CASCADE
+    );
   `);
 }
 
@@ -228,6 +258,55 @@ app.post('/api/import/csv', async (req, res) => {
     res.status(500).json({ error: message });
   } finally {
     client.release();
+  }
+});
+
+app.post('/api/import/project', async (req, res) => {
+  const payload = req.body as Partial<ProjectImportPayload>;
+
+  if (!payload?.projectCode || !payload?.programCode || !payload?.phases) {
+    res.status(400).json({ error: 'El payload JSON no tiene la estructura esperada para importar el proyecto.' });
+    return;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await importProject(client, payload as ProjectImportPayload);
+    await client.query('COMMIT');
+    res.status(201).json({ ok: true, ...result });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    const message = error instanceof Error ? error.message : 'No se pudo importar el proyecto a la base de datos.';
+    res.status(500).json({ error: message });
+  } finally {
+    client.release();
+  }
+});
+
+app.get('/api/projects', async (req, res) => {
+  try {
+    const projects = await getProjects(pool);
+    res.json(projects);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudieron cargar los proyectos formativos.';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.get('/api/projects/:id/phases', async (req, res) => {
+  const projectId = Number(req.params.id);
+  if (!Number.isInteger(projectId) || projectId <= 0) {
+    res.status(400).json({ error: 'ID de proyecto no valido.' });
+    return;
+  }
+
+  try {
+    const details = await getProjectPhases(pool, projectId);
+    res.json(details);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'No se pudieron cargar las fases del proyecto.';
+    res.status(500).json({ error: message });
   }
 });
 
