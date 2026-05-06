@@ -84,9 +84,16 @@ interface PhaseLearnerStat {
   progressPercentage: number
 }
 
+interface Ficha {
+  id_formacion: number
+  ficha_caracterizacion: string
+}
+
 const phases = ref<PhaseDetail[]>([])
 const unassignedComps = ref<UnassignedCompetency[]>([])
 const learnerStats = ref<PhaseLearnerStat[]>([])
+const fichas = ref<Ficha[]>([])
+const selectedFichaId = ref<number | null>(null)
 const isLoading = ref(true)
 const error = ref('')
 
@@ -95,26 +102,50 @@ const globalFilter = ref<'all' | 'approved' | 'pending'>('all')
 const activePhaseId = ref<number | 'unassigned' | 'learner-progress' | null>(null)
 const expandedCompetencies = ref<Set<number>>(new Set())
 
+const searchQuery = ref('')
+
 const isEditMode = ref(false)
 const isAssigning = ref(false)
 const selectedCompToAssign = ref<UnassignedCompetency | Competency | null>(null)
+const selectedPhasesForComp = ref<Set<number>>(new Set())
 
 const isSelectedCompUnassigned = computed(() => {
   if (!selectedCompToAssign.value) return false
   return unassignedComps.value.some(c => c.id_competencia === selectedCompToAssign.value?.id_competencia)
 })
 
+function openAssignModal(comp: UnassignedCompetency | Competency) {
+  selectedCompToAssign.value = comp
+  selectedPhasesForComp.value = new Set()
+  phases.value.forEach(p => {
+    if (p.competencies.some(c => c.id_competencia === comp.id_competencia)) {
+      selectedPhasesForComp.value.add(p.id_fase)
+    }
+  })
+}
+
+function togglePhaseSelection(phaseId: number) {
+  if (selectedPhasesForComp.value.has(phaseId)) {
+    selectedPhasesForComp.value.delete(phaseId)
+  } else {
+    selectedPhasesForComp.value.add(phaseId)
+  }
+}
+
 async function fetchDetails() {
   isLoading.value = true
   error.value = ''
   try {
-    const [phasesRes, unassignedRes, learnerStatsRes] = await Promise.all([
-      fetch(`${apiBaseUrl}/api/projects/${props.projectId}/phases`),
+    const fichaQuery = selectedFichaId.value ? `?fichaId=${selectedFichaId.value}` : ''
+    
+    const [phasesRes, unassignedRes, learnerStatsRes, fichasRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/api/projects/${props.projectId}/phases${fichaQuery}`),
       fetch(`${apiBaseUrl}/api/projects/${props.projectId}/unassigned`),
-      fetch(`${apiBaseUrl}/api/projects/${props.projectId}/phase-learner-stats`)
+      fetch(`${apiBaseUrl}/api/projects/${props.projectId}/phase-learner-stats${fichaQuery}`),
+      fetch(`${apiBaseUrl}/api/projects/${props.projectId}/fichas`)
     ])
 
-    if (!phasesRes.ok || !unassignedRes.ok || !learnerStatsRes.ok) throw new Error('Error al cargar datos del proyecto.')
+    if (!phasesRes.ok || !unassignedRes.ok || !learnerStatsRes.ok || !fichasRes.ok) throw new Error('Error al cargar datos del proyecto.')
 
     const phaseOrder: Record<string, number> = {
       'ANALISIS': 1,
@@ -130,6 +161,7 @@ async function fetchDetails() {
     phases.value = (await phasesRes.json()).sort(sortPhases)
     unassignedComps.value = await unassignedRes.json()
     learnerStats.value = (await learnerStatsRes.json()).sort(sortPhases)
+    fichas.value = await fichasRes.json()
 
     phases.value.forEach(p => {
       if (!phaseFilters.value[p.id_fase]) {
@@ -151,6 +183,10 @@ onMounted(() => {
   void fetchDetails()
 })
 
+watch(selectedFichaId, () => {
+  void fetchDetails()
+})
+
 function setGlobalFilter(filter: 'all' | 'approved' | 'pending') {
   globalFilter.value = filter
   for (const id in phaseFilters.value) {
@@ -166,12 +202,18 @@ function getPhaseStats(phase: PhaseDetail) {
 }
 
 function getFilteredCompetencies(phase: PhaseDetail) {
-  const filter = phaseFilters.value[phase.id_fase] || 'all'
   let filtered = phase.competencies
 
-  // Primary filter (Competencies)
-  if (filter === 'approved') filtered = filtered.filter(c => c.isApproved)
-  else if (filter === 'pending') filtered = filtered.filter(c => !c.isApproved)
+  if (!isEditMode.value) {
+    const filter = phaseFilters.value[phase.id_fase] || 'all'
+    if (filter === 'approved') filtered = filtered.filter(c => c.isApproved)
+    else if (filter === 'pending') filtered = filtered.filter(c => !c.isApproved)
+  }
+
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase().trim()
+    filtered = filtered.filter(c => c.codigo.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q))
+  }
 
   return filtered
 }
@@ -189,35 +231,32 @@ const currentPhase = computed(() => {
   return phases.value.find(p => p.id_fase === activePhaseId.value) || null
 })
 
-async function handleAssign(phaseId: number | null) {
+async function saveAssignChanges() {
   if (!selectedCompToAssign.value) return
   isAssigning.value = true
   try {
     const compId = selectedCompToAssign.value.id_competencia
     
-    // If phaseId is null, it's a simple unassign from the current phase
-    if (phaseId === null) {
-      const currentPhaseId = currentPhase.value?.id_fase
-      if (!currentPhaseId) throw new Error('No se pudo identificar la fase actual.')
-      
+    const originalPhases = new Set<number>()
+    phases.value.forEach(p => {
+      if (p.competencies.some(c => c.id_competencia === compId)) {
+        originalPhases.add(p.id_fase)
+      }
+    })
+    
+    const toAssign = [...selectedPhasesForComp.value].filter(id => !originalPhases.has(id))
+    const toUnassign = [...originalPhases].filter(id => !selectedPhasesForComp.value.has(id))
+    
+    for (const phaseId of toUnassign) {
       const res = await fetch(`${apiBaseUrl}/api/competencies/${compId}/unassign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phaseId: currentPhaseId })
+        body: JSON.stringify({ phaseId })
       })
-      if (!res.ok) throw new Error('No se pudo desasignar la competencia.')
-    } 
-    else {
-      // If it's already assigned somewhere else and we are in a phase, we MOVE it (unassign then assign)
-      if (!isSelectedCompUnassigned.value && currentPhase.value) {
-        await fetch(`${apiBaseUrl}/api/competencies/${compId}/unassign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phaseId: currentPhase.value.id_fase })
-        })
-      }
-      
-      // Assign to the new phase
+      if (!res.ok) throw new Error('No se pudo desasignar la competencia de la fase.')
+    }
+    
+    for (const phaseId of toAssign) {
       const res = await fetch(`${apiBaseUrl}/api/competencies/${compId}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -232,6 +271,22 @@ async function handleAssign(phaseId: number | null) {
     alert(err instanceof Error ? err.message : 'Error en la operación')
   } finally {
     isAssigning.value = false
+  }
+}
+
+async function handleDeleteProject() {
+  if (!confirm('¿Estás seguro de que deseas eliminar este proyecto formativo? Esta acción no se puede deshacer.')) return
+  
+  try {
+    const res = await fetch(`${apiBaseUrl}/api/projects/${props.projectId}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) throw new Error('No se pudo eliminar el proyecto.')
+    
+    alert('Proyecto eliminado exitosamente.')
+    emit('close')
+  } catch (err) {
+    alert(err instanceof Error ? err.message : 'Error al eliminar')
   }
 }
 
@@ -331,20 +386,54 @@ const desertionChartOptions = computed(() => ({
         </div>
       </div>
 
-      <button 
-        v-if="typeof activePhaseId === 'number'"
-        @click="isEditMode = !isEditMode"
-        class="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-all shadow-sm"
-        :class="isEditMode 
-          ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700' 
-          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950'"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg>
-        {{ isEditMode ? 'Salir Edición' : 'Modo Editor' }}
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- Ficha Filter -->
+        <div class="relative group">
+          <label class="absolute -top-2 left-3 bg-white px-1 text-[0.6rem] font-black uppercase tracking-widest text-slate-400 z-10 transition-colors group-focus-within:text-slate-950">Filtrar por Ficha</label>
+          <div class="relative">
+            <select 
+              v-model="selectedFichaId"
+              class="h-11 w-48 appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 text-xs font-bold text-slate-900 shadow-sm outline-none transition-all hover:border-slate-400 focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5 cursor-pointer"
+            >
+              <option :value="null">Todas las fichas</option>
+              <option v-for="ficha in fichas" :key="ficha.id_formacion" :value="ficha.id_formacion">
+                Ficha {{ ficha.ficha_caracterizacion }}
+              </option>
+            </select>
+            <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-950 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          v-if="typeof activePhaseId === 'number'"
+          @click="isEditMode = !isEditMode"
+          class="flex h-11 items-center gap-2 rounded-xl border px-5 py-2 text-xs font-bold transition-all shadow-sm"
+          :class="isEditMode 
+            ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700' 
+            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950'"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          {{ isEditMode ? 'Salir' : 'Modo Editor' }}
+        </button>
+
+        <button 
+          v-if="isEditMode"
+          @click="handleDeleteProject"
+          class="flex h-11 w-11 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 shadow-sm transition hover:border-rose-600 hover:bg-rose-600 hover:text-white"
+          title="Eliminar Proyecto"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- General Stats Row -->
@@ -387,9 +476,14 @@ const desertionChartOptions = computed(() => ({
       <div v-if="typeof activePhaseId === 'number'" class="space-y-3">
         <!-- Filter Competencies -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-slate-950 px-5 py-4 shadow-lg animate-in fade-in zoom-in-95 duration-200">
-          <div>
-            <p class="text-[0.6rem] font-black uppercase tracking-widest text-slate-500">Filtro Global de Competencias</p>
-            <p class="text-xs font-medium text-white">Visualizar por estado global</p>
+          <div class="hidden md:block">
+            <p class="text-[0.6rem] font-black uppercase tracking-widest text-slate-500">Filtro Global</p>
+            <p class="text-xs font-medium text-white">Búsqueda y estado</p>
+          </div>
+          <div class="flex-1 w-full sm:max-w-md relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input v-model="searchQuery" type="text" placeholder="Buscar competencia por nombre o código..." class="w-full rounded-xl bg-slate-900 border border-slate-800 py-2.5 pl-10 pr-4 text-xs font-medium text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600 transition-all" />
+            <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
           </div>
           <div class="flex gap-2">
             <button @click="setGlobalFilter('all')" class="rounded-lg px-4 py-2 text-xs font-semibold transition" :class="globalFilter === 'all' ? 'bg-white text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'">Todas</button>
@@ -429,31 +523,31 @@ const desertionChartOptions = computed(() => ({
       <!-- Active Phase View (Competencies) -->
       <div v-if="currentPhase" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div class="border-b border-slate-100 bg-slate-50 px-6 py-5">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-1.5 min-w-0">
-              <span class="inline-block rounded-md bg-slate-950 px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(currentPhase.nombre) }}</span>
-              <p class="max-w-2xl text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
-            </div>
-            <div class="flex shrink-0 gap-2">
-              <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
-                <span class="text-lg font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
-                <span class="text-[0.55rem] font-bold uppercase tracking-wider text-slate-400">Total Res.</span>
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div class="space-y-1.5 min-w-0">
+                <span class="inline-block rounded-md bg-slate-950 px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(currentPhase.nombre) }}</span>
+                <p class="max-w-2xl text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
               </div>
-              <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-center">
-                <span class="text-lg font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
-                <span class="text-[0.55rem] font-bold uppercase tracking-wider text-emerald-600">Aprobados</span>
-              </div>
-              <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-center">
-                <span class="text-lg font-black text-amber-700">{{ currentPhase.competencies.reduce((acc, c) => acc + (c.totalResults - c.approvedResults), 0) }}</span>
-                <span class="text-[0.55rem] font-bold uppercase tracking-wider text-amber-500">Pendientes</span>
+              <div class="flex shrink-0 gap-2">
+                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
+                  <span class="text-lg font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
+                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-slate-400">Total Res.</span>
+                </div>
+                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-center">
+                  <span class="text-lg font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
+                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-emerald-600">Aprobados</span>
+                </div>
+                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-center">
+                  <span class="text-lg font-black text-amber-700">{{ currentPhase.competencies.reduce((acc, c) => acc + (c.totalResults - c.approvedResults), 0) }}</span>
+                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-amber-500">Pendientes</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="divide-y divide-slate-100">
-          <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
+          <div class="divide-y divide-slate-100">
+            <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
             <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
-              <button @click.stop="selectedCompToAssign = comp" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>Gestionar</button>
+              <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>Gestionar</button>
             </div>
             <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
               <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition"><svg class="h-4 w-4 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
@@ -496,7 +590,7 @@ const desertionChartOptions = computed(() => ({
       <div v-else-if="activePhaseId === 'unassigned'" class="overflow-hidden rounded-2xl border border-dashed border-amber-200 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div class="border-b border-amber-100 bg-amber-50/30 px-6 py-5"><h3 class="text-sm font-bold text-amber-800 uppercase tracking-widest">Competencias Sueltas</h3><p class="mt-1 text-xs text-amber-600">Sin fase asignada.</p></div>
         <div class="divide-y divide-slate-100">
-          <div v-for="comp in unassignedComps" :key="comp.id_competencia" class="flex items-center justify-between p-5 transition hover:bg-amber-50/20"><div class="min-w-0 flex-1"><span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">{{ comp.codigo }}</span><p class="mt-0.5 text-sm font-semibold text-slate-900">{{ comp.nombre }}</p></div><button @click="selectedCompToAssign = comp" class="shrink-0 ml-4 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-amber-600 transition">Asignar a fase</button></div>
+          <div v-for="comp in unassignedComps.filter(c => !searchQuery || c.codigo.toLowerCase().includes(searchQuery.toLowerCase().trim()) || c.nombre.toLowerCase().includes(searchQuery.toLowerCase().trim()))" :key="comp.id_competencia" class="flex items-center justify-between p-5 transition hover:bg-amber-50/20"><div class="min-w-0 flex-1"><span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">{{ comp.codigo }}</span><p class="mt-0.5 text-sm font-semibold text-slate-900">{{ comp.nombre }}</p></div><button @click="openAssignModal(comp)" class="shrink-0 ml-4 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-amber-600 transition">Asignar a fase</button></div>
         </div>
       </div>
 
@@ -597,12 +691,42 @@ const desertionChartOptions = computed(() => ({
     <Teleport to="body">
       <div v-if="selectedCompToAssign" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-md transition-all" @click.self="selectedCompToAssign = null">
         <div class="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in-95 duration-200">
-          <div class="bg-slate-950 p-8 text-white"><h3 class="text-xl font-bold tracking-tight">Gestionar Competencia</h3><p class="mt-2 text-xs text-slate-400 uppercase tracking-widest font-bold">Competencia seleccionada:</p><p class="mt-1 text-sm font-medium leading-relaxed text-slate-200">{{ selectedCompToAssign.nombre }}</p></div>
-          <div class="p-8 space-y-6">
-            <div><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">{{ isSelectedCompUnassigned ? 'Asignar a Fase:' : 'Agregar a otra Fase:' }}</p><div class="grid grid-cols-2 gap-2"><button v-for="phase in phases" :key="phase.id_fase" @click="handleAssign(phase.id_fase)" :disabled="isAssigning" class="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-100 p-4 text-center transition hover:border-slate-950 hover:bg-slate-50 disabled:opacity-50 group"><span class="text-[0.65rem] font-black uppercase tracking-tighter text-slate-400 group-hover:text-slate-900">Fase</span><span class="mt-0.5 text-xs font-bold text-slate-900">{{ phase.nombre }}</span></button></div></div>
-            <div v-if="!isSelectedCompUnassigned" class="pt-4 border-t border-slate-100"><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-rose-400">Opciones Críticas:</p><button @click="handleAssign(null)" :disabled="isAssigning" class="flex w-full items-center justify-between rounded-2xl border-2 border-rose-50 bg-rose-50/30 p-4 text-left transition hover:border-rose-500 hover:bg-rose-50 disabled:opacity-50"><div><p class="text-sm font-bold text-rose-600">Quitar de esta fase</p><p class="text-[0.65rem] text-rose-400">La competencia puede seguir vinculada a otras fases</p></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+          <div class="bg-slate-950 p-8 text-white">
+            <h3 class="text-xl font-bold tracking-tight">Gestionar Asignación de Fases</h3>
+            <p class="mt-2 text-xs text-slate-400 uppercase tracking-widest font-bold">Competencia seleccionada:</p>
+            <p class="mt-1 text-sm font-medium leading-relaxed text-slate-200">{{ selectedCompToAssign.nombre }}</p>
           </div>
-          <div class="bg-slate-50 px-8 py-4 flex justify-center"><button @click="selectedCompToAssign = null" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-950 transition">Cerrar</button></div>
+          <div class="p-8 space-y-6">
+            <div>
+              <p class="mb-4 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">Selecciona las fases a vincular:</p>
+              <div class="grid grid-cols-2 gap-3">
+                <button v-for="phase in phases" :key="phase.id_fase" @click="togglePhaseSelection(phase.id_fase)" :disabled="isAssigning" class="flex flex-col items-center justify-center rounded-2xl border-2 p-5 text-center transition group" :class="selectedPhasesForComp.has(phase.id_fase) ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50'">
+                  <span class="text-[0.65rem] font-black uppercase tracking-tighter" :class="selectedPhasesForComp.has(phase.id_fase) ? 'text-indigo-500' : 'text-slate-400'">Fase</span>
+                  <span class="mt-1 text-xs font-bold" :class="selectedPhasesForComp.has(phase.id_fase) ? 'text-indigo-900' : 'text-slate-900'">{{ formatPhaseName(phase.nombre) }}</span>
+                  <div class="mt-3 flex h-5 w-5 items-center justify-center rounded border transition-colors duration-200" :class="selectedPhasesForComp.has(phase.id_fase) ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300 bg-white'">
+                    <svg v-if="selectedPhasesForComp.has(phase.id_fase)" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div v-if="!isSelectedCompUnassigned" class="pt-4 border-t border-slate-100">
+              <p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-rose-400">Opciones Críticas:</p>
+              <button @click="selectedPhasesForComp.clear(); saveAssignChanges()" :disabled="isAssigning" class="flex w-full items-center justify-between rounded-2xl border-2 border-rose-50 bg-rose-50/30 p-4 text-left transition hover:border-rose-500 hover:bg-rose-50 disabled:opacity-50 group">
+                <div>
+                  <p class="text-sm font-bold text-rose-600">Desvincular de todas las fases</p>
+                  <p class="text-[0.65rem] text-rose-400">La competencia pasará a estado de 'Suelta'</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500 group-hover:scale-110 transition-transform"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+              </button>
+            </div>
+            <div class="pt-2">
+              <button @click="saveAssignChanges" :disabled="isAssigning" class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 p-4 font-bold text-white transition hover:bg-slate-800 disabled:opacity-50">
+                <span v-if="isAssigning">Guardando...</span>
+                <span v-else>Guardar Cambios</span>
+              </button>
+            </div>
+          </div>
+          <div class="bg-slate-50 px-8 py-4 flex justify-center"><button @click="selectedCompToAssign = null" :disabled="isAssigning" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-950 transition disabled:opacity-50">Cancelar</button></div>
         </div>
       </div>
     </Teleport>

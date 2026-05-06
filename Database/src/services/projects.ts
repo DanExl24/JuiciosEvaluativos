@@ -278,7 +278,22 @@ export async function getProjects(pool: Pool) {
   return result.rows;
 }
 
-export async function getProjectPhases(pool: Pool, projectId: number) {
+export async function getFichasByProject(pool: Pool, projectId: number) {
+  const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
+  if (projRes.rowCount === 0) return [];
+  const idPrograma = projRes.rows[0].id_programa;
+
+  const fichasRes = await pool.query(`
+    SELECT id_formacion, ficha_caracterizacion, estado, modalidad
+    FROM formacion
+    WHERE id_programa = $1
+    ORDER BY ficha_caracterizacion ASC
+  `, [idPrograma]);
+
+  return fichasRes.rows;
+}
+
+export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: number) {
   // First get program ID from project
   const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   if (projRes.rowCount === 0) return null;
@@ -316,13 +331,16 @@ export async function getProjectPhases(pool: Pool, projectId: number) {
           (
             SELECT count(*)
             FROM juicios_evaluativos je
+            JOIN aprendiz a ON je.id_aprendiz = a.id_aprendiz
             WHERE je.id_resultado = r.id_resultado AND je.estado = 'aprobado'
+              AND ($2::int IS NULL OR a.id_formacion = $2)
           ) as approved_count,
           (
             SELECT count(*)
             FROM aprendiz a
             JOIN formacion f ON a.id_formacion = f.id_formacion
             WHERE f.id_programa = (SELECT id_programa FROM competencia WHERE id_competencia = $1)
+              AND ($2::int IS NULL OR a.id_formacion = $2)
               AND (
                 a.estado = 'en formacion'
                 OR EXISTS (
@@ -333,7 +351,7 @@ export async function getProjectPhases(pool: Pool, projectId: number) {
           ) as total_count
         FROM resultados_aprendizaje r
         WHERE r.id_competencia = $1
-      `, [comp.id_competencia]);
+      `, [comp.id_competencia, fichaId || null]);
 
       comp.learningOutcomes = resultsRes.rows.map((row: any) => {
         const approved = Number(row.approved_count);
@@ -380,27 +398,71 @@ export async function getUnassignedCompetencies(pool: Pool, projectId: number) {
 }
 
 export async function assignCompetencyToPhase(pool: Pool, competencyId: number, phaseId: number) {
-  const result = await pool.query(`
-    INSERT INTO fase_competencia (id_fase, id_competencia)
-    VALUES ($1, $2)
-    ON CONFLICT DO NOTHING
-    RETURNING id_competencia
-  `, [phaseId, competencyId]);
-  
-  return result.rowCount !== null;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Link competency
+    await client.query(`
+      INSERT INTO fase_competencia (id_fase, id_competencia)
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+    `, [phaseId, competencyId]);
+    
+    // Link all results of this competency to the phase
+    await client.query(`
+      INSERT INTO fase_resultado (id_fase, id_resultado)
+      SELECT $1, id_resultado
+      FROM resultados_aprendizaje
+      WHERE id_competencia = $2
+      ON CONFLICT DO NOTHING
+    `, [phaseId, competencyId]);
+    
+    await client.query('COMMIT');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function unassignCompetency(pool: Pool, competencyId: number, phaseId: number) {
-  // Delete competency mapping from this phase
-  const result = await pool.query(`
-    DELETE FROM fase_competencia
-    WHERE id_competencia = $1 AND id_fase = $2
-  `, [competencyId, phaseId]);
-  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // Unlink competency
+    await client.query(`
+      DELETE FROM fase_competencia
+      WHERE id_competencia = $1 AND id_fase = $2
+    `, [competencyId, phaseId]);
+    
+    // Unlink all results of this competency from the phase
+    await client.query(`
+      DELETE FROM fase_resultado
+      WHERE id_fase = $2 AND id_resultado IN (
+        SELECT id_resultado FROM resultados_aprendizaje WHERE id_competencia = $1
+      )
+    `, [competencyId, phaseId]);
+    
+    await client.query('COMMIT');
+    return true;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteProject(pool: Pool, projectId: number) {
+  const result = await pool.query('DELETE FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   return (result.rowCount !== null && result.rowCount > 0);
 }
 
-export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
+export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaId?: number) {
   const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   if (projRes.rowCount === 0) return [];
   const idPrograma = projRes.rows[0].id_programa;
@@ -422,6 +484,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       LEFT JOIN juicios_evaluativos je ON je.id_aprendiz = a.id_aprendiz AND je.id_resultado = fr.id_resultado
       WHERE f.id_programa = $1 
         AND a.estado = 'en formacion'
+        AND ($2::int IS NULL OR a.id_formacion = $2)
       
       UNION ALL
       
@@ -437,6 +500,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       JOIN fase_resultado fr ON fr.id_resultado = je.id_resultado
       WHERE f.id_programa = $1 
         AND a.estado <> 'en formacion'
+        AND ($2::int IS NULL OR a.id_formacion = $2)
         AND (je.estado <> 'por evaluar' OR je.fecha IS NOT NULL)
     )
     SELECT
@@ -446,7 +510,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       COUNT(*) FILTER (WHERE juicio_estado IS NULL OR juicio_estado <> 'aprobado')::int AS pending_results
     FROM phase_expected_results
     GROUP BY id_fase
-  `, [idPrograma]);
+  `, [idPrograma, fichaId || null]);
 
   const activeProgressByPhase = new Map<number, { approvedResults: number; pendingResults: number; expectedResults: number; progress: number }>(
     activeProgressRes.rows.map((row) => {
@@ -477,8 +541,9 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
     JOIN formacion f ON a.id_formacion = f.id_formacion
     WHERE f.id_programa = $1
       AND a.estado = 'en formacion'
+      AND ($2::int IS NULL OR a.id_formacion = $2)
     GROUP BY fc.id_fase
-  `, [idPrograma]);
+  `, [idPrograma, fichaId || null]);
 
   const referenceDateByPhase = new Map<number, Date | null>(
     referenceDatesRes.rows.map((row) => [Number(row.id_fase), row.reference_date ?? null]),
@@ -491,6 +556,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       JOIN formacion f ON a.id_formacion = f.id_formacion
       WHERE f.id_programa = $1
         AND a.estado IN ('retiro voluntario', 'traslado')
+        AND ($2::int IS NULL OR a.id_formacion = $2)
     ),
     latest_judgement AS (
       -- Obtenemos el ultimo juicio de cada aprendiz
@@ -526,7 +592,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       lj.competencia_nombre
     FROM retired_learners rl
     JOIN latest_judgement lj ON lj.id_aprendiz = rl.id_aprendiz
-  `, [idPrograma]);
+  `, [idPrograma, fichaId || null]);
 
   const desertedLearnersByPhase = new Map<number, any[]>();
 

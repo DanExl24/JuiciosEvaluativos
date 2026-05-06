@@ -12,7 +12,7 @@ import { pool } from './config/db.ts';
 import { importCsvPayload } from './services/csvImport.ts';
 import { getDashboardData, getFormationCompetencyCatalog, getLearnerDetail } from './services/dashboard.ts';
 import { deleteFormationByFicha } from './services/formations.ts';
-import { importProject, getProjects, getProjectPhases, getUnassignedCompetencies, assignCompetencyToPhase, unassignCompetency, getPhaseLearnerStats } from './services/projects.ts';
+import { importProject, getProjects, getProjectPhases, getUnassignedCompetencies, assignCompetencyToPhase, unassignCompetency, getPhaseLearnerStats, getFichasByProject, deleteProject } from './services/projects.ts';
 import type { CsvImportPayload, DashboardFilters, ProjectImportPayload } from './types.ts';
 
 const execAsync = promisify(exec);
@@ -146,6 +146,14 @@ async function ensureSchemaCompatibility() {
       id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
       id_competencia INTEGER NOT NULL REFERENCES competencia(id_competencia) ON DELETE CASCADE,
       PRIMARY KEY (id_fase, id_competencia)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fase_resultado (
+      id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
+      id_resultado INTEGER NOT NULL REFERENCES resultados_aprendizaje(id_resultado) ON DELETE CASCADE,
+      PRIMARY KEY (id_fase, id_resultado)
     );
   `);
 
@@ -325,6 +333,25 @@ app.post('/api/import/project', async (req, res) => {
   }
 });
 
+app.delete('/api/projects/:id', async (req, res) => {
+  const projectId = Number(req.params.id);
+  if (!projectId) {
+    res.status(400).json({ error: 'ID de proyecto no valido.' });
+    return;
+  }
+
+  try {
+    const success = await deleteProject(pool, projectId);
+    if (success) {
+      res.json({ message: 'Proyecto eliminado correctamente.' });
+    } else {
+      res.status(404).json({ error: 'No se encontró el proyecto.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el proyecto.' });
+  }
+});
+
 app.get('/api/projects', async (req, res) => {
   try {
     const projects = await getProjects(pool);
@@ -337,13 +364,14 @@ app.get('/api/projects', async (req, res) => {
 
 app.get('/api/projects/:id/phases', async (req, res) => {
   const projectId = Number(req.params.id);
+  const fichaId = req.query.fichaId ? Number(req.query.fichaId) : undefined;
   if (!Number.isInteger(projectId) || projectId <= 0) {
     res.status(400).json({ error: 'ID de proyecto no valido.' });
     return;
   }
 
   try {
-    const details = await getProjectPhases(pool, projectId);
+    const details = await getProjectPhases(pool, projectId, fichaId);
     res.json(details);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudieron cargar las fases del proyecto.';
@@ -413,17 +441,33 @@ app.post('/api/competencies/:id/unassign', async (req, res) => {
 
 app.get('/api/projects/:id/phase-learner-stats', async (req, res) => {
   const projectId = Number(req.params.id);
+  const fichaId = req.query.fichaId ? Number(req.query.fichaId) : undefined;
   if (!projectId) {
     res.status(400).json({ error: 'ID de proyecto no valido.' });
     return;
   }
 
   try {
-    const stats = await getPhaseLearnerStats(pool, projectId);
+    const stats = await getPhaseLearnerStats(pool, projectId, fichaId);
     res.json(stats);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
     res.status(500).json({ error: `Error al obtener estadísticas: ${message}` });
+  }
+});
+
+app.get('/api/projects/:id/fichas', async (req, res) => {
+  const projectId = Number(req.params.id);
+  if (!projectId) {
+    res.status(400).json({ error: 'ID de proyecto no valido.' });
+    return;
+  }
+
+  try {
+    const fichas = await getFichasByProject(pool, projectId);
+    res.json(fichas);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener fichas del proyecto.' });
   }
 });
 
