@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, BarElement, CategoryScale, Legend, LinearScale, Tooltip } from 'chart.js'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 import type {
@@ -7,6 +9,8 @@ import type {
   FormationCatalogResult,
   LearnerDetail,
 } from '../types/dashboard'
+
+ChartJS.register(BarElement, CategoryScale, Legend, LinearScale, Tooltip)
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
@@ -689,6 +693,43 @@ onMounted(() => {
           <span class="rounded-full bg-slate-100 px-3 py-1">Ficha {{ learnerDetail.learner.ficha }}</span>
           <span class="rounded-full bg-slate-100 px-3 py-1">{{ prettyState(learnerDetail.learner.state) }}</span>
           <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">Avance {{ formatPercent(learnerDetail.learner.progress) }}</span>
+        </div>
+      </div>
+
+      <!-- Competency Progress Bar Chart -->
+      <div class="px-6 py-4 xl:px-7 border-b border-slate-100 bg-slate-50/30">
+        <p class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Progreso por competencia (%)</p>
+        <div class="h-64">
+          <Bar 
+            :data="{
+              labels: learnerDetail.competencies.map(c => c.code),
+              datasets: [{
+                label: 'Avance %',
+                data: learnerDetail.competencies.map(c => c.progress),
+                backgroundColor: learnerDetail.competencies.map(c => c.progress === 100 ? '#10b981' : '#0f172a'),
+                borderRadius: 8
+              }]
+            }"
+            :options="{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { 
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    afterLabel: (context) => {
+                      const comp = learnerDetail?.competencies[context.dataIndex];
+                      return comp ? comp.name : '';
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: { beginAtZero: true, max: 100, ticks: { callback: (v) => `${v}%` } },
+                x: { grid: { display: false } }
+              }
+            }"
+          />
         </div>
       </div>
 

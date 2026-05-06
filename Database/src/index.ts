@@ -9,7 +9,7 @@ import { pool } from './config/db.ts';
 import { importCsvPayload } from './services/csvImport.ts';
 import { getDashboardData, getFormationCompetencyCatalog, getLearnerDetail } from './services/dashboard.ts';
 import { deleteFormationByFicha } from './services/formations.ts';
-import { importProject, getProjects, getProjectPhases } from './services/projects.ts';
+import { importProject, getProjects, getProjectPhases, getUnassignedCompetencies, assignCompetencyToPhase, unassignCompetency, getPhaseLearnerStats } from './services/projects.ts';
 import type { CsvImportPayload, DashboardFilters, ProjectImportPayload } from './types.ts';
 
 dotenv.config();
@@ -23,6 +23,11 @@ const apiPort = Number(process.env.PORT) || 4000;
 
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
+
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
 
 async function ensureSchemaCompatibility() {
   await pool.query(`
@@ -307,6 +312,77 @@ app.get('/api/projects/:id/phases', async (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudieron cargar las fases del proyecto.';
     res.status(500).json({ error: message });
+  }
+});
+
+app.get('/api/projects/:id/unassigned', async (req, res) => {
+  const projectId = Number(req.params.id);
+  if (!Number.isInteger(projectId)) {
+    res.status(400).json({ error: 'ID de proyecto no valido.' });
+    return;
+  }
+
+  try {
+    const competencies = await getUnassignedCompetencies(pool, projectId);
+    res.json(competencies);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener competencias sin asignar.' });
+  }
+});
+
+app.post('/api/competencies/:id/assign', async (req, res) => {
+  const competencyId = Number(req.params.id);
+  const { phaseId } = req.body;
+
+  if (!competencyId || !phaseId) {
+    res.status(400).json({ error: 'Faltan datos para la asignación.' });
+    return;
+  }
+
+  try {
+    const success = await assignCompetencyToPhase(pool, competencyId, phaseId);
+    if (success) {
+      res.json({ message: 'Competencia asignada correctamente.' });
+    } else {
+      res.status(404).json({ error: 'No se encontró la competencia o la fase.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al asignar la competencia.' });
+  }
+});
+
+app.post('/api/competencies/:id/unassign', async (req, res) => {
+  const competencyId = Number(req.params.id);
+  if (!competencyId) {
+    res.status(400).json({ error: 'ID de competencia no valido.' });
+    return;
+  }
+
+  try {
+    const success = await unassignCompetency(pool, competencyId);
+    if (success) {
+      res.json({ message: 'Competencia desasignada correctamente.' });
+    } else {
+      res.status(404).json({ error: 'No se encontró la competencia.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al desasignar la competencia.' });
+  }
+});
+
+app.get('/api/projects/:id/phase-learner-stats', async (req, res) => {
+  const projectId = Number(req.params.id);
+  if (!projectId) {
+    res.status(400).json({ error: 'ID de proyecto no valido.' });
+    return;
+  }
+
+  try {
+    const stats = await getPhaseLearnerStats(pool, projectId);
+    res.json(stats);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    res.status(500).json({ error: `Error al obtener estadísticas: ${message}` });
   }
 });
 
