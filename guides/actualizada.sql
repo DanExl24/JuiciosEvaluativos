@@ -136,8 +136,7 @@ CREATE TABLE public.competencia (
     id_competencia integer NOT NULL,
     codigo character varying(50) NOT NULL,
     nombre text NOT NULL,
-    id_formacion integer NOT NULL,
-    id_fase integer
+    id_programa integer NOT NULL
 );
 
 
@@ -173,7 +172,8 @@ CREATE TABLE public.fases (
     id_fase integer NOT NULL,
     nombre public.fase_nombre_enum NOT NULL,
     actividad text NOT NULL,
-    id_programa integer NOT NULL
+    id_programa integer NOT NULL,
+    CONSTRAINT phases_nombre_programa_key UNIQUE (nombre, id_programa)
 );
 
 
@@ -447,7 +447,7 @@ ALTER TABLE ONLY public.aprendiz
 --
 
 ALTER TABLE ONLY public.competencia
-    ADD CONSTRAINT competencia_codigo_formacion_key UNIQUE (codigo, id_formacion);
+    ADD CONSTRAINT competencia_codigo_programa_key UNIQUE (codigo, id_programa);
 
 
 --
@@ -550,8 +550,7 @@ ALTER TABLE ONLY public.juicios_evaluativos
 -- Name: fases unique_nombre_fase; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fases
-    ADD CONSTRAINT unique_nombre_fase UNIQUE (nombre);
+-- Removed legacy unique_nombre_fase constraint as it is now (nombre, id_programa)
 
 
 --
@@ -567,15 +566,7 @@ ALTER TABLE ONLY public.aprendiz
 --
 
 ALTER TABLE ONLY public.competencia
-    ADD CONSTRAINT fk_competencia_fase FOREIGN KEY (id_fase) REFERENCES public.fases(id_fase) ON DELETE SET NULL;
-
-
---
--- Name: competencia fk_competencia_formacion; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.competencia
-    ADD CONSTRAINT fk_competencia_formacion FOREIGN KEY (id_formacion) REFERENCES public.formacion(id_formacion) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT fk_competencia_programa FOREIGN KEY (id_programa) REFERENCES public.programa(id_programa) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -625,6 +616,108 @@ ALTER TABLE ONLY public.juicios_evaluativos
 ALTER TABLE ONLY public.resultados_aprendizaje
     ADD CONSTRAINT fk_resultado_competencia FOREIGN KEY (id_competencia) REFERENCES public.competencia(id_competencia) ON UPDATE CASCADE ON DELETE CASCADE;
 
+
+--
+-- Name: proyecto_formativo; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.proyecto_formativo (
+    id_proyecto integer NOT NULL,
+    codigo_proyecto character varying(50) NOT NULL,
+    nombre text NOT NULL,
+    tiempo_ejecucion character varying(100),
+    regional character varying(100),
+    centro_formacion character varying(200),
+    id_programa integer NOT NULL
+);
+
+ALTER TABLE public.proyecto_formativo OWNER TO postgres;
+
+--
+-- Name: proyecto_formativo_id_proyecto_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.proyecto_formativo_id_proyecto_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.proyecto_formativo_id_proyecto_seq OWNER TO postgres;
+
+ALTER SEQUENCE public.proyecto_formativo_id_proyecto_seq OWNED BY public.proyecto_formativo.id_proyecto;
+
+--
+-- Name: fase_competencia; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fase_competencia (
+    id_fase integer NOT NULL,
+    id_competencia integer NOT NULL
+);
+
+ALTER TABLE public.fase_competencia OWNER TO postgres;
+
+--
+-- Name: fase_competencia; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fase_competencia (
+    id_fase integer NOT NULL,
+    id_competencia integer NOT NULL
+);
+
+ALTER TABLE public.fase_competencia OWNER TO postgres;
+
+--
+-- Name: proyecto_formativo id_proyecto; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proyecto_formativo ALTER COLUMN id_proyecto SET DEFAULT nextval('public.proyecto_formativo_id_proyecto_seq'::regclass);
+
+--
+-- Name: proyecto_formativo proyecto_formativo_codigo_proyecto_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proyecto_formativo
+    ADD CONSTRAINT proyecto_formativo_codigo_proyecto_key UNIQUE (codigo_proyecto);
+
+--
+-- Name: proyecto_formativo proyecto_formativo_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proyecto_formativo
+    ADD CONSTRAINT proyecto_formativo_pkey PRIMARY KEY (id_proyecto);
+
+--
+-- Name: fase_competencia fase_competencia_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fase_competencia
+    ADD CONSTRAINT fase_competencia_pkey PRIMARY KEY (id_fase, id_competencia);
+
+--
+-- Name: proyecto_formativo fk_proyecto_programa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.proyecto_formativo
+    ADD CONSTRAINT fk_proyecto_programa FOREIGN KEY (id_programa) REFERENCES public.programa(id_programa) ON DELETE CASCADE;
+
+--
+-- Name: fase_competencia fk_fase_competencia_fase; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fase_competencia
+    ADD CONSTRAINT fk_fase_competencia_fase FOREIGN KEY (id_fase) REFERENCES public.fases(id_fase) ON DELETE CASCADE;
+
+--
+-- Name: fase_competencia fk_fase_competencia_comp; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fase_competencia
+    ADD CONSTRAINT fk_fase_competencia_comp FOREIGN KEY (id_competencia) REFERENCES public.competencia(id_competencia) ON DELETE CASCADE;
 
 --
 -- PostgreSQL database dump complete

@@ -104,12 +104,12 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   const projectRes = await client.query(`
     INSERT INTO proyecto_formativo (codigo_proyecto, nombre, tiempo_ejecucion, regional, centro_formacion, id_programa)
     VALUES ($1, $2, $3, $4, $5, $6)
-    ON CONFLICT (id_programa) DO UPDATE SET
-      codigo_proyecto = EXCLUDED.codigo_proyecto,
+    ON CONFLICT (codigo_proyecto) DO UPDATE SET
       nombre = EXCLUDED.nombre,
       tiempo_ejecucion = EXCLUDED.tiempo_ejecucion,
       regional = EXCLUDED.regional,
-      centro_formacion = EXCLUDED.centro_formacion
+      centro_formacion = EXCLUDED.centro_formacion,
+      id_programa = EXCLUDED.id_programa
     RETURNING id_proyecto
   `, [payload.projectCode, payload.projectName, payload.executionTime, payload.regional, payload.center, idPrograma]);
 
@@ -156,7 +156,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   }
 
   await client.query(`
-    DELETE FROM fase_resultado
+    DELETE FROM fase_competencia
     WHERE id_fase IN (
       SELECT id_fase
       FROM fases
@@ -165,7 +165,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   `, [idPrograma]);
 
   await client.query(`
-    DELETE FROM fase_competencia
+    DELETE FROM fase_resultado
     WHERE id_fase IN (
       SELECT id_fase
       FROM fases
@@ -176,16 +176,14 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   const compsRes = await client.query(`
     SELECT c.id_competencia, c.codigo, c.nombre
     FROM competencia c
-    JOIN formacion f ON c.id_formacion = f.id_formacion
-    WHERE f.id_programa = $1
+    WHERE c.id_programa = $1
   `, [idPrograma]);
 
   const resultsRes = await client.query(`
     SELECT r.id_resultado, r.codigo, r.detalle, r.id_competencia
     FROM resultados_aprendizaje r
     JOIN competencia c ON r.id_competencia = c.id_competencia
-    JOIN formacion f ON c.id_formacion = f.id_formacion
-    WHERE f.id_programa = $1
+    WHERE c.id_programa = $1
   `, [idPrograma]);
 
   const resultByCode = new Map<string, Array<{ id_resultado: number; id_competencia: number }>>();
@@ -202,18 +200,21 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
     for (const resultCode of phase.resultCodes) {
       const linkedResults = resultByCode.get(resultCode) ?? [];
       for (const linkedResult of linkedResults) {
+        // Link Result to Phase (Explicitly like before)
         await client.query(`
           INSERT INTO fase_resultado (id_fase, id_resultado)
           VALUES ($1, $2)
           ON CONFLICT DO NOTHING
         `, [phase.id_fase, linkedResult.id_resultado]);
 
+        // Link Competency to Phase
         const compRes = await client.query(`
           INSERT INTO fase_competencia (id_fase, id_competencia)
           VALUES ($1, $2)
           ON CONFLICT DO NOTHING
           RETURNING id_competencia
         `, [phase.id_fase, linkedResult.id_competencia]);
+        
         if ((compRes.rowCount ?? 0) > 0) {
           competenciesUpdated += 1;
         }
@@ -241,8 +242,19 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
         ON CONFLICT DO NOTHING
         RETURNING id_competencia
       `, [phaseId, comp.id_competencia]);
+      
       if ((compRes.rowCount ?? 0) > 0) {
         competenciesUpdated += 1;
+      }
+
+      // Also link all results of this matched competency to this phase
+      const compResults = resultsRes.rows.filter(r => r.id_competencia === comp.id_competencia);
+      for (const r of compResults) {
+        await client.query(`
+          INSERT INTO fase_resultado (id_fase, id_resultado)
+          VALUES ($1, $2)
+          ON CONFLICT DO NOTHING
+        `, [phaseId, r.id_resultado]);
       }
     }
 
@@ -295,6 +307,7 @@ export async function getProjectPhases(pool: Pool, projectId: number) {
 
     // Get results for competencies
     for (const comp of phase.competencies) {
+      // Get results for this competency and phase, with their approval counts
       const resultsRes = await pool.query(`
         SELECT 
           r.id_resultado, 
@@ -303,27 +316,42 @@ export async function getProjectPhases(pool: Pool, projectId: number) {
           (
             SELECT count(*)
             FROM juicios_evaluativos je
-            WHERE je.id_resultado = r.id_resultado AND je.estado = 'por evaluar'
-          ) as por_evaluar_count,
+            WHERE je.id_resultado = r.id_resultado AND je.estado = 'aprobado'
+          ) as approved_count,
           (
             SELECT count(*)
-            FROM juicios_evaluativos je
-            WHERE je.id_resultado = r.id_resultado AND je.estado = 'aprobado'
-          ) as aprobados_count
+            FROM aprendiz a
+            JOIN formacion f ON a.id_formacion = f.id_formacion
+            WHERE f.id_programa = (SELECT id_programa FROM competencia WHERE id_competencia = $1)
+              AND (
+                a.estado = 'en formacion'
+                OR EXISTS (
+                  SELECT 1 FROM juicios_evaluativos je_check 
+                  WHERE je_check.id_aprendiz = a.id_aprendiz AND je_check.id_resultado = r.id_resultado
+                )
+              )
+          ) as total_count
         FROM resultados_aprendizaje r
-        JOIN fase_resultado fr ON fr.id_resultado = r.id_resultado
-        WHERE r.id_competencia = $1 AND fr.id_fase = $2
-      `, [comp.id_competencia, phase.id_fase]);
+        WHERE r.id_competencia = $1
+      `, [comp.id_competencia]);
 
-      comp.learningOutcomes = resultsRes.rows.map((row: any) => ({
-        id_resultado: row.id_resultado,
-        codigo: row.codigo,
-        detalle: row.detalle,
-        isApproved: Number(row.por_evaluar_count) === 0 && Number(row.aprobados_count) > 0
-      }));
+      comp.learningOutcomes = resultsRes.rows.map((row: any) => {
+        const approved = Number(row.approved_count);
+        const total = Number(row.total_count);
+        return {
+          id_resultado: row.id_resultado,
+          codigo: row.codigo,
+          detalle: row.detalle,
+          approvedCount: approved,
+          totalCount: total,
+          isApproved: total > 0 && approved === total
+        };
+      });
 
-      // Competency is approved if it has results and ALL are approved
-      comp.isApproved = comp.learningOutcomes.length > 0 && comp.learningOutcomes.every((r: any) => r.isApproved);
+      // Stats for the competency
+      comp.totalResults = comp.learningOutcomes.reduce((acc: number, r: any) => acc + r.totalCount, 0);
+      comp.approvedResults = comp.learningOutcomes.reduce((acc: number, r: any) => acc + r.approvedCount, 0);
+      comp.isApproved = comp.totalResults > 0 && comp.approvedResults === comp.totalResults;
     }
   }
 
@@ -340,8 +368,7 @@ export async function getUnassignedCompetencies(pool: Pool, projectId: number) {
   const compsRes = await pool.query(`
     SELECT c.id_competencia, c.codigo, c.nombre
     FROM competencia c
-    JOIN formacion f ON c.id_formacion = f.id_formacion
-    WHERE f.id_programa = $1
+    WHERE c.id_programa = $1
       AND NOT EXISTS (
         SELECT 1
         FROM fase_competencia fc
@@ -359,33 +386,18 @@ export async function assignCompetencyToPhase(pool: Pool, competencyId: number, 
     ON CONFLICT DO NOTHING
     RETURNING id_competencia
   `, [phaseId, competencyId]);
-
-  await pool.query(`
-    INSERT INTO fase_resultado (id_fase, id_resultado)
-    SELECT $1, r.id_resultado
-    FROM resultados_aprendizaje r
-    WHERE r.id_competencia = $2
-    ON CONFLICT DO NOTHING
-  `, [phaseId, competencyId]);
   
   return result.rowCount !== null;
 }
 
 export async function unassignCompetency(pool: Pool, competencyId: number, phaseId: number) {
+  // Delete competency mapping from this phase
   const result = await pool.query(`
     DELETE FROM fase_competencia
     WHERE id_competencia = $1 AND id_fase = $2
   `, [competencyId, phaseId]);
-
-  await pool.query(`
-    DELETE FROM fase_resultado fr
-    USING resultados_aprendizaje r
-    WHERE fr.id_resultado = r.id_resultado
-      AND r.id_competencia = $1
-      AND fr.id_fase = $2
-  `, [competencyId, phaseId]);
   
-  return result.rowCount ? result.rowCount > 0 : false;
+  return (result.rowCount !== null && result.rowCount > 0);
 }
 
 export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
@@ -397,74 +409,75 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
   const phases = phasesRes.rows;
 
   const activeProgressRes = await pool.query(`
-    WITH phase_results AS (
-      SELECT
-        c.id_formacion,
-        fr.id_fase,
-        COUNT(DISTINCT fr.id_resultado)::int AS total_results
-      FROM fase_resultado fr
-      JOIN resultados_aprendizaje ra ON fr.id_resultado = ra.id_resultado
-      JOIN competencia c ON ra.id_competencia = c.id_competencia
-      JOIN formacion f ON c.id_formacion = f.id_formacion
-      WHERE f.id_programa = $1
-      GROUP BY c.id_formacion, fr.id_fase
-    ),
-    learner_phase_judgements AS (
+    WITH phase_expected_results AS (
+      -- Activos: Se espera todos los resultados asociados a la fase segun fase_resultado
       SELECT
         fr.id_fase,
-        a.id_formacion,
         a.id_aprendiz,
-        COUNT(DISTINCT fr.id_resultado) FILTER (WHERE je.id_resultado IS NOT NULL)::int AS evaluated_results,
-        COUNT(DISTINCT fr.id_resultado) FILTER (WHERE je.estado = 'aprobado')::int AS approved_results
+        fr.id_resultado,
+        je.estado AS juicio_estado
       FROM aprendiz a
       JOIN formacion f ON a.id_formacion = f.id_formacion
-      JOIN fase_resultado fr ON true
-      JOIN resultados_aprendizaje ra ON fr.id_resultado = ra.id_resultado
-      JOIN competencia c ON ra.id_competencia = c.id_competencia AND c.id_formacion = a.id_formacion
+      JOIN fase_resultado fr ON fr.id_fase IN (SELECT id_fase FROM fases WHERE id_programa = f.id_programa)
       LEFT JOIN juicios_evaluativos je ON je.id_aprendiz = a.id_aprendiz AND je.id_resultado = fr.id_resultado
-      WHERE f.id_programa = $1 AND a.estado = 'en formacion'
-      GROUP BY fr.id_fase, a.id_formacion, a.id_aprendiz
+      WHERE f.id_programa = $1 
+        AND a.estado = 'en formacion'
+      
+      UNION ALL
+      
+      -- Retirados/Trasladados: Solo se cuenta en la fase si tuvieron actividad real en esa fase
+      SELECT
+        fr.id_fase,
+        a.id_aprendiz,
+        fr.id_resultado,
+        je.estado AS juicio_estado
+      FROM aprendiz a
+      JOIN formacion f ON a.id_formacion = f.id_formacion
+      JOIN juicios_evaluativos je ON je.id_aprendiz = a.id_aprendiz
+      JOIN fase_resultado fr ON fr.id_resultado = je.id_resultado
+      WHERE f.id_programa = $1 
+        AND a.estado <> 'en formacion'
+        AND (je.estado <> 'por evaluar' OR je.fecha IS NOT NULL)
     )
     SELECT
-      lpj.id_fase,
-      COUNT(*) FILTER (
-        WHERE COALESCE(pr.total_results, 0) > 0
-          AND lpj.evaluated_results = pr.total_results
-          AND lpj.approved_results = pr.total_results
-      )::int AS approved_count,
-      COUNT(*) FILTER (
-        WHERE COALESCE(pr.total_results, 0) = 0
-          OR lpj.evaluated_results <> pr.total_results
-          OR lpj.approved_results <> pr.total_results
-      )::int AS pending_count
-    FROM learner_phase_judgements lpj
-    LEFT JOIN phase_results pr ON pr.id_fase = lpj.id_fase AND pr.id_formacion = lpj.id_formacion
-    GROUP BY lpj.id_fase
+      id_fase,
+      COUNT(*)::int AS total_expected_results,
+      COUNT(*) FILTER (WHERE juicio_estado = 'aprobado')::int AS approved_results,
+      COUNT(*) FILTER (WHERE juicio_estado IS NULL OR juicio_estado <> 'aprobado')::int AS pending_results
+    FROM phase_expected_results
+    GROUP BY id_fase
   `, [idPrograma]);
 
-  const activeProgressByPhase = new Map<number, { approvedCount: number; pendingCount: number }>(
-    activeProgressRes.rows.map((row) => [
-      Number(row.id_fase),
-      {
-        approvedCount: Number(row.approved_count),
-        pendingCount: Number(row.pending_count),
-      },
-    ]),
+  const activeProgressByPhase = new Map<number, { approvedResults: number; pendingResults: number; expectedResults: number; progress: number }>(
+    activeProgressRes.rows.map((row) => {
+      const totalExpected = Number(row.total_expected_results) || 0;
+      const totalApproved = Number(row.approved_results) || 0;
+      const totalPending = Number(row.pending_results) || 0;
+      return [
+        Number(row.id_fase),
+        {
+          approvedResults: totalApproved,
+          pendingResults: totalPending,
+          expectedResults: totalExpected,
+          progress: totalExpected > 0 ? (totalApproved / totalExpected) * 100 : 0
+        },
+      ];
+    }),
   );
 
   const referenceDatesRes = await pool.query(`
     SELECT
-      fr.id_fase,
+      fc.id_fase,
       MAX(je.fecha) AS reference_date
     FROM juicios_evaluativos je
-    JOIN fase_resultado fr ON je.id_resultado = fr.id_resultado
-    JOIN resultados_aprendizaje ra ON fr.id_resultado = ra.id_resultado
+    JOIN resultados_aprendizaje ra ON je.id_resultado = ra.id_resultado
     JOIN competencia c ON ra.id_competencia = c.id_competencia
+    JOIN fase_competencia fc ON fc.id_competencia = c.id_competencia
     JOIN aprendiz a ON je.id_aprendiz = a.id_aprendiz
     JOIN formacion f ON a.id_formacion = f.id_formacion
     WHERE f.id_programa = $1
       AND a.estado = 'en formacion'
-    GROUP BY fr.id_fase
+    GROUP BY fc.id_fase
   `, [idPrograma]);
 
   const referenceDateByPhase = new Map<number, Date | null>(
@@ -480,22 +493,23 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
         AND a.estado IN ('retiro voluntario', 'traslado')
     ),
     latest_judgement AS (
+      -- Obtenemos el ultimo juicio de cada aprendiz
       SELECT DISTINCT ON (je.id_aprendiz)
         je.id_aprendiz,
+        fr.id_fase,
         je.fecha AS ultima_fecha,
         je.estado AS ultimo_juicio_estado,
         ra.codigo AS resultado_codigo,
         ra.detalle AS resultado_detalle,
-        fr.id_fase,
         c.codigo AS competencia_codigo,
         c.nombre AS competencia_nombre
       FROM juicios_evaluativos je
-      JOIN fase_resultado fr ON je.id_resultado = fr.id_resultado
       JOIN resultados_aprendizaje ra ON je.id_resultado = ra.id_resultado
       JOIN competencia c ON ra.id_competencia = c.id_competencia
+      JOIN fase_resultado fr ON fr.id_resultado = je.id_resultado
       JOIN retired_learners rl ON rl.id_aprendiz = je.id_aprendiz
-      WHERE je.fecha IS NOT NULL
-      ORDER BY je.id_aprendiz, je.fecha DESC, je.id_juicio DESC, fr.id_fase
+      WHERE (je.estado <> 'por evaluar' OR je.fecha IS NOT NULL)
+      ORDER BY je.id_aprendiz, je.fecha DESC NULLS LAST, je.id_juicio DESC
     )
     SELECT
       rl.id_aprendiz,
@@ -518,13 +532,10 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
 
   for (const row of desertedRes.rows) {
     const phaseId = Number(row.id_fase);
-    const referenceDate = referenceDateByPhase.get(phaseId);
-    const latestDate = row.ultima_fecha;
-    const latestTime = latestDate ? new Date(latestDate).getTime() : null;
-    const referenceTime = referenceDate ? new Date(referenceDate).getTime() : null;
-
-    if (latestTime === null || latestTime === referenceTime) {
-      continue;
+    // Si el aprendiz desertor tiene un juicio en esta fase, lo incluimos
+    // Eliminamos el filtro de referenceTime que era demasiado restrictivo
+    if (row.ultima_fecha === null && row.ultimo_juicio_estado === 'por evaluar') {
+      // Opcional: podrías decidir si mostrar desertores que nunca tuvieron actividad
     }
 
     const learners = desertedLearnersByPhase.get(phaseId) ?? [];
@@ -532,7 +543,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
       nombre: `${row.nombres} ${row.apellidos}`,
       documento: row.documento,
       estado: row.estado,
-      ultima_fecha: latestDate,
+      ultima_fecha: row.ultima_fecha,
       juicio_estado: row.ultimo_juicio_estado,
       competencia_codigo: row.competencia_codigo,
       competencia_nombre: row.competencia_nombre,
@@ -544,17 +555,21 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number) {
 
   return phases.map((phase) => {
     const phaseId = Number(phase.id_fase);
-    const activeProgress = activeProgressByPhase.get(phaseId) ?? { approvedCount: 0, pendingCount: 0 };
     const desertedLearners = desertedLearnersByPhase.get(phaseId) ?? [];
 
+    const activeProgress = activeProgressByPhase.get(phaseId) ?? { approvedResults: 0, pendingResults: 0, expectedResults: 0, progress: 0 };
+    
     return {
       id_fase: phase.id_fase,
       nombre: phase.nombre,
-      approvedCount: activeProgress.approvedCount,
-      pendingCount: activeProgress.pendingCount,
+      approvedResults: activeProgress.approvedResults,
+      pendingResults: activeProgress.pendingResults,
+      expectedResults: activeProgress.expectedResults,
       desertedCount: desertedLearners.length,
+      trasladoCount: desertedLearners.filter(d => d.estado?.toLowerCase().includes('traslado')).length,
+      voluntarioCount: desertedLearners.filter(d => d.estado?.toLowerCase().includes('retiro')).length,
       desertedLearners,
-      totalLearners: activeProgress.approvedCount + activeProgress.pendingCount + desertedLearners.length,
+      progressPercentage: activeProgress.progress
     };
   });
 }

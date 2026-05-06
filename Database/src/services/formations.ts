@@ -26,29 +26,10 @@ export async function deleteFormationByFicha(client: PoolClient, ficha: string) 
         FROM aprendiz
         WHERE id_formacion = $1
       )
-      OR id_resultado IN (
-        SELECT r.id_resultado
-        FROM resultados_aprendizaje r
-        INNER JOIN competencia c ON c.id_competencia = r.id_competencia
-        WHERE c.id_formacion = $1
-      )
     `,
     [id_formacion],
   );
 
-  await client.query(
-    `
-      DELETE FROM resultados_aprendizaje
-      WHERE id_competencia IN (
-        SELECT id_competencia
-        FROM competencia
-        WHERE id_formacion = $1
-      )
-    `,
-    [id_formacion],
-  );
-
-  await client.query('DELETE FROM competencia WHERE id_formacion = $1', [id_formacion]);
   await client.query('DELETE FROM aprendiz WHERE id_formacion = $1', [id_formacion]);
   await client.query('DELETE FROM formacion WHERE id_formacion = $1', [id_formacion]);
 

@@ -22,18 +22,11 @@ Enum modalidad_enum {
   "a distancia"
 }
 
-Table aprendiz {
-  id_aprendiz int [pk, increment]
-  documento varchar(20) [not null]
-  tipo_documento varchar(20) [not null]
-  nombres varchar(100) [not null]
-  apellidos varchar(100) [not null]
-  estado estado_aprendiz_enum [not null]
-  id_formacion int
-
-  Indexes {
-    (documento, id_formacion) [unique]
-  }
+Enum fase_nombre_enum {
+  "ANALISIS"
+  "PLANEACION"
+  "EJECUCION"
+  "EVALUACION"
 }
 
 Table programa {
@@ -41,6 +34,16 @@ Table programa {
   nombre text [not null]
   codigo varchar(50) [not null, unique]
   version varchar(20) [not null]
+}
+
+Table proyecto_formativo {
+  id_proyecto int [pk, increment]
+  codigo_proyecto varchar(50) [not null, unique]
+  nombre text [not null]
+  tiempo_ejecucion varchar(100)
+  regional varchar(100)
+  centro_formacion varchar(200)
+  id_programa int [not null]
 }
 
 Table formacion {
@@ -51,14 +54,25 @@ Table formacion {
   id_programa int [not null]
 }
 
+Table fases {
+  id_fase int [pk, increment]
+  nombre fase_nombre_enum [not null]
+  actividad text [not null]
+  id_programa int [not null]
+
+  Indexes {
+    (nombre, id_programa) [unique]
+  }
+}
+
 Table competencia {
   id_competencia int [pk, increment]
   codigo varchar(50) [not null]
   nombre text [not null]
-  id_formacion int [not null]
+  id_programa int [not null]
 
   Indexes {
-    (codigo, id_formacion) [unique]
+    (codigo, id_programa) [unique]
   }
 }
 
@@ -70,6 +84,25 @@ Table resultados_aprendizaje {
 
   Indexes {
     (codigo, id_competencia) [unique]
+  }
+}
+
+Table fase_competencia {
+  id_fase int [pk]
+  id_competencia int [pk]
+}
+
+Table aprendiz {
+  id_aprendiz int [pk, increment]
+  documento varchar(20) [not null]
+  tipo_documento varchar(20) [not null]
+  nombres varchar(100) [not null]
+  apellidos varchar(100) [not null]
+  estado estado_aprendiz_enum [not null]
+  id_formacion int
+
+  Indexes {
+    (documento, id_formacion) [unique]
   }
 }
 
@@ -94,19 +127,14 @@ Table juicios_evaluativos {
   }
 }
 
-Table importacion_archivo {
-  id_importacion_archivo int [pk, increment]
-  nombre_archivo varchar(255) [not null]
-  huella_contenido varchar(64) [not null, unique]
-  ficha_caracterizacion varchar(100) [not null]
-  filas_importadas int [not null]
-  fecha_importacion timestamp [not null]
-}
-
-Ref: aprendiz.id_formacion > formacion.id_formacion [delete: set null, update: cascade]
+Ref: proyecto_formativo.id_programa > programa.id_programa [delete: cascade, update: cascade]
 Ref: formacion.id_programa > programa.id_programa [delete: cascade, update: cascade]
-Ref: competencia.id_formacion > formacion.id_formacion [delete: cascade, update: cascade]
+Ref: fases.id_programa > programa.id_programa [delete: cascade, update: cascade]
+Ref: competencia.id_programa > programa.id_programa [delete: cascade, update: cascade]
 Ref: resultados_aprendizaje.id_competencia > competencia.id_competencia [delete: cascade, update: cascade]
+Ref: fase_competencia.id_fase > fases.id_fase [delete: cascade]
+Ref: fase_competencia.id_competencia > competencia.id_competencia [delete: cascade]
+Ref: aprendiz.id_formacion > formacion.id_formacion [delete: set null, update: cascade]
 Ref: juicios_evaluativos.id_aprendiz > aprendiz.id_aprendiz [delete: cascade, update: cascade]
 Ref: juicios_evaluativos.id_resultado > resultados_aprendizaje.id_resultado [delete: cascade, update: cascade]
 Ref: juicios_evaluativos.id_funcionario > funcionario.id_funcionario [delete: set null, update: cascade]

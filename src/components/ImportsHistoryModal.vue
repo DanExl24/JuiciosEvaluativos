@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 
 import type { ImportHistoryEntry } from '../types/csv'
-import { readImportHistory } from '../utils/importHistory'
+import { readImportHistory, clearAllImportHistory } from '../utils/importHistory'
 
 const props = defineProps<{
   open: boolean
@@ -56,6 +56,13 @@ async function fetchImportHistory() {
   }
 }
 
+function handleClearHistory() {
+  if (confirm('¿Estás seguro de que deseas limpiar todo el historial de importaciones locales? Esta acción no se puede deshacer.')) {
+    clearAllImportHistory()
+    void fetchImportHistory()
+  }
+}
+
 watch(
   () => props.open,
   (open) => {
@@ -75,13 +82,23 @@ watch(
           <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-emerald-700">Control de carga</p>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Archivos importados</h3>
         </div>
-        <button
-          class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          type="button"
-          @click="emit('close')"
-        >
-          Cerrar
-        </button>
+        <div class="flex items-center gap-3">
+          <button
+            v-if="importHistory.length"
+            class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+            type="button"
+            @click="handleClearHistory"
+          >
+            Limpiar historial
+          </button>
+          <button
+            class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            type="button"
+            @click="emit('close')"
+          >
+            Cerrar
+          </button>
+        </div>
       </div>
 
       <div class="max-h-[calc(92vh-6rem)] overflow-y-auto p-5">

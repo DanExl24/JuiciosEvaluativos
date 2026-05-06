@@ -1,0 +1,2498 @@
+[
+  {
+    "text": "SERVICIO NACIONAL DE APRENDIZAJE SENA",
+    "x0": 317.47,
+    "top": 25.857000000000085,
+    "page": 3
+  },
+  {
+    "text": "Sistema Integrado de Gestión y Autocontrol",
+    "x0": 338.78,
+    "top": 41.25,
+    "page": 3
+  },
+  {
+    "text": "Procedimiento Ejecución de la Formación",
+    "x0": 346.25,
+    "top": 56.25,
+    "page": 3
+  },
+  {
+    "text": "PROYECTO FORMATIVO",
+    "x0": 373.11,
+    "top": 70.85700000000008,
+    "page": 3
+  },
+  {
+    "text": "Modelo de Mejora",
+    "x0": 46.49,
+    "top": 79.94200000000001,
+    "page": 3
+  },
+  {
+    "text": "2.5.3 Restricciones o riesgos asociados y alternativas de solución",
+    "x0": 33.0,
+    "top": 110.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "1. Recurso presupuestal insuficiente para la implantación de la solución del sistema de información.",
+    "x0": 33.0,
+    "top": 123.25600000000003,
+    "page": 3
+  },
+  {
+    "text": "2. No aceptación de la solución tecnológica por parte del cliente, por tanto se ofrece alternativas de solución para que el equipo gerencial determine cual es la alternativa viable según los requerimientos",
+    "x0": 33.0,
+    "top": 132.56600000000003,
+    "page": 3
+  },
+  {
+    "text": "previamente establecidos.",
+    "x0": 33.0,
+    "top": 141.87600000000003,
+    "page": 3
+  },
+  {
+    "text": "3. No satisfacer completamente las necesidades específicas del cliente, por ello se bebe contar con un riguroso análisis de requerimientos de la solución de software a desarrollar.",
+    "x0": 33.0,
+    "top": 151.18599999999998,
+    "page": 3
+  },
+  {
+    "text": "4. Fallas en el control de calidad en el desarrollo del proyecto, estableciendo previamente la diferenciación de cada etapa del proceso, establecer controles preventivos en cada proceso.",
+    "x0": 33.0,
+    "top": 160.49599999999998,
+    "page": 3
+  },
+  {
+    "text": "5. Perdida o daño en los recursos tecnológicos tales como dispositivos de almacenamientos, problemas de conexión adquiridos para el desarrollo del proyecto, establecer controles de los insumos",
+    "x0": 33.0,
+    "top": 169.796,
+    "page": 3
+  },
+  {
+    "text": "tecnológicos evitando las posibles fallas en la implementación de la solución",
+    "x0": 33.0,
+    "top": 179.106,
+    "page": 3
+  },
+  {
+    "text": "2.5.4. Productos o resultados del proyecto",
+    "x0": 33.0,
+    "top": 194.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "1. Informe de resultado de análisis de los requerimientos del sistema",
+    "x0": 33.0,
+    "top": 209.25600000000003,
+    "page": 3
+  },
+  {
+    "text": "2. Diseño Arquitectónico del software basado en lenguaje Unificado de Modelado",
+    "x0": 33.0,
+    "top": 218.56600000000003,
+    "page": 3
+  },
+  {
+    "text": "3. Base de datos e interfaz de usuario desarrollado e implementado en un motor de base de datos y lenguaje tendencia de desarrollo de software",
+    "x0": 33.0,
+    "top": 227.87600000000003,
+    "page": 3
+  },
+  {
+    "text": "4. Manual técnico y manual de usuario (Español /Ingles)",
+    "x0": 33.0,
+    "top": 237.18599999999998,
+    "page": 3
+  },
+  {
+    "text": "5. Articulo (Ingles/Español) de revisión bibliográfica acerca de la gestión de calidad del Software desarrollado y publicado en la revista innventiva del Centro Tecnológico de la Amazonia.",
+    "x0": 33.0,
+    "top": 246.49599999999998,
+    "page": 3
+  },
+  {
+    "text": "2.6 Innovación/Gestión Tecnológica",
+    "x0": 33.0,
+    "top": 262.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "El proyecto resuelve una necesidad del sector productivo?",
+    "x0": 33.0,
+    "top": 281.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 281.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "El proyecto mejora el proceso/producto/servicio existente?",
+    "x0": 33.0,
+    "top": 300.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 300.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "El proyecto involucra el uso de nuevas técnicas y tecnologías de proceso?",
+    "x0": 33.0,
+    "top": 319.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 319.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "Los productos finales son susceptibles a protección industrial y/o derechos de autor?",
+    "x0": 33.0,
+    "top": 338.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 338.12600000000003,
+    "page": 3
+  },
+  {
+    "text": "Los productos obtenidos en el proyecto pueden ser posicionados en el mercado?",
+    "x0": 33.0,
+    "top": 357.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 357.126,
+    "page": 3
+  },
+  {
+    "text": "2.7 Valoración Productiva",
+    "x0": 33.0,
+    "top": 376.126,
+    "page": 3
+  },
+  {
+    "text": "Con el desarrollo del proyecto se puede satisfacer la necesidad de un cliente potencial?",
+    "x0": 33.0,
+    "top": 395.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 395.126,
+    "page": 3
+  },
+  {
+    "text": "Viabilidad de proyecto para plan de negocio?",
+    "x0": 33.0,
+    "top": 414.106,
+    "page": 3
+  },
+  {
+    "text": "SI",
+    "x0": 738.72,
+    "top": 414.126,
+    "page": 3
+  },
+  {
+    "text": "3. Planeación del proyecto",
+    "x0": 324.3,
+    "top": 468.43399999999997,
+    "page": 3
+  },
+  {
+    "text": "3.3. Resultados de Aprendizaje Específicos, Transversales",
+    "x0": 360.04,
+    "top": 495.399,
+    "page": 3
+  },
+  {
+    "text": "3.1. Fases del Proyecto",
+    "x0": 75.79,
+    "top": 504.549,
+    "page": 3
+  },
+  {
+    "text": "3.2. Actividades del Proyecto",
+    "x0": 230.56,
+    "top": 504.049,
+    "page": 3
+  },
+  {
+    "text": "y Básicos (a partir del programa de formación)",
+    "x0": 379.89,
+    "top": 503.549,
+    "page": 3
+  },
+  {
+    "text": "3.4. Competencia Asociada",
+    "x0": 614.18,
+    "top": 504.549,
+    "page": 3
+  },
+  {
+    "text": "09/05/2022 11:04:45",
+    "x0": 41.0,
+    "top": 570.57,
+    "page": 3
+  },
+  {
+    "text": "GFPI- F-016 v2",
+    "x0": 355.55,
+    "top": 570.57,
+    "page": 3
+  },
+  {
+    "text": "Página 3 de",
+    "x0": 666.63,
+    "top": 570.57,
+    "page": 3
+  },
+  {
+    "text": "15",
+    "x0": 724.0,
+    "top": 570.57,
+    "page": 3
+  },
+  {
+    "text": "SERVICIO NACIONAL DE APRENDIZAJE SENA",
+    "x0": 317.47,
+    "top": 25.857000000000085,
+    "page": 4
+  },
+  {
+    "text": "Sistema Integrado de Gestión y Autocontrol",
+    "x0": 338.78,
+    "top": 41.25,
+    "page": 4
+  },
+  {
+    "text": "Procedimiento Ejecución de la Formación",
+    "x0": 346.25,
+    "top": 56.25,
+    "page": 4
+  },
+  {
+    "text": "PROYECTO FORMATIVO",
+    "x0": 373.11,
+    "top": 70.85700000000008,
+    "page": 4
+  },
+  {
+    "text": "Modelo de Mejora",
+    "x0": 46.49,
+    "top": 79.94200000000001,
+    "page": 4
+  },
+  {
+    "text": "593343  - 01  IDENTIFICAR LA DINÁMICA",
+    "x0": 361.0,
+    "top": 106.98599999999999,
+    "page": 4
+  },
+  {
+    "text": "1. DESARROLLAR EL PROCESO DE",
+    "x0": 201.0,
+    "top": 116.29599999999999,
+    "page": 4
+  },
+  {
+    "text": "ORGANIZACIONAL DEL SENA Y EL ROL DE LA",
+    "x0": 361.0,
+    "top": 116.29599999999999,
+    "page": 4
+  },
+  {
+    "text": "240201530  - Resultado de Aprendizaje de la Inducción.",
+    "x0": 559.0,
+    "top": 120.94600000000003,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 125.606,
+    "page": 4
+  },
+  {
+    "text": "INDUCCION DE LA FORMACION",
+    "x0": 201.0,
+    "top": 125.606,
+    "page": 4
+  },
+  {
+    "text": "FORMACIÓN PROFESIONAL INTEGRAL DE",
+    "x0": 361.0,
+    "top": 125.606,
+    "page": 4
+  },
+  {
+    "text": "PROFESIONAL INTEGRAL",
+    "x0": 201.0,
+    "top": 134.916,
+    "page": 4
+  },
+  {
+    "text": "ACUERDO CON SU PROYECTO DE VIDA Y EL",
+    "x0": 361.0,
+    "top": 134.916,
+    "page": 4
+  },
+  {
+    "text": "DESARROLLO PROFESIONAL.",
+    "x0": 361.0,
+    "top": 144.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 155.986,
+    "page": 4
+  },
+  {
+    "text": "240202501  - INTERACTUAR EN LENGUA INGLESA",
+    "x0": 559.0,
+    "top": 155.986,
+    "page": 4
+  },
+  {
+    "text": "593115  - 02  INTERCAMBIAR OPINIONES SOBRE",
+    "x0": 361.0,
+    "top": 160.63600000000002,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 165.296,
+    "page": 4
+  },
+  {
+    "text": "DE FORMA ORAL Y ESCRITA DENTRO DE",
+    "x0": 559.0,
+    "top": 165.296,
+    "page": 4
+  },
+  {
+    "text": "SITUACIONES COTIDIANAS Y LABORALES",
+    "x0": 361.0,
+    "top": 169.94600000000003,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 174.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 174.606,
+    "page": 4
+  },
+  {
+    "text": "CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS",
+    "x0": 559.0,
+    "top": 174.606,
+    "page": 4
+  },
+  {
+    "text": "ACTUALES, PASADAS Y FUTURAS EN",
+    "x0": 361.0,
+    "top": 179.25600000000003,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 183.916,
+    "page": 4
+  },
+  {
+    "text": "CRITERIOS ESTABLECIDOS POR EL MARCO",
+    "x0": 559.0,
+    "top": 183.916,
+    "page": 4
+  },
+  {
+    "text": "CONTEXTOS SOCIALES ORALES Y ESCRITOS.",
+    "x0": 361.0,
+    "top": 188.56600000000003,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 193.216,
+    "page": 4
+  },
+  {
+    "text": "COMÚN EUROPEO DE REFERENCIA PARA LAS",
+    "x0": 559.0,
+    "top": 193.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 204.986,
+    "page": 4
+  },
+  {
+    "text": "593117  - 01  COMPRENDER INFORMACIÓN",
+    "x0": 361.0,
+    "top": 204.986,
+    "page": 4
+  },
+  {
+    "text": "240202501  - INTERACTUAR EN LENGUA INGLESA",
+    "x0": 559.0,
+    "top": 204.986,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 214.296,
+    "page": 4
+  },
+  {
+    "text": "SOBRE SITUACIONES COTIDIANAS Y LABORALES",
+    "x0": 361.0,
+    "top": 214.296,
+    "page": 4
+  },
+  {
+    "text": "DE FORMA ORAL Y ESCRITA DENTRO DE",
+    "x0": 559.0,
+    "top": 214.296,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 223.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 223.606,
+    "page": 4
+  },
+  {
+    "text": "ACTUALES Y FUTURAS A TRAVÉS DE",
+    "x0": 361.0,
+    "top": 223.606,
+    "page": 4
+  },
+  {
+    "text": "CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS",
+    "x0": 559.0,
+    "top": 223.606,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 232.916,
+    "page": 4
+  },
+  {
+    "text": "INTERACCIONES SOCIALES DE FORMA ORAL Y",
+    "x0": 361.0,
+    "top": 232.916,
+    "page": 4
+  },
+  {
+    "text": "CRITERIOS ESTABLECIDOS POR EL MARCO",
+    "x0": 559.0,
+    "top": 232.916,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 242.216,
+    "page": 4
+  },
+  {
+    "text": "ESCRITA.",
+    "x0": 361.0,
+    "top": 242.216,
+    "page": 4
+  },
+  {
+    "text": "COMÚN EUROPEO DE REFERENCIA PARA LAS",
+    "x0": 559.0,
+    "top": 242.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 253.986,
+    "page": 4
+  },
+  {
+    "text": "593154  - 01  ALISTAR HERRAMIENTAS DE",
+    "x0": 361.0,
+    "top": 253.986,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 263.296,
+    "page": 4
+  },
+  {
+    "text": "TECNOLOGÍAS DE LA INFORMACIÓN Y LA",
+    "x0": 361.0,
+    "top": 263.296,
+    "page": 4
+  },
+  {
+    "text": "220501046  - Utilizar herramientas informáticas de",
+    "x0": 559.0,
+    "top": 263.296,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 272.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 272.606,
+    "page": 4
+  },
+  {
+    "text": "COMUNICACIÓN (TIC), DE ACUERDO CON LAS",
+    "x0": 361.0,
+    "top": 272.606,
+    "page": 4
+  },
+  {
+    "text": "acuerdo con las necesidades de manejo de información",
+    "x0": 559.0,
+    "top": 272.606,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 281.916,
+    "page": 4
+  },
+  {
+    "text": "NECESIDADES DE PROCESAMIENTO DE",
+    "x0": 361.0,
+    "top": 281.916,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 291.216,
+    "page": 4
+  },
+  {
+    "text": "INFORMACIÓN Y COMUNICACIÓN.",
+    "x0": 361.0,
+    "top": 291.216,
+    "page": 4
+  },
+  {
+    "text": "593156  - 01  ANALIZAR LAS ESTRATEGIAS PARA",
+    "x0": 361.0,
+    "top": 302.836,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 307.486,
+    "page": 4
+  },
+  {
+    "text": "220601501  - APLICAR PRÁCTICAS  DE",
+    "x0": 559.0,
+    "top": 307.486,
+    "page": 4
+  },
+  {
+    "text": "LA PREVENCIÓN Y CONTROL DE LOS IMPACTOS",
+    "x0": 361.0,
+    "top": 312.136,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 316.796,
+    "page": 4
+  },
+  {
+    "text": "PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD",
+    "x0": 559.0,
+    "top": 316.796,
+    "page": 4
+  },
+  {
+    "text": "AMBIENTALES Y DE LOS ACCIDENTES Y",
+    "x0": 361.0,
+    "top": 321.446,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 326.106,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 326.106,
+    "page": 4
+  },
+  {
+    "text": "EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS",
+    "x0": 559.0,
+    "top": 326.106,
+    "page": 4
+  },
+  {
+    "text": "ENFERMEDADES LABORALES (ATEL) DE",
+    "x0": 361.0,
+    "top": 330.75600000000003,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 335.416,
+    "page": 4
+  },
+  {
+    "text": "ORGANIZACIONALES  Y LA NORMATIVIDAD",
+    "x0": 559.0,
+    "top": 335.416,
+    "page": 4
+  },
+  {
+    "text": "ACUERDO CON LAS POLÍTICAS",
+    "x0": 361.0,
+    "top": 340.06600000000003,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 344.716,
+    "page": 4
+  },
+  {
+    "text": "VIGENTE.",
+    "x0": 559.0,
+    "top": 344.716,
+    "page": 4
+  },
+  {
+    "text": "ORGANIZACIONALES Y EL ENTORNO SOCIAL.",
+    "x0": 361.0,
+    "top": 349.37600000000003,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 360.986,
+    "page": 4
+  },
+  {
+    "text": "593162  - 01  IDENTIFICAR LOS PRINCIPIOS Y",
+    "x0": 361.0,
+    "top": 365.63599999999997,
+    "page": 4
+  },
+  {
+    "text": "220201501  - APLICACIÓN DE CONOCIMIENTOS DE",
+    "x0": 559.0,
+    "top": 365.63599999999997,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 370.296,
+    "page": 4
+  },
+  {
+    "text": "LEYES DE LA FÍSICA EN LA SOLUCIÓN DE",
+    "x0": 361.0,
+    "top": 374.946,
+    "page": 4
+  },
+  {
+    "text": "LAS CIENCIAS NATURALES DE ACUERDO CON",
+    "x0": 559.0,
+    "top": 374.946,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 379.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 379.606,
+    "page": 4
+  },
+  {
+    "text": "PROBLEMAS DE ACUERDO AL CONTEXTO",
+    "x0": 361.0,
+    "top": 384.256,
+    "page": 4
+  },
+  {
+    "text": "SITUACIONES DEL CONTEXTO PRODUCTIVO Y",
+    "x0": 559.0,
+    "top": 384.256,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 388.916,
+    "page": 4
+  },
+  {
+    "text": "PRODUCTIVO.",
+    "x0": 361.0,
+    "top": 393.56600000000003,
+    "page": 4
+  },
+  {
+    "text": "SOCIAL.",
+    "x0": 559.0,
+    "top": 393.56600000000003,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 398.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 409.986,
+    "page": 4
+  },
+  {
+    "text": "593225  - 01  ANALIZAR LOS COMPONENTES DE",
+    "x0": 361.0,
+    "top": 414.63599999999997,
+    "page": 4
+  },
+  {
+    "text": "240201524  - DESARROLLAR PROCESOS DE",
+    "x0": 559.0,
+    "top": 414.63599999999997,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 419.296,
+    "page": 4
+  },
+  {
+    "text": "LA COMUNICACIÓN SEGÚN SUS",
+    "x0": 361.0,
+    "top": 423.946,
+    "page": 4
+  },
+  {
+    "text": "COMUNICACIÓN EFICACES Y EFECTIVOS,",
+    "x0": 559.0,
+    "top": 423.946,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 428.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 428.606,
+    "page": 4
+  },
+  {
+    "text": "CARACTERÍSTICAS, INTENCIONALIDAD Y",
+    "x0": 361.0,
+    "top": 433.256,
+    "page": 4
+  },
+  {
+    "text": "TENIENDO EN CUENTA SITUACIONES  DE ORDEN",
+    "x0": 559.0,
+    "top": 433.256,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 437.916,
+    "page": 4
+  },
+  {
+    "text": "CONTEXTO.",
+    "x0": 361.0,
+    "top": 442.56600000000003,
+    "page": 4
+  },
+  {
+    "text": "SOCIAL, PERSONAL Y PRODUCTIVO.",
+    "x0": 559.0,
+    "top": 442.56600000000003,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 447.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 458.986,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 468.296,
+    "page": 4
+  },
+  {
+    "text": "593236  - 01  ANALIZAR EL CONTEXTO",
+    "x0": 361.0,
+    "top": 468.296,
+    "page": 4
+  },
+  {
+    "text": "240201064  - Orientar investigación formativa según",
+    "x0": 559.0,
+    "top": 472.946,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 477.606,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 477.606,
+    "page": 4
+  },
+  {
+    "text": "PRODUCTIVO SEGÚN SUS CARACTERÍSTICAS Y",
+    "x0": 361.0,
+    "top": 477.606,
+    "page": 4
+  },
+  {
+    "text": "referentes técnicos",
+    "x0": 559.0,
+    "top": 482.256,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 486.916,
+    "page": 4
+  },
+  {
+    "text": "NECESIDADES.",
+    "x0": 361.0,
+    "top": 486.916,
+    "page": 4
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 496.216,
+    "page": 4
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 507.796,
+    "page": 4
+  },
+  {
+    "text": "593256  - 01  IDENTIFICAR MODELOS",
+    "x0": 361.0,
+    "top": 507.796,
+    "page": 4
+  },
+  {
+    "text": "240201528  - Razonar cuantitativamente frente a",
+    "x0": 559.0,
+    "top": 507.796,
+    "page": 4
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 517.106,
+    "page": 4
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 517.106,
+    "page": 4
+  },
+  {
+    "text": "MATEMÁTICOS DE ACUERDO CON LOS",
+    "x0": 361.0,
+    "top": 517.106,
+    "page": 4
+  },
+  {
+    "text": "situaciones susceptibles de ser abordadas de manera",
+    "x0": 559.0,
+    "top": 517.106,
+    "page": 4
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 526.416,
+    "page": 4
+  },
+  {
+    "text": "REQUERIMIENTOS DEL PROBLEMA PLANTEADO",
+    "x0": 361.0,
+    "top": 526.416,
+    "page": 4
+  },
+  {
+    "text": "matemática en contextos laborales,",
+    "x0": 559.0,
+    "top": 526.416,
+    "page": 4
+  },
+  {
+    "text": "09/05/2022 11:04:45",
+    "x0": 41.0,
+    "top": 570.57,
+    "page": 4
+  },
+  {
+    "text": "GFPI- F-016 v2",
+    "x0": 355.55,
+    "top": 570.57,
+    "page": 4
+  },
+  {
+    "text": "Página 4 de",
+    "x0": 666.63,
+    "top": 570.57,
+    "page": 4
+  },
+  {
+    "text": "15",
+    "x0": 724.0,
+    "top": 570.57,
+    "page": 4
+  },
+  {
+    "text": "SERVICIO NACIONAL DE APRENDIZAJE SENA",
+    "x0": 317.47,
+    "top": 25.857000000000085,
+    "page": 5
+  },
+  {
+    "text": "Sistema Integrado de Gestión y Autocontrol",
+    "x0": 338.78,
+    "top": 41.25,
+    "page": 5
+  },
+  {
+    "text": "Procedimiento Ejecución de la Formación",
+    "x0": 346.25,
+    "top": 56.25,
+    "page": 5
+  },
+  {
+    "text": "PROYECTO FORMATIVO",
+    "x0": 373.11,
+    "top": 70.85700000000008,
+    "page": 5
+  },
+  {
+    "text": "Modelo de Mejora",
+    "x0": 46.49,
+    "top": 79.94200000000001,
+    "page": 5
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 106.94600000000003,
+    "page": 5
+  },
+  {
+    "text": "CONTEXTOS SOCIALES Y PRODUCTIVO.",
+    "x0": 361.0,
+    "top": 111.606,
+    "page": 5
+  },
+  {
+    "text": "sociales y personales.",
+    "x0": 559.0,
+    "top": 111.606,
+    "page": 5
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 116.25600000000003,
+    "page": 5
+  },
+  {
+    "text": "2. ANALIZAR Y CONOCER",
+    "x0": 201.0,
+    "top": 127.98599999999999,
+    "page": 5
+  },
+  {
+    "text": "HERRAMIENTAS TECNOLÓGICAS",
+    "x0": 201.0,
+    "top": 137.296,
+    "page": 5
+  },
+  {
+    "text": "593346  - 01  CARACTERIZAR LOS PROCESOS DE",
+    "x0": 361.0,
+    "top": 137.296,
+    "page": 5
+  },
+  {
+    "text": "220501092  - Establecer requisitos de la solución de",
+    "x0": 559.0,
+    "top": 137.296,
+    "page": 5
+  },
+  {
+    "text": "ANÁLISIS",
+    "x0": 32.0,
+    "top": 146.606,
+    "page": 5
+  },
+  {
+    "text": "NECESARIAS PARA EL MANEJO DE LOS",
+    "x0": 201.0,
+    "top": 146.606,
+    "page": 5
+  },
+  {
+    "text": "LA ORGANIZACIÓN DE ACUERDO CON EL",
+    "x0": 361.0,
+    "top": 146.606,
+    "page": 5
+  },
+  {
+    "text": "software de acuerdo con estándares y procedimiento",
+    "x0": 559.0,
+    "top": 146.606,
+    "page": 5
+  },
+  {
+    "text": "REQUERIMIENTOS DE SOFTWARE EN",
+    "x0": 201.0,
+    "top": 155.916,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A CONSTRUIR.",
+    "x0": 361.0,
+    "top": 155.916,
+    "page": 5
+  },
+  {
+    "text": "técnico",
+    "x0": 559.0,
+    "top": 155.916,
+    "page": 5
+  },
+  {
+    "text": "LA EMPRESA",
+    "x0": 201.0,
+    "top": 165.216,
+    "page": 5
+  },
+  {
+    "text": "592373  - 02  MODELAR LAS FUNCIONES DEL",
+    "x0": 361.0,
+    "top": 176.796,
+    "page": 5
+  },
+  {
+    "text": "220501093  - Evaluar requisitos de la solución de",
+    "x0": 559.0,
+    "top": 176.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 181.44600000000003,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 186.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE DE ACUERDO CON EL INFORME DE",
+    "x0": 361.0,
+    "top": 186.106,
+    "page": 5
+  },
+  {
+    "text": "software de acuerdo con metodologías de análisis y",
+    "x0": 559.0,
+    "top": 186.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 190.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "REQUISITOS.",
+    "x0": 361.0,
+    "top": 195.416,
+    "page": 5
+  },
+  {
+    "text": "estándares",
+    "x0": 559.0,
+    "top": 195.416,
+    "page": 5
+  },
+  {
+    "text": "592376  - 03  DESARROLLAR PROCESOS",
+    "x0": 361.0,
+    "top": 206.796,
+    "page": 5
+  },
+  {
+    "text": "220501093  - Evaluar requisitos de la solución de",
+    "x0": 559.0,
+    "top": 206.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 211.44600000000003,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 216.106,
+    "page": 5
+  },
+  {
+    "text": "LÓGICOS A TRAVÉS DE LA IMPLEMENTACIÓN DE",
+    "x0": 361.0,
+    "top": 216.106,
+    "page": 5
+  },
+  {
+    "text": "software de acuerdo con metodologías de análisis y",
+    "x0": 559.0,
+    "top": 216.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 220.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "ALGORITMOS.",
+    "x0": 361.0,
+    "top": 225.416,
+    "page": 5
+  },
+  {
+    "text": "estándares",
+    "x0": 559.0,
+    "top": 225.416,
+    "page": 5
+  },
+  {
+    "text": "593062  - 02  ELABORAR PROPUESTA TÉCNICA",
+    "x0": 361.0,
+    "top": 236.796,
+    "page": 5
+  },
+  {
+    "text": "220501094  - Estructurar propuesta técnica de servicio",
+    "x0": 559.0,
+    "top": 236.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 241.44600000000003,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 246.106,
+    "page": 5
+  },
+  {
+    "text": "DEL SOFTWARE DE ACUERDO CON LAS",
+    "x0": 361.0,
+    "top": 246.106,
+    "page": 5
+  },
+  {
+    "text": "de tecnología de la información según requisitos",
+    "x0": 559.0,
+    "top": 246.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 250.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "ESPECIFICACIONES TÉCNICAS DEFINIDAS.",
+    "x0": 361.0,
+    "top": 255.416,
+    "page": 5
+  },
+  {
+    "text": "técnicos y normativa",
+    "x0": 559.0,
+    "top": 255.416,
+    "page": 5
+  },
+  {
+    "text": "593104  - 03  CREAR COMPONENTES FRONT-END",
+    "x0": 361.0,
+    "top": 266.796,
+    "page": 5
+  },
+  {
+    "text": "220501096  - DESARROLLAR LA SOLUCIÓN DE",
+    "x0": 559.0,
+    "top": 266.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 271.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 276.106,
+    "page": 5
+  },
+  {
+    "text": "DEL SOFTWARE DE ACUERDO CON EL DISEÑO.",
+    "x0": 361.0,
+    "top": 276.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE DE ACUERDO CON EL DISEÑO Y",
+    "x0": 559.0,
+    "top": 276.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 280.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "METODOLOGÍAS DE DESARROLLO",
+    "x0": 559.0,
+    "top": 285.416,
+    "page": 5
+  },
+  {
+    "text": "593107  - 02  CONSTRUIR LA BASE DE DATOS",
+    "x0": 361.0,
+    "top": 296.796,
+    "page": 5
+  },
+  {
+    "text": "220501096  - DESARROLLAR LA SOLUCIÓN DE",
+    "x0": 559.0,
+    "top": 296.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 301.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 306.106,
+    "page": 5
+  },
+  {
+    "text": "PARA EL SOFTWARE A PARTIR DEL MODELO DE",
+    "x0": 361.0,
+    "top": 306.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE DE ACUERDO CON EL DISEÑO Y",
+    "x0": 559.0,
+    "top": 306.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 310.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "DATOS.",
+    "x0": 361.0,
+    "top": 315.416,
+    "page": 5
+  },
+  {
+    "text": "METODOLOGÍAS DE DESARROLLO",
+    "x0": 559.0,
+    "top": 315.416,
+    "page": 5
+  },
+  {
+    "text": "220501096  - DESARROLLAR LA SOLUCIÓN DE",
+    "x0": 559.0,
+    "top": 326.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 331.446,
+    "page": 5
+  },
+  {
+    "text": "593108  - 04  CODIFICAR EL SOFTWARE DE",
+    "x0": 361.0,
+    "top": 331.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 336.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE DE ACUERDO CON EL DISEÑO Y",
+    "x0": 559.0,
+    "top": 336.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 340.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "ACUERDO CON EL DISEÑO ESTABLECIDO.",
+    "x0": 361.0,
+    "top": 340.75600000000003,
+    "page": 5
+  },
+  {
+    "text": "METODOLOGÍAS DE DESARROLLO",
+    "x0": 559.0,
+    "top": 345.416,
+    "page": 5
+  },
+  {
+    "text": "593110  - 02  DESPLEGAR EL SOFTWARE DE",
+    "x0": 361.0,
+    "top": 356.796,
+    "page": 5
+  },
+  {
+    "text": "220501097  - Implementar la solución de software de",
+    "x0": 559.0,
+    "top": 356.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 361.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 366.106,
+    "page": 5
+  },
+  {
+    "text": "ACUERDO CON LA ARQUITECTURA Y LAS",
+    "x0": 361.0,
+    "top": 366.106,
+    "page": 5
+  },
+  {
+    "text": "acuerdo con los requisitos de operación y modelos de",
+    "x0": 559.0,
+    "top": 366.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 370.756,
+    "page": 5
+  },
+  {
+    "text": "POLÍTICAS ESTABLECIDAS.",
+    "x0": 361.0,
+    "top": 375.416,
+    "page": 5
+  },
+  {
+    "text": "referencia",
+    "x0": 559.0,
+    "top": 375.416,
+    "page": 5
+  },
+  {
+    "text": "593112  - 04  IMPLANTAR EL SOFTWARE DE",
+    "x0": 361.0,
+    "top": 386.796,
+    "page": 5
+  },
+  {
+    "text": "220501097  - Implementar la solución de software de",
+    "x0": 559.0,
+    "top": 386.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 391.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 396.106,
+    "page": 5
+  },
+  {
+    "text": "ACUERDO CON LOS NIVELES DE SERVICIO",
+    "x0": 361.0,
+    "top": 396.106,
+    "page": 5
+  },
+  {
+    "text": "acuerdo con los requisitos de operación y modelos de",
+    "x0": 559.0,
+    "top": 396.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 400.756,
+    "page": 5
+  },
+  {
+    "text": "ESTABLECIDOS CON EL CLIENTE.",
+    "x0": 361.0,
+    "top": 405.416,
+    "page": 5
+  },
+  {
+    "text": "referencia",
+    "x0": 559.0,
+    "top": 405.416,
+    "page": 5
+  },
+  {
+    "text": "240202501  - INTERACTUAR EN LENGUA INGLESA",
+    "x0": 559.0,
+    "top": 416.986,
+    "page": 5
+  },
+  {
+    "text": "593113  - 06  EXPLICAR LAS FUNCIONES DE SU",
+    "x0": 361.0,
+    "top": 421.63599999999997,
+    "page": 5
+  },
+  {
+    "text": "DE FORMA ORAL Y ESCRITA DENTRO DE",
+    "x0": 559.0,
+    "top": 426.296,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 430.946,
+    "page": 5
+  },
+  {
+    "text": "OCUPACIÓN LABORAL USANDO EXPRESIONES",
+    "x0": 361.0,
+    "top": 430.946,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 435.606,
+    "page": 5
+  },
+  {
+    "text": "CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS",
+    "x0": 559.0,
+    "top": 435.606,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 440.256,
+    "page": 5
+  },
+  {
+    "text": "DE ACUERDO AL NIVEL REQUERIDO POR EL",
+    "x0": 361.0,
+    "top": 440.256,
+    "page": 5
+  },
+  {
+    "text": "CRITERIOS ESTABLECIDOS POR EL MARCO",
+    "x0": 559.0,
+    "top": 444.916,
+    "page": 5
+  },
+  {
+    "text": "PROGRAMA DE FORMACIÓN.",
+    "x0": 361.0,
+    "top": 449.56600000000003,
+    "page": 5
+  },
+  {
+    "text": "COMÚN EUROPEO DE REFERENCIA PARA LAS",
+    "x0": 559.0,
+    "top": 454.216,
+    "page": 5
+  },
+  {
+    "text": "593116  - 05  PRESENTAR UN PROCESO PARA LA",
+    "x0": 361.0,
+    "top": 465.986,
+    "page": 5
+  },
+  {
+    "text": "240202501  - INTERACTUAR EN LENGUA INGLESA",
+    "x0": 559.0,
+    "top": 465.986,
+    "page": 5
+  },
+  {
+    "text": "REALIZACIÓN DE UNA ACTIVIDAD EN SU",
+    "x0": 361.0,
+    "top": 475.296,
+    "page": 5
+  },
+  {
+    "text": "DE FORMA ORAL Y ESCRITA DENTRO DE",
+    "x0": 559.0,
+    "top": 475.296,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 479.946,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 484.606,
+    "page": 5
+  },
+  {
+    "text": "QUEHACER LABORAL DE ACUERDO CON LOS",
+    "x0": 361.0,
+    "top": 484.606,
+    "page": 5
+  },
+  {
+    "text": "CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS",
+    "x0": 559.0,
+    "top": 484.606,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 489.256,
+    "page": 5
+  },
+  {
+    "text": "PROCEDIMIENTOS ESTABLECIDOS DESDE SU",
+    "x0": 361.0,
+    "top": 493.916,
+    "page": 5
+  },
+  {
+    "text": "CRITERIOS ESTABLECIDOS POR EL MARCO",
+    "x0": 559.0,
+    "top": 493.916,
+    "page": 5
+  },
+  {
+    "text": "PROGRAMA DE FORMACIÓN.",
+    "x0": 361.0,
+    "top": 503.216,
+    "page": 5
+  },
+  {
+    "text": "COMÚN EUROPEO DE REFERENCIA PARA LAS",
+    "x0": 559.0,
+    "top": 503.216,
+    "page": 5
+  },
+  {
+    "text": "593119  - 02  PRACTICAR HÁBITOS SALUDABLES",
+    "x0": 361.0,
+    "top": 514.796,
+    "page": 5
+  },
+  {
+    "text": "230101507  - GENERAR HÁBITOS SALUDABLES DE",
+    "x0": 559.0,
+    "top": 514.796,
+    "page": 5
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 519.446,
+    "page": 5
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 524.106,
+    "page": 5
+  },
+  {
+    "text": "MEDIANTE LA APLICACIÓN DE  FUNDAMENTOS",
+    "x0": 361.0,
+    "top": 524.106,
+    "page": 5
+  },
+  {
+    "text": "VIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS",
+    "x0": 559.0,
+    "top": 524.106,
+    "page": 5
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 528.756,
+    "page": 5
+  },
+  {
+    "text": "DE NUTRICIÓN E HIGIENE.",
+    "x0": 361.0,
+    "top": 533.416,
+    "page": 5
+  },
+  {
+    "text": "DE ACTIVIDAD FÍSICA EN LOS CONTEXTOS",
+    "x0": 559.0,
+    "top": 533.416,
+    "page": 5
+  },
+  {
+    "text": "09/05/2022 11:04:45",
+    "x0": 41.0,
+    "top": 570.57,
+    "page": 5
+  },
+  {
+    "text": "GFPI- F-016 v2",
+    "x0": 355.55,
+    "top": 570.57,
+    "page": 5
+  },
+  {
+    "text": "Página 5 de",
+    "x0": 666.63,
+    "top": 570.57,
+    "page": 5
+  },
+  {
+    "text": "15",
+    "x0": 724.0,
+    "top": 570.57,
+    "page": 5
+  },
+  {
+    "text": "SERVICIO NACIONAL DE APRENDIZAJE SENA",
+    "x0": 317.47,
+    "top": 25.857000000000085,
+    "page": 6
+  },
+  {
+    "text": "Sistema Integrado de Gestión y Autocontrol",
+    "x0": 338.78,
+    "top": 41.25,
+    "page": 6
+  },
+  {
+    "text": "Procedimiento Ejecución de la Formación",
+    "x0": 346.25,
+    "top": 56.25,
+    "page": 6
+  },
+  {
+    "text": "PROYECTO FORMATIVO",
+    "x0": 373.11,
+    "top": 70.85700000000008,
+    "page": 6
+  },
+  {
+    "text": "Modelo de Mejora",
+    "x0": 46.49,
+    "top": 79.94200000000001,
+    "page": 6
+  },
+  {
+    "text": "PRODUCTIVOS Y SOCIALES.",
+    "x0": 559.0,
+    "top": 111.106,
+    "page": 6
+  },
+  {
+    "text": "593121  - 03  EJECUTAR ACTIVIDADES DE",
+    "x0": 361.0,
+    "top": 124.98599999999999,
+    "page": 6
+  },
+  {
+    "text": "230101507  - GENERAR HÁBITOS SALUDABLES DE",
+    "x0": 559.0,
+    "top": 129.63600000000002,
+    "page": 6
+  },
+  {
+    "text": "ACONDICIONAMIENTO FÍSICO ORIENTADAS",
+    "x0": 361.0,
+    "top": 134.296,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 138.94600000000003,
+    "page": 6
+  },
+  {
+    "text": "VIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS",
+    "x0": 559.0,
+    "top": 138.94600000000003,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 143.606,
+    "page": 6
+  },
+  {
+    "text": "HACIA EL MEJORAMIENTO DE LA CONDICIÓN",
+    "x0": 361.0,
+    "top": 143.606,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 148.25600000000003,
+    "page": 6
+  },
+  {
+    "text": "DE ACTIVIDAD FÍSICA EN LOS CONTEXTOS",
+    "x0": 559.0,
+    "top": 148.25600000000003,
+    "page": 6
+  },
+  {
+    "text": "FÍSICA EN LOS CONTEXTOS PRODUCTIVO Y",
+    "x0": 361.0,
+    "top": 152.916,
+    "page": 6
+  },
+  {
+    "text": "PRODUCTIVOS Y SOCIALES.",
+    "x0": 559.0,
+    "top": 157.56600000000003,
+    "page": 6
+  },
+  {
+    "text": "SOCIAL.",
+    "x0": 361.0,
+    "top": 162.216,
+    "page": 6
+  },
+  {
+    "text": "230101507  - GENERAR HÁBITOS SALUDABLES DE",
+    "x0": 559.0,
+    "top": 174.13600000000002,
+    "page": 6
+  },
+  {
+    "text": "593122  - 04  IMPLEMENTAR UN PLAN DE",
+    "x0": 361.0,
+    "top": 178.796,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 183.44600000000003,
+    "page": 6
+  },
+  {
+    "text": "VIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS",
+    "x0": 559.0,
+    "top": 183.44600000000003,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 188.106,
+    "page": 6
+  },
+  {
+    "text": "ERGONOMÍA Y PAUSAS ACTIVAS SEGÚN LAS",
+    "x0": 361.0,
+    "top": 188.106,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 192.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "DE ACTIVIDAD FÍSICA EN LOS CONTEXTOS",
+    "x0": 559.0,
+    "top": 192.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "CARACTERÍSTICAS DE LA FUNCIÓN",
+    "x0": 361.0,
+    "top": 197.416,
+    "page": 6
+  },
+  {
+    "text": "PRODUCTIVOS Y SOCIALES.",
+    "x0": 559.0,
+    "top": 202.06600000000003,
+    "page": 6
+  },
+  {
+    "text": "593146  - 01  INCORPORAR ACTIVIDADES DE",
+    "x0": 361.0,
+    "top": 214.13600000000002,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 223.44600000000003,
+    "page": 6
+  },
+  {
+    "text": "ASEGURAMIENTO DE LA CALIDAD DEL",
+    "x0": 361.0,
+    "top": 223.44600000000003,
+    "page": 6
+  },
+  {
+    "text": "220501098  - Controlar la calidad del servicio de",
+    "x0": 559.0,
+    "top": 223.44600000000003,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 228.106,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 232.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE DE ACUERDO CON ESTÁNDARES DE",
+    "x0": 361.0,
+    "top": 232.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "software de acuerdo con los estándares técnicos",
+    "x0": 559.0,
+    "top": 232.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "LA INDUSTRIA.",
+    "x0": 361.0,
+    "top": 242.06600000000003,
+    "page": 6
+  },
+  {
+    "text": "593147  - 02  ESTABLECER RELACIONES DE",
+    "x0": 361.0,
+    "top": 254.13600000000002,
+    "page": 6
+  },
+  {
+    "text": "240201526  - Enrique Low Murtra-Interactuar en el",
+    "x0": 559.0,
+    "top": 254.13600000000002,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 263.446,
+    "page": 6
+  },
+  {
+    "text": "CRECIMIENTO PERSONAL Y COMUNITARIO A",
+    "x0": 361.0,
+    "top": 263.446,
+    "page": 6
+  },
+  {
+    "text": "contexto productivo y social de acuerdo con principios",
+    "x0": 559.0,
+    "top": 263.446,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 268.106,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 272.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "PARTIR DEL BIEN COMÚN COMO APORTE PARA",
+    "x0": 361.0,
+    "top": 272.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "éticos para la construcción de una cultura de paz.",
+    "x0": 559.0,
+    "top": 272.75600000000003,
+    "page": 6
+  },
+  {
+    "text": "EL DESARROLLO SOCIAL.",
+    "x0": 361.0,
+    "top": 282.06600000000003,
+    "page": 6
+  },
+  {
+    "text": "593150  - 04  CONTRIBUIR CON EL",
+    "x0": 361.0,
+    "top": 293.986,
+    "page": 6
+  },
+  {
+    "text": "240201526  - Enrique Low Murtra-Interactuar en el",
+    "x0": 559.0,
+    "top": 298.636,
+    "page": 6
+  },
+  {
+    "text": "FORTALECIMIENTO DE LA CULTURA DE PAZ A",
+    "x0": 361.0,
+    "top": 303.296,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 307.946,
+    "page": 6
+  },
+  {
+    "text": "contexto productivo y social de acuerdo con principios",
+    "x0": 559.0,
+    "top": 307.946,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 312.606,
+    "page": 6
+  },
+  {
+    "text": "PARTIR DE LA DIGNIDAD HUMANA Y LAS",
+    "x0": 361.0,
+    "top": 312.606,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 317.25600000000003,
+    "page": 6
+  },
+  {
+    "text": "éticos para la construcción de una cultura de paz.",
+    "x0": 559.0,
+    "top": 317.25600000000003,
+    "page": 6
+  },
+  {
+    "text": "ESTRATEGIAS PARA LA TRANSFORMACIÓN DE",
+    "x0": 361.0,
+    "top": 321.916,
+    "page": 6
+  },
+  {
+    "text": "CONFLICTOS.",
+    "x0": 361.0,
+    "top": 331.216,
+    "page": 6
+  },
+  {
+    "text": "593151  - 02  APLICAR FUNCIONALIDADES DE",
+    "x0": 361.0,
+    "top": 343.136,
+    "page": 6
+  },
+  {
+    "text": "220501046  - Utilizar herramientas informáticas de",
+    "x0": 559.0,
+    "top": 347.796,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 352.44599999999997,
+    "page": 6
+  },
+  {
+    "text": "HERRAMIENTAS Y SERVICIOS TIC, DE ACUERDO",
+    "x0": 361.0,
+    "top": 352.44599999999997,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 357.106,
+    "page": 6
+  },
+  {
+    "text": "acuerdo con las necesidades de manejo de información",
+    "x0": 559.0,
+    "top": 357.106,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 361.756,
+    "page": 6
+  },
+  {
+    "text": "CON MANUALES DE USO, PROCEDIMIENTOS",
+    "x0": 361.0,
+    "top": 361.756,
+    "page": 6
+  },
+  {
+    "text": "ESTABLECIDOS Y BUENAS PRÁCTICAS.",
+    "x0": 361.0,
+    "top": 371.06600000000003,
+    "page": 6
+  },
+  {
+    "text": "220601501  - APLICAR PRÁCTICAS  DE",
+    "x0": 559.0,
+    "top": 382.986,
+    "page": 6
+  },
+  {
+    "text": "593157  - 03  REALIZAR SEGUIMIENTO Y",
+    "x0": 361.0,
+    "top": 387.63599999999997,
+    "page": 6
+  },
+  {
+    "text": "PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD",
+    "x0": 559.0,
+    "top": 392.296,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 396.946,
+    "page": 6
+  },
+  {
+    "text": "ACOMPAÑAMIENTO AL DESARROLLO DE LOS",
+    "x0": 361.0,
+    "top": 396.946,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 401.606,
+    "page": 6
+  },
+  {
+    "text": "EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS",
+    "x0": 559.0,
+    "top": 401.606,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 406.256,
+    "page": 6
+  },
+  {
+    "text": "PLANES Y PROGRAMAS AMBIENTALES Y SST,",
+    "x0": 361.0,
+    "top": 406.256,
+    "page": 6
+  },
+  {
+    "text": "ORGANIZACIONALES  Y LA NORMATIVIDAD",
+    "x0": 559.0,
+    "top": 410.916,
+    "page": 6
+  },
+  {
+    "text": "SEGÚN EL  ÁREA DE DESEMPEÑO.",
+    "x0": 361.0,
+    "top": 415.56600000000003,
+    "page": 6
+  },
+  {
+    "text": "VIGENTE.",
+    "x0": 559.0,
+    "top": 420.216,
+    "page": 6
+  },
+  {
+    "text": "593158  - 02  IMPLEMENTAR ESTRATEGIAS PARA",
+    "x0": 361.0,
+    "top": 431.986,
+    "page": 6
+  },
+  {
+    "text": "220601501  - APLICAR PRÁCTICAS  DE",
+    "x0": 559.0,
+    "top": 431.986,
+    "page": 6
+  },
+  {
+    "text": "EL CONTROL DE LOS IMPACTOS AMBIENTALES Y",
+    "x0": 361.0,
+    "top": 441.296,
+    "page": 6
+  },
+  {
+    "text": "PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD",
+    "x0": 559.0,
+    "top": 441.296,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 445.946,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 450.606,
+    "page": 6
+  },
+  {
+    "text": "DE LOS ACCIDENTES Y ENFERMEDADES   DE",
+    "x0": 361.0,
+    "top": 450.606,
+    "page": 6
+  },
+  {
+    "text": "EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS",
+    "x0": 559.0,
+    "top": 450.606,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 455.256,
+    "page": 6
+  },
+  {
+    "text": "ACUERDO  CON LOS PLANES Y PROGRAMAS",
+    "x0": 361.0,
+    "top": 459.916,
+    "page": 6
+  },
+  {
+    "text": "ORGANIZACIONALES  Y LA NORMATIVIDAD",
+    "x0": 559.0,
+    "top": 459.916,
+    "page": 6
+  },
+  {
+    "text": "ESTABLECIDOS POR LA ORGANIZACIÓN.",
+    "x0": 361.0,
+    "top": 469.216,
+    "page": 6
+  },
+  {
+    "text": "VIGENTE.",
+    "x0": 559.0,
+    "top": 469.216,
+    "page": 6
+  },
+  {
+    "text": "220201501  - APLICACIÓN DE CONOCIMIENTOS DE",
+    "x0": 559.0,
+    "top": 481.13599999999997,
+    "page": 6
+  },
+  {
+    "text": "593159  - 02  SOLUCIONAR PROBLEMAS",
+    "x0": 361.0,
+    "top": 485.796,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 490.446,
+    "page": 6
+  },
+  {
+    "text": "LAS CIENCIAS NATURALES DE ACUERDO CON",
+    "x0": 559.0,
+    "top": 490.446,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 495.106,
+    "page": 6
+  },
+  {
+    "text": "ASOCIADOS CON EL SECTOR PRODUCTIVO CON",
+    "x0": 361.0,
+    "top": 495.106,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 499.756,
+    "page": 6
+  },
+  {
+    "text": "SITUACIONES DEL CONTEXTO PRODUCTIVO Y",
+    "x0": 559.0,
+    "top": 499.756,
+    "page": 6
+  },
+  {
+    "text": "BASE EN LOS PRINCIPIOS Y LEYES DE LA FÍSICA.",
+    "x0": 361.0,
+    "top": 504.416,
+    "page": 6
+  },
+  {
+    "text": "SOCIAL.",
+    "x0": 559.0,
+    "top": 509.06600000000003,
+    "page": 6
+  },
+  {
+    "text": "4. CODIFICAR LOS MÓDULOS DEL",
+    "x0": 201.0,
+    "top": 520.946,
+    "page": 6
+  },
+  {
+    "text": "593227  - 02  ARGUMENTAR EN FORMA ORAL Y",
+    "x0": 361.0,
+    "top": 520.946,
+    "page": 6
+  },
+  {
+    "text": "240201524  - DESARROLLAR PROCESOS DE",
+    "x0": 559.0,
+    "top": 520.946,
+    "page": 6
+  },
+  {
+    "text": "EJECUCIÓN",
+    "x0": 32.0,
+    "top": 525.606,
+    "page": 6
+  },
+  {
+    "text": "SOFTWARE A DESARROLLAR",
+    "x0": 201.0,
+    "top": 530.256,
+    "page": 6
+  },
+  {
+    "text": "ESCRITA ATENDIENDO LAS EXIGENCIAS Y",
+    "x0": 361.0,
+    "top": 530.256,
+    "page": 6
+  },
+  {
+    "text": "COMUNICACIÓN EFICACES Y EFECTIVOS,",
+    "x0": 559.0,
+    "top": 530.256,
+    "page": 6
+  },
+  {
+    "text": "09/05/2022 11:04:45",
+    "x0": 41.0,
+    "top": 570.57,
+    "page": 6
+  },
+  {
+    "text": "GFPI- F-016 v2",
+    "x0": 355.55,
+    "top": 570.57,
+    "page": 6
+  },
+  {
+    "text": "Página 6 de",
+    "x0": 666.63,
+    "top": 570.57,
+    "page": 6
+  },
+  {
+    "text": "15",
+    "x0": 724.0,
+    "top": 570.57,
+    "page": 6
+  }
+]

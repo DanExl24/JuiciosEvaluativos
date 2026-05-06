@@ -1,9 +1,12 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import multer from 'multer';
 
 import { pool } from './config/db.ts';
 import { importCsvPayload } from './services/csvImport.ts';
@@ -12,6 +15,8 @@ import { deleteFormationByFicha } from './services/formations.ts';
 import { importProject, getProjects, getProjectPhases, getUnassignedCompetencies, assignCompetencyToPhase, unassignCompetency, getPhaseLearnerStats } from './services/projects.ts';
 import type { CsvImportPayload, DashboardFilters, ProjectImportPayload } from './types.ts';
 
+const execAsync = promisify(exec);
+
 dotenv.config();
 
 const app = express();
@@ -19,7 +24,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
 const logsDirectory = path.join(projectRoot, 'logs');
+const uploadsDirectory = path.join(projectRoot, 'uploads');
 const apiPort = Number(process.env.PORT) || 4000;
+
+const upload = multer({ dest: uploadsDirectory });
 
 app.use(cors());
 app.use(express.json({ limit: '20mb' }));
@@ -95,27 +103,27 @@ async function ensureSchemaCompatibility() {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1
-        FROM pg_constraint
-        WHERE conname = 'competencia_codigo_formacion_key'
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'competencia' AND column_name = 'id_programa'
       ) THEN
-        ALTER TABLE competencia
-        ADD CONSTRAINT competencia_codigo_formacion_key UNIQUE (codigo, id_formacion);
-      END IF;
-    END
-    $$;
-  `);
-
-  await pool.query(`
-    DO $$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1
-        FROM pg_constraint
-        WHERE conname = 'resultado_codigo_competencia_key'
-      ) THEN
-        ALTER TABLE resultados_aprendizaje
-        ADD CONSTRAINT resultado_codigo_competencia_key UNIQUE (codigo, id_competencia);
+        -- Add id_programa column
+        ALTER TABLE competencia ADD COLUMN id_programa INTEGER REFERENCES programa(id_programa) ON DELETE CASCADE;
+        
+        -- Migrate data
+        UPDATE competencia c
+        SET id_programa = f.id_programa
+        FROM formacion f
+        WHERE c.id_formacion = f.id_formacion;
+        
+        -- Make it NOT NULL after migration
+        ALTER TABLE competencia ALTER COLUMN id_programa SET NOT NULL;
+        
+        -- Drop old constraints and column
+        ALTER TABLE competencia DROP CONSTRAINT IF EXISTS competencia_codigo_formacion_key;
+        ALTER TABLE competencia DROP COLUMN IF EXISTS id_formacion;
+        
+        -- Add new unique constraint
+        ALTER TABLE competencia ADD CONSTRAINT competencia_codigo_programa_key UNIQUE (codigo, id_programa);
       END IF;
     END
     $$;
@@ -129,7 +137,7 @@ async function ensureSchemaCompatibility() {
         tiempo_ejecucion VARCHAR(100),
         regional VARCHAR(100),
         centro_formacion VARCHAR(200),
-        id_programa INTEGER NOT NULL UNIQUE REFERENCES programa(id_programa) ON DELETE CASCADE
+        id_programa INTEGER NOT NULL REFERENCES programa(id_programa) ON DELETE CASCADE
     );
   `);
 
@@ -141,29 +149,24 @@ async function ensureSchemaCompatibility() {
     );
   `);
 
+  // Migrate legacy id_fase if column exists
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS fase_resultado (
-      id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
-      id_resultado INTEGER NOT NULL REFERENCES resultados_aprendizaje(id_resultado) ON DELETE CASCADE,
-      PRIMARY KEY (id_fase, id_resultado)
-    );
-  `);
-
-  await pool.query(`
-    INSERT INTO fase_competencia (id_fase, id_competencia)
-    SELECT c.id_fase, c.id_competencia
-    FROM competencia c
-    WHERE c.id_fase IS NOT NULL
-    ON CONFLICT DO NOTHING
-  `);
-
-  await pool.query(`
-    INSERT INTO fase_resultado (id_fase, id_resultado)
-    SELECT c.id_fase, r.id_resultado
-    FROM competencia c
-    JOIN resultados_aprendizaje r ON r.id_competencia = c.id_competencia
-    WHERE c.id_fase IS NOT NULL
-    ON CONFLICT DO NOTHING
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'competencia' AND column_name = 'id_fase'
+      ) THEN
+        INSERT INTO fase_competencia (id_fase, id_competencia)
+        SELECT c.id_fase, c.id_competencia
+        FROM competencia c
+        WHERE c.id_fase IS NOT NULL
+        ON CONFLICT DO NOTHING;
+        
+        ALTER TABLE competencia DROP COLUMN id_fase;
+      END IF;
+    END
+    $$;
   `);
 }
 
@@ -482,9 +485,43 @@ app.post('/api/csv/logs', async (req, res) => {
   }
 });
 
+app.post('/api/extract/project', upload.single('pdf'), async (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: 'No se ha subido ningún archivo PDF.' });
+    return;
+  }
+
+  const pdfPath = req.file.path;
+  const scriptPath = path.join(projectRoot, 'parse_pdf.py');
+
+  try {
+    // Run the python script
+    const { stdout, stderr } = await execAsync(`python "${scriptPath}" "${pdfPath}"`);
+    
+    if (stderr && !stdout) {
+       console.error('Python Error:', stderr);
+       throw new Error('Error al procesar el PDF con Python.');
+    }
+
+    const result = JSON.parse(stdout);
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    res.json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Error interno al procesar el PDF.';
+    res.status(500).json({ error: message });
+  } finally {
+    // Cleanup temporary file
+    await fs.unlink(pdfPath).catch(console.error);
+  }
+});
+
 async function startServer() {
   try {
     await ensureSchemaCompatibility();
+    await fs.mkdir(uploadsDirectory, { recursive: true });
     await pool.query('SELECT NOW()');
     app.listen(apiPort, () => {
       console.log(`Servidor corriendo en http://localhost:${apiPort}`);

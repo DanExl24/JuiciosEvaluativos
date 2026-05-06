@@ -273,17 +273,17 @@ async function ensureAprendiz(client: PoolClient, row: CsvRow, formacionId: numb
   return aprendiz.id_aprendiz;
 }
 
-async function ensureCompetencia(client: PoolClient, row: CsvRow, formacionId: number) {
+async function ensureCompetencia(client: PoolClient, row: CsvRow, programId: number) {
   const competencia = splitCodeAndName(getRowValue(row, rowAliases.competencia), 'competencia');
   const result = await client.query<{ id_competencia: number }>(
     `
-      INSERT INTO competencia (codigo, nombre, id_formacion)
+      INSERT INTO competencia (codigo, nombre, id_programa)
       VALUES ($1, $2, $3)
-      ON CONFLICT (codigo, id_formacion)
+      ON CONFLICT (codigo, id_programa)
       DO UPDATE SET nombre = EXCLUDED.nombre
       RETURNING id_competencia
     `,
-    [competencia.code, competencia.name, formacionId],
+    [competencia.code, competencia.name, programId],
   );
 
   return {
@@ -388,10 +388,10 @@ export async function importCsvPayload(client: PoolClient, payload: CsvImportPay
       learnerCache.set(learnerKey, aprendizId);
     }
 
-    const competenciaKey = `${formacion.id_formacion}::${getRowValue(row, rowAliases.competencia)}`;
+    const competenciaKey = `${program.id_programa}::${getRowValue(row, rowAliases.competencia)}`;
     let competenciaId = competenciaCache.get(competenciaKey);
     if (!competenciaId) {
-      const competencia = await ensureCompetencia(client, row, formacion.id_formacion);
+      const competencia = await ensureCompetencia(client, row, program.id_programa);
       competenciaId = competencia.id;
       competenciaCache.set(competenciaKey, competenciaId);
     }

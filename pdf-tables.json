@@ -1,0 +1,1760 @@
+[
+  {
+    "page": 1,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 1,
+    "table": [
+      [
+        "1. Información básica del proyecto",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Código Proyecto SOFIA:",
+        "2480542",
+        "Código del Programa SOFIA:",
+        null,
+        null,
+        "228118",
+        null,
+        "Versión del Programa:",
+        null,
+        "1",
+        "Fichas asociadas:",
+        "0",
+        null
+      ],
+      [
+        "1.1 Centro de Formación:",
+        "CENTRO TECNOLOGICO DE LA AMAZONIA",
+        null,
+        null,
+        null,
+        null,
+        "1.2 Regional:",
+        null,
+        "REGIONAL CAQUETÁ",
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.3 Nombre del proyecto:",
+        "ANÁLISIS Y DESARROLLO DE SOFTWARE A LA MEDIDA PARA EL SECTOR SERVICIOS EN EL MUNICIPIO DE FLORENCIA",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.4 Programa de Formación al\nque da respuesta:",
+        "ANALISIS Y DESARROLLO DE SOFTWARE.",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.5 Tiempo estimado de\nejecución del proyecto (meses):",
+        "27",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.6 Empresas o instituciones que\nparticipan en su formulación o\nfinanciación: (si Existe)",
+        "SENA - CENTRO TECNOLÓGICO DE LA AMAZONIA Y EMPRESAS DEL SECTOR SERVICIOS EPS Y DISTRIBUIDORES DE MEDICAMENTOS",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.7 Palabras claves de\nbúsqueda:",
+        "Desarrollo de software",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.8 Número total de resultados\nde aprendizaje del programa de\nformación:",
+        "75",
+        null,
+        "1.9 Número de\nresultados de\naprendizaje por tipo\nde competencia",
+        "1.9.1 Número de resultados de aprendizaje específicos que se alcanzan con el proyecto:",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "",
+        "74"
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        "1.9.2 Número de resultados de aprendizaje transversales que se alcanzan con el proyecto:",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "0"
+      ],
+      [
+        null,
+        null,
+        null,
+        null,
+        "1.9.3 Número de resultados de aprendizaje básicos que se alcanzan con el proyecto:",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        "",
+        "1"
+      ]
+    ]
+  },
+  {
+    "page": 1,
+    "table": [
+      [
+        "2. Estructura del proyecto"
+      ],
+      [
+        "2.1 Planteamiento del problema o necesidad que se pretende solucionar"
+      ],
+      [
+        "De acuerdo con los informes de la agenda digital para América Latina y el Caribe e-LAC, en Colombia son múltiples los problemas que se presentan en la actualidad, pero quizá los principales podrían ser\naquellos relacionados con la implementación del ecosistema digital tanto en la educación como en los modelos de desarrollo empresarial, su ejecución, seguimiento, automatización y de una buena\nimplementación a la vanguardia del desarrollo de las Tecnologias de la Información y as comunicaciones TIC, lo que permite una economía digital con una dinámica de enfoque en la creación de bienes y\nservicios digitales y modelo de negocios on line y servicios en la nube basados en plataformas de alcance global. Es así, como algunos actores de la industria digital que lideran la capitalización de\nmercados en la actualidad, logran controlar mercados estimados en 910.000 millones de dolares que se derivan del crecimiento de las actividades de su núcleo de negocios como equipos, software,\npublicidad y bienes y servicios digitales. Esto conlleva, a una reninvención de los modelos de negocios de software conforme a los cambios sociales, politicos, administrativos y esencialmente apoyados en\ntecnología, lo cúal deja en evidencia la necesidad para la región, y que"
+      ]
+    ]
+  },
+  {
+    "page": 2,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 2,
+    "table": [
+      [
+        "permita integrar personal con habilidades y competencias enmarcadas en el desarrollo, investigación, modelamientos e implemetacion de software como recurso tecnológico de manera globalizada. Lo\nanterior, demuestra claramente la necesidad existente por la amplicación del mercado como tendencia en desarrollo e implementación de software. Todo esto genera un espacio laboral significativoen la\nnecesiada de personal en tecnologías relacionadas de programación, algoritmos, bases de datos y redes digitales (Arquitectura Cliente-Servidor), sistemas clouding, bigdata, blockchain, testing y la\nadaptación del software como plataformas virtuales, fijas, móviles y convergentes, big data, SCRUM, tecnologías de seguridad, así como reforzar conocimiento en áreas como Administración de Proyectos\ny habilidades analíticas.",
+        null
+      ],
+      [
+        "2.2 Justificación del proyecto",
+        null
+      ],
+      [
+        "El desarrollo de software se ha convirtido en la industria de mayor auge de la economia de productos y servicios para el crecimiento económico de la industria digital. A diferencia de otras; esta actividad\nes altamente generadora de empleo, por el modelo disruptivo que trasciende frente a las necesidades del control de procesos, datos y manejo de información, es asi como sus fases de ejecución conlleva\ngenerar competencias laborales de desempeño como son el proceso de análisis y desarrollo de software.\nEn por eso que el SENA, crea el programa de Analisis y desarrollo de software para brindar al sector productivo la posibilidad de incorporar personal con formación en el desarrollo de soluciones de\nsoftware para el sector TI prestando servicios como analista, diseñador y programador de software y que también tiene la capacidad de hacer parte de unidades productivas al tiempo que mejora la\ndinámica y economia del pais como tendencia acorde con los avances tecnológicos para el desarrollo, análisis e implementación de soluciones de software de acuerdo a las necesidades y cambios del\nmercado.",
+        null
+      ],
+      [
+        "2.3 Objetivo general",
+        null
+      ],
+      [
+        "Desarrollar software a la medida para el sector servicios que le permita mejorar sus procesos de gestión y calidad para ser mas competitivos en el mercado utilizando herramientas tecnológicas de última\ngeneración que impacten tanto el entorno como en la sociedad moderna",
+        null
+      ],
+      [
+        "2.4 Objetivos específicos",
+        null
+      ],
+      [
+        "1. Elaborar el informe de resultados de acuerdo con el análisis de requerimientos para la solución de software a desarrollar.\n2. Diseñar la arquitectura de software haciendo uso de lenguaje de modelamiento unificado.\n3. Construir los módulos del software de acuerdo a los componentes de usuarios identificados, utilizando un lenguaje de programación, aplicando buenas practicas de desarrollo y estandares de calidad.\n4. Realizar pruebas y despliegue del software de acuerdo con los requerimientos definidos por el cliente mediante la capacitación en cada uno de los módulos desarrollados.\n5. Escribir y publicar un articulo de revisión bibliográfica acerca de la gestión de calidad del Software desarrollado para la revista innventiva del Centro Tecnológico de la Amazonia.",
+        null
+      ],
+      [
+        "2.5 Alcance",
+        null
+      ],
+      [
+        "2.5.1 Beneficiarios del proyecto",
+        "Sector Empresarial y Aprendices del Centro de formación"
+      ],
+      [
+        "2.5.2 Impacto",
+        null
+      ],
+      [
+        "Social:",
+        "Ofrecer al sector empresarial soluciones tecnológicas que permitan la optimización de sus procesos y proyectar a los aprendices como futuro empresarios."
+      ],
+      [
+        "Económico:",
+        "Mejora la competitividad de la empresa ya que permitirá la toma de decisiones basadas en información."
+      ],
+      [
+        "Ambiental:",
+        "Comprender como los elementos tecnologicos, equipos y maquinas usados para prolongar su vida útil proporcionando al medio menos contaminación por\ndesechos y residuos sólidos. Contenidos 100% digitales que no producen desechos químicos al final del producto a entregar, distinto a los productos en otros\nsectores industriales."
+      ],
+      [
+        "Tecnológico:",
+        "Permite que las empresas mejoren su infraestructura tecnológica utilizando las TICs como herramienta fundamental en la ejecución de todos sus procesos"
+      ]
+    ]
+  },
+  {
+    "page": 3,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 3,
+    "table": [
+      [
+        "2.5.3 Restricciones o riesgos asociados y alternativas de solución",
+        null
+      ],
+      [
+        "1. Recurso presupuestal insuficiente para la implantación de la solución del sistema de información.\n2. No aceptación de la solución tecnológica por parte del cliente, por tanto se ofrece alternativas de solución para que el equipo gerencial determine cual es la alternativa viable según los requerimientos\npreviamente establecidos.\n3. No satisfacer completamente las necesidades específicas del cliente, por ello se bebe contar con un riguroso análisis de requerimientos de la solución de software a desarrollar.\n4. Fallas en el control de calidad en el desarrollo del proyecto, estableciendo previamente la diferenciación de cada etapa del proceso, establecer controles preventivos en cada proceso.\n5. Perdida o daño en los recursos tecnológicos tales como dispositivos de almacenamientos, problemas de conexión adquiridos para el desarrollo del proyecto, establecer controles de los insumos\ntecnológicos evitando las posibles fallas en la implementación de la solución",
+        null
+      ],
+      [
+        "2.5.4. Productos o resultados del proyecto",
+        null
+      ],
+      [
+        "1. Informe de resultado de análisis de los requerimientos del sistema\n2. Diseño Arquitectónico del software basado en lenguaje Unificado de Modelado\n3. Base de datos e interfaz de usuario desarrollado e implementado en un motor de base de datos y lenguaje tendencia de desarrollo de software\n4. Manual técnico y manual de usuario (Español /Ingles)\n5. Articulo (Ingles/Español) de revisión bibliográfica acerca de la gestión de calidad del Software desarrollado y publicado en la revista innventiva del Centro Tecnológico de la Amazonia.",
+        null
+      ],
+      [
+        "2.6 Innovación/Gestión Tecnológica",
+        null
+      ],
+      [
+        "El proyecto resuelve una necesidad del sector productivo?",
+        "SI"
+      ],
+      [
+        "El proyecto mejora el proceso/producto/servicio existente?",
+        "SI"
+      ],
+      [
+        "El proyecto involucra el uso de nuevas técnicas y tecnologías de proceso?",
+        "SI"
+      ],
+      [
+        "Los productos finales son susceptibles a protección industrial y/o derechos de autor?",
+        "SI"
+      ],
+      [
+        "Los productos obtenidos en el proyecto pueden ser posicionados en el mercado?",
+        "SI"
+      ],
+      [
+        "2.7 Valoración Productiva",
+        null
+      ],
+      [
+        "Con el desarrollo del proyecto se puede satisfacer la necesidad de un cliente potencial?",
+        "SI"
+      ],
+      [
+        "Viabilidad de proyecto para plan de negocio?",
+        "SI"
+      ]
+    ]
+  },
+  {
+    "page": 3,
+    "table": [
+      [
+        "3. Planeación del proyecto",
+        null,
+        null,
+        null
+      ],
+      [
+        "3.1. Fases del Proyecto",
+        "3.2. Actividades del Proyecto",
+        "3.3. Resultados de Aprendizaje Específicos, Transversales\ny Básicos (a partir del programa de formación)",
+        "3.4. Competencia Asociada"
+      ]
+    ]
+  },
+  {
+    "page": 4,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 4,
+    "table": [
+      [
+        "ANÁLISIS",
+        "1. DESARROLLAR EL PROCESO DE\nINDUCCION DE LA FORMACION\nPROFESIONAL INTEGRAL",
+        "593343 - 01 IDENTIFICAR LA DINÁMICA\nORGANIZACIONAL DEL SENA Y EL ROL DE LA\nFORMACIÓN PROFESIONAL INTEGRAL DE\nACUERDO CON SU PROYECTO DE VIDA Y EL\nDESARROLLO PROFESIONAL.",
+        "240201530 - Resultado de Aprendizaje de la Inducción."
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593115 - 02 INTERCAMBIAR OPINIONES SOBRE\nSITUACIONES COTIDIANAS Y LABORALES\nACTUALES, PASADAS Y FUTURAS EN\nCONTEXTOS SOCIALES ORALES Y ESCRITOS.",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS\nCRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593117 - 01 COMPRENDER INFORMACIÓN\nSOBRE SITUACIONES COTIDIANAS Y LABORALES\nACTUALES Y FUTURAS A TRAVÉS DE\nINTERACCIONES SOCIALES DE FORMA ORAL Y\nESCRITA.",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS\nCRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593154 - 01 ALISTAR HERRAMIENTAS DE\nTECNOLOGÍAS DE LA INFORMACIÓN Y LA\nCOMUNICACIÓN (TIC), DE ACUERDO CON LAS\nNECESIDADES DE PROCESAMIENTO DE\nINFORMACIÓN Y COMUNICACIÓN.",
+        "220501046 - Utilizar herramientas informáticas de\nacuerdo con las necesidades de manejo de información"
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593156 - 01 ANALIZAR LAS ESTRATEGIAS PARA\nLA PREVENCIÓN Y CONTROL DE LOS IMPACTOS\nAMBIENTALES Y DE LOS ACCIDENTES Y\nENFERMEDADES LABORALES (ATEL) DE\nACUERDO CON LAS POLÍTICAS\nORGANIZACIONALES Y EL ENTORNO SOCIAL.",
+        "220601501 - APLICAR PRÁCTICAS DE\nPROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD\nEN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS\nORGANIZACIONALES Y LA NORMATIVIDAD\nVIGENTE."
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593162 - 01 IDENTIFICAR LOS PRINCIPIOS Y\nLEYES DE LA FÍSICA EN LA SOLUCIÓN DE\nPROBLEMAS DE ACUERDO AL CONTEXTO\nPRODUCTIVO.",
+        "220201501 - APLICACIÓN DE CONOCIMIENTOS DE\nLAS CIENCIAS NATURALES DE ACUERDO CON\nSITUACIONES DEL CONTEXTO PRODUCTIVO Y\nSOCIAL."
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593225 - 01 ANALIZAR LOS COMPONENTES DE\nLA COMUNICACIÓN SEGÚN SUS\nCARACTERÍSTICAS, INTENCIONALIDAD Y\nCONTEXTO.",
+        "240201524 - DESARROLLAR PROCESOS DE\nCOMUNICACIÓN EFICACES Y EFECTIVOS,\nTENIENDO EN CUENTA SITUACIONES DE ORDEN\nSOCIAL, PERSONAL Y PRODUCTIVO."
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593236 - 01 ANALIZAR EL CONTEXTO\nPRODUCTIVO SEGÚN SUS CARACTERÍSTICAS Y\nNECESIDADES.",
+        "240201064 - Orientar investigación formativa según\nreferentes técnicos"
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS",
+        "593256 - 01 IDENTIFICAR MODELOS\nMATEMÁTICOS DE ACUERDO CON LOS\nREQUERIMIENTOS DEL PROBLEMA PLANTEADO",
+        "240201528 - Razonar cuantitativamente frente a\nsituaciones susceptibles de ser abordadas de manera\nmatemática en contextos laborales,"
+      ]
+    ]
+  },
+  {
+    "page": 5,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 5,
+    "table": [
+      [
+        "",
+        "REQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "CONTEXTOS SOCIALES Y PRODUCTIVO.",
+        "sociales y personales."
+      ],
+      [
+        "ANÁLISIS",
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS TECNOLÓGICAS\nNECESARIAS PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE SOFTWARE EN\nLA EMPRESA",
+        "593346 - 01 CARACTERIZAR LOS PROCESOS DE\nLA ORGANIZACIÓN DE ACUERDO CON EL\nSOFTWARE A CONSTRUIR.",
+        "220501092 - Establecer requisitos de la solución de\nsoftware de acuerdo con estándares y procedimiento\ntécnico"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "592373 - 02 MODELAR LAS FUNCIONES DEL\nSOFTWARE DE ACUERDO CON EL INFORME DE\nREQUISITOS.",
+        "220501093 - Evaluar requisitos de la solución de\nsoftware de acuerdo con metodologías de análisis y\nestándares"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "592376 - 03 DESARROLLAR PROCESOS\nLÓGICOS A TRAVÉS DE LA IMPLEMENTACIÓN DE\nALGORITMOS.",
+        "220501093 - Evaluar requisitos de la solución de\nsoftware de acuerdo con metodologías de análisis y\nestándares"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593062 - 02 ELABORAR PROPUESTA TÉCNICA\nDEL SOFTWARE DE ACUERDO CON LAS\nESPECIFICACIONES TÉCNICAS DEFINIDAS.",
+        "220501094 - Estructurar propuesta técnica de servicio\nde tecnología de la información según requisitos\ntécnicos y normativa"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593104 - 03 CREAR COMPONENTES FRONT-END\nDEL SOFTWARE DE ACUERDO CON EL DISEÑO.",
+        "220501096 - DESARROLLAR LA SOLUCIÓN DE\nSOFTWARE DE ACUERDO CON EL DISEÑO Y\nMETODOLOGÍAS DE DESARROLLO"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593107 - 02 CONSTRUIR LA BASE DE DATOS\nPARA EL SOFTWARE A PARTIR DEL MODELO DE\nDATOS.",
+        "220501096 - DESARROLLAR LA SOLUCIÓN DE\nSOFTWARE DE ACUERDO CON EL DISEÑO Y\nMETODOLOGÍAS DE DESARROLLO"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593108 - 04 CODIFICAR EL SOFTWARE DE\nACUERDO CON EL DISEÑO ESTABLECIDO.",
+        "220501096 - DESARROLLAR LA SOLUCIÓN DE\nSOFTWARE DE ACUERDO CON EL DISEÑO Y\nMETODOLOGÍAS DE DESARROLLO"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593110 - 02 DESPLEGAR EL SOFTWARE DE\nACUERDO CON LA ARQUITECTURA Y LAS\nPOLÍTICAS ESTABLECIDAS.",
+        "220501097 - Implementar la solución de software de\nacuerdo con los requisitos de operación y modelos de\nreferencia"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593112 - 04 IMPLANTAR EL SOFTWARE DE\nACUERDO CON LOS NIVELES DE SERVICIO\nESTABLECIDOS CON EL CLIENTE.",
+        "220501097 - Implementar la solución de software de\nacuerdo con los requisitos de operación y modelos de\nreferencia"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593113 - 06 EXPLICAR LAS FUNCIONES DE SU\nOCUPACIÓN LABORAL USANDO EXPRESIONES\nDE ACUERDO AL NIVEL REQUERIDO POR EL\nPROGRAMA DE FORMACIÓN.",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS\nCRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593116 - 05 PRESENTAR UN PROCESO PARA LA\nREALIZACIÓN DE UNA ACTIVIDAD EN SU\nQUEHACER LABORAL DE ACUERDO CON LOS\nPROCEDIMIENTOS ESTABLECIDOS DESDE SU\nPROGRAMA DE FORMACIÓN.",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS\nCRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593119 - 02 PRACTICAR HÁBITOS SALUDABLES\nMEDIANTE LA APLICACIÓN DE FUNDAMENTOS\nDE NUTRICIÓN E HIGIENE.",
+        "230101507 - GENERAR HÁBITOS SALUDABLES DE\nVIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS\nDE ACTIVIDAD FÍSICA EN LOS CONTEXTOS"
+      ]
+    ]
+  },
+  {
+    "page": 6,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 6,
+    "table": [
+      [
+        "",
+        "",
+        "",
+        "PRODUCTIVOS Y SOCIALES."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593121 - 03 EJECUTAR ACTIVIDADES DE\nACONDICIONAMIENTO FÍSICO ORIENTADAS\nHACIA EL MEJORAMIENTO DE LA CONDICIÓN\nFÍSICA EN LOS CONTEXTOS PRODUCTIVO Y\nSOCIAL.",
+        "230101507 - GENERAR HÁBITOS SALUDABLES DE\nVIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS\nDE ACTIVIDAD FÍSICA EN LOS CONTEXTOS\nPRODUCTIVOS Y SOCIALES."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593122 - 04 IMPLEMENTAR UN PLAN DE\nERGONOMÍA Y PAUSAS ACTIVAS SEGÚN LAS\nCARACTERÍSTICAS DE LA FUNCIÓN",
+        "230101507 - GENERAR HÁBITOS SALUDABLES DE\nVIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS\nDE ACTIVIDAD FÍSICA EN LOS CONTEXTOS\nPRODUCTIVOS Y SOCIALES."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593146 - 01 INCORPORAR ACTIVIDADES DE\nASEGURAMIENTO DE LA CALIDAD DEL\nSOFTWARE DE ACUERDO CON ESTÁNDARES DE\nLA INDUSTRIA.",
+        "220501098 - Controlar la calidad del servicio de\nsoftware de acuerdo con los estándares técnicos"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593147 - 02 ESTABLECER RELACIONES DE\nCRECIMIENTO PERSONAL Y COMUNITARIO A\nPARTIR DEL BIEN COMÚN COMO APORTE PARA\nEL DESARROLLO SOCIAL.",
+        "240201526 - Enrique Low Murtra-Interactuar en el\ncontexto productivo y social de acuerdo con principios\néticos para la construcción de una cultura de paz."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593150 - 04 CONTRIBUIR CON EL\nFORTALECIMIENTO DE LA CULTURA DE PAZ A\nPARTIR DE LA DIGNIDAD HUMANA Y LAS\nESTRATEGIAS PARA LA TRANSFORMACIÓN DE\nCONFLICTOS.",
+        "240201526 - Enrique Low Murtra-Interactuar en el\ncontexto productivo y social de acuerdo con principios\néticos para la construcción de una cultura de paz."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593151 - 02 APLICAR FUNCIONALIDADES DE\nHERRAMIENTAS Y SERVICIOS TIC, DE ACUERDO\nCON MANUALES DE USO, PROCEDIMIENTOS\nESTABLECIDOS Y BUENAS PRÁCTICAS.",
+        "220501046 - Utilizar herramientas informáticas de\nacuerdo con las necesidades de manejo de información"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593157 - 03 REALIZAR SEGUIMIENTO Y\nACOMPAÑAMIENTO AL DESARROLLO DE LOS\nPLANES Y PROGRAMAS AMBIENTALES Y SST,\nSEGÚN EL ÁREA DE DESEMPEÑO.",
+        "220601501 - APLICAR PRÁCTICAS DE\nPROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD\nEN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS\nORGANIZACIONALES Y LA NORMATIVIDAD\nVIGENTE."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593158 - 02 IMPLEMENTAR ESTRATEGIAS PARA\nEL CONTROL DE LOS IMPACTOS AMBIENTALES Y\nDE LOS ACCIDENTES Y ENFERMEDADES DE\nACUERDO CON LOS PLANES Y PROGRAMAS\nESTABLECIDOS POR LA ORGANIZACIÓN.",
+        "220601501 - APLICAR PRÁCTICAS DE\nPROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD\nEN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS\nORGANIZACIONALES Y LA NORMATIVIDAD\nVIGENTE."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593159 - 02 SOLUCIONAR PROBLEMAS\nASOCIADOS CON EL SECTOR PRODUCTIVO CON\nBASE EN LOS PRINCIPIOS Y LEYES DE LA FÍSICA.",
+        "220201501 - APLICACIÓN DE CONOCIMIENTOS DE\nLAS CIENCIAS NATURALES DE ACUERDO CON\nSITUACIONES DEL CONTEXTO PRODUCTIVO Y\nSOCIAL."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593227 - 02 ARGUMENTAR EN FORMA ORAL Y\nESCRITA ATENDIENDO LAS EXIGENCIAS Y",
+        "240201524 - DESARROLLAR PROCESOS DE\nCOMUNICACIÓN EFICACES Y EFECTIVOS,"
+      ]
+    ]
+  },
+  {
+    "page": 7,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 7,
+    "table": [
+      [
+        "",
+        "",
+        "PARTICULARIDADES DE LAS DIVERSAS\nSITUACIONES COMUNICATIVAS MEDIANTE LOS\nDISTINTOS SISTEMAS DE REPRESENTACIÓN.",
+        "EN CUENTA SITUACIONES DE ORDEN SOCIAL,\nPERSONAL Y PRODUCTIVO."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593237 - 03 ARGUMENTAR ASPECTOS\nTEÓRICOS DEL PROYECTO SEGÚN REFERENTES\nNACIONALES E INTERNACIONALES.",
+        "240201064 - Orientar investigación formativa según\nreferentes técnicos"
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593244 - 03- Practicar los derechos fundamentales\nen el trabajo de acuerdo con la Constitución Política y\nlos Convenios Internacionales.",
+        "210201501 - Ejercer derechos fundamentales del\ntrabajo en el marco de la constitución política y los\nconvenios internacionales."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593246 - 04- Participar en acciones solidarias\nteniendo en cuenta el ejercicio de los derechos\nhumanos, de los pueblos y de la naturaleza.",
+        "210201501 - Ejercer derechos fundamentales del\ntrabajo en el marco de la constitución política y los\nconvenios internacionales."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593255 - 03 RESOLVER PROBLEMAS\nMATEMÁTICOS A PARTIR DE SITUACIONES\nGENERADAS EN EL CONTEXTO SOCIAL Y\nPRODUCTIVO.",
+        "240201528 - Razonar cuantitativamente frente a\nsituaciones susceptibles de ser abordadas de manera\nmatemática en contextos laborales, sociales y\npersonales."
+      ],
+      [
+        "EJECUCIÓN",
+        "4. CODIFICAR LOS MÓDULOS DEL\nSOFTWARE A DESARROLLAR",
+        "593340 - 03 ESTRUCTURAR EL PLAN DE\nNEGOCIO DE ACUERDO CON LAS\nCARACTERÍSTICAS EMPRESARIALES Y\nTENDENCIAS DE MERCADO.",
+        "240201529 - Gestionar procesos propios de la cultura\nemprendedora y empresarial de acuerdo con el perfil\npersonal y los requerimientos de los contextos\nproductivo y social."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "592374 - 04 VERIFICAR LOS MODELOS\nREALIZADOS EN LA FASE DE ANÁLISIS DE\nACUERDO CON LO ESTABLECIDO EN EL\nINFORME DE REQUISITOS.",
+        "220501093 - Evaluar requisitos de la solución de\nsoftware de acuerdo con metodologías de análisis y\nestándares"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593061 - 03 VALIDAR LAS CONDICIONES DE LA\nPROPUESTA TÉCNICA DEL SOFTWARE DE\nACUERDO CON LOS INTERESES DE LAS PARTES.",
+        "220501094 - Estructurar propuesta técnica de servicio\nde tecnología de la información según requisitos\ntécnicos y normativa"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593102 - 04 VERIFICAR LOS ENTREGABLES DE\nLA FASE DE DISEÑO DEL SOFTWARE DE\nACUERDO CON LO ESTABLECIDO EN EL\nINFORME DE ANÁLISIS.",
+        "220501095 - Diseñar la solución de software de\nacuerdo con procedimientos y requisitos técnicos"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593105 - 05 REALIZAR PRUEBAS AL SOFTWARE\nPARA VERIFICAR SU FUNCIONALIDAD.",
+        "220501096 - DESARROLLAR LA SOLUCIÓN DE\nSOFTWARE DE ACUERDO CON EL DISEÑO Y\nMETODOLOGÍAS DE DESARROLLO"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593109 - 03 DOCUMENTAR EL PROCESO DE\nIMPLANTACIÓN DE SOFTWARE SIGUIENDO\nESTÁNDARES DE CALIDAD.",
+        "220501097 - Implementar la solución de software de\nacuerdo con los requisitos de operación y modelos de\nreferencia"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL",
+        "593144 - 02 VERIFICAR LA CALIDAD DEL\nSOFTWARE DE ACUERDO CON LAS PRÁCTICAS",
+        "220501098 - Controlar la calidad del servicio de\nsoftware de acuerdo con los estándares técnicos"
+      ]
+    ]
+  },
+  {
+    "page": 8,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 8,
+    "table": [
+      [
+        "",
+        "DESARROLLADO ACORDE A\nREQUISITOS DE LA EMPRESA",
+        "ASOCIADAS EN LOS PROCESOS DE",
+        ""
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593145 - 03 REALIZAR ACTIVIDADES DE MEJORA\nDE LA CALIDAD DEL SOFTWARE A PARTIR DE\nLOS RESULTADOS DE LA VERIFICACIÓN.",
+        "220501098 - Controlar la calidad del servicio de\nsoftware de acuerdo con los estándares técnicos"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593153 - 03 EVALUAR LOS RESULTADOS, DE\nACUERDO CON LOS REQUERIMIENTOS.",
+        "220501046 - Utilizar herramientas informáticas de\nacuerdo con las necesidades de manejo de información"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593155 - 04 PROPONER ACCIONES DE MEJORA\nPARA EL MANEJO AMBIENTAL Y EL CONTROL DE\nLA SST, DE ACUERDO CON ESTRATEGIAS DE\nTRABAJO, COLABORATIVO, COOPERATIVO Y\nCOORDINADO EN EL CONTEXTO PRODUCTIVO Y\nSOCIAL.",
+        "220601501 - APLICAR PRÁCTICAS DE\nPROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD\nEN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS\nORGANIZACIONALES Y LA NORMATIVIDAD\nVIGENTE."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593160 - 04 PROPONER ACCIONES DE MEJORA\nEN LOS PROCESOS PRODUCTIVOS DE ACUERDO\nCON LOS PRINCIPIOS Y LEYES DE LA FÍSICA.",
+        "220201501 - APLICACIÓN DE CONOCIMIENTOS DE\nLAS CIENCIAS NATURALES DE ACUERDO CON\nSITUACIONES DEL CONTEXTO PRODUCTIVO Y\nSOCIAL."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593161 - 03 VERIFICAR LAS\nTRANSFORMACIONES FÍSICAS DE LA MATERIA\nUTILIZANDO HERRAMIENTAS TECNOLÓGICAS.",
+        "220201501 - APLICACIÓN DE CONOCIMIENTOS DE\nLAS CIENCIAS NATURALES DE ACUERDO CON\nSITUACIONES DEL CONTEXTO PRODUCTIVO Y\nSOCIAL."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593226 - 04 ESTABLECER PROCESOS DE\nENRIQUECIMIENTO LEXICAL Y ACCIONES DE\nMEJORAMIENTO EN EL DESARROLLO DE\nPROCESOS COMUNICATIVOS SEGÚN\nREQUERIMIENTOS DEL CONTEXTO.",
+        "240201524 - DESARROLLAR PROCESOS DE\nCOMUNICACIÓN EFICACES Y EFECTIVOS,\nTENIENDO EN CUENTA SITUACIONES DE ORDEN\nSOCIAL, PERSONAL Y PRODUCTIVO."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593235 - 04 PROPONER SOLUCIONES A LAS\nNECESIDADES DEL CONTEXTO SEGÚN\nRESULTADOS DE LA INVESTIGACIÓN.",
+        "240201064 - Orientar investigación formativa según\nreferentes técnicos"
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593245 - 02- Valorar la importancia de la ciudadanía\nlaboral con base en el estudio de los derechos\nhumanos y fundamentales en el trabajo.",
+        "210201501 - Ejercer derechos fundamentales del\ntrabajo en el marco de la constitución política y los\nconvenios internacionales."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593257 - 04 PROPONER ACCIONES DE MEJORA\nFRENTE A LOS RESULTADOS DE LOS\nPROCEDIMIENTOS MATEMÁTICOS DE ACUERDO\nCON EL PROBLEMA PLANTEADO.",
+        "240201528 - Razonar cuantitativamente frente a\nsituaciones susceptibles de ser abordadas de manera\nmatemática en contextos laborales, sociales y\npersonales."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE",
+        "593341 - 04 VALORAR LA PROPUESTA DE\nNEGOCIO CONFORME CON SU ESTRUCTURA Y\nNECESIDADES DEL SECTOR PRODUCTIVO Y",
+        "240201529 - Gestionar procesos propios de la cultura\nemprendedora y empresarial de acuerdo con el perfil\npersonal y los requerimientos de los"
+      ]
+    ]
+  },
+  {
+    "page": 9,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 9,
+    "table": [
+      [
+        "",
+        "DE LA EMPRESA",
+        "SOCIAL.",
+        "contextos productivo y social."
+      ],
+      [
+        "EVALUACIÓN",
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS AL\nSOFTWARE DESARROLLADO ACORDE\nA REQUISITOS DE LA EMPRESA",
+        "593345 - 04 VALIDAR EL INFORME DE\nREQUISITOS DE ACUERDO CON LAS\nNECESIDADES DEL CLIENTE.",
+        "220501092 - Establecer requisitos de la solución de\nsoftware de acuerdo con estándares y procedimiento\ntécnico"
+      ],
+      [
+        "EVALUACIÓN",
+        "6- APLICAR CONOCIMIENTOS,\nHABILIDADES Y DESTREZAS EN LA\nEMPRESA",
+        "590803 - APLICAR EN LA RESOLUCIÓN DE\nPROBLEMAS REALES DEL SECTOR\nPRODUCTIVO, LOS CONOCIMIENTOS,\nHABILIDADES Y DESTREZAS PERTINENTES A LAS\nCOMPETENCIAS DEL PROGRAMA DE\nFORMACIÓN ASUMIENDO ESTRATEGIAS Y\nMETODOLOGÍAS DE AUTOGESTIÓN",
+        "999999999 - RESULTADOS DE APRENDIZAJE\nETAPA PRACTICA"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "592375 - 01 PLANEAR ACTIVIDADES DE ANÁLISIS\nDE ACUERDO CON LA METODOLOGÍA\nSELECCIONADA.",
+        "220501093 - Evaluar requisitos de la solución de\nsoftware de acuerdo con metodologías de análisis y\nestándares"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593060 - 01 DEFINIR ESPECIFICACIONES\nTÉCNICAS DEL SOFTWARE DE ACUERDO CON\nLAS CARACTERÍSTICAS DEL SOFTWARE A",
+        "220501094 - Estructurar propuesta técnica de servicio\nde tecnología de la información según requisitos\ntécnicos y normativa"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593100 - 03 DETERMINAR LAS\nCARACTERÍSTICAS TÉCNICAS DE LA INTERFAZ\nGRÁFICA DEL SOFTWARE ADOPTANDO\nESTÁNDARES.",
+        "220501095 - Diseñar la solución de software de\nacuerdo con procedimientos y requisitos técnicos"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593101 - 02 ESTRUCTURAR EL MODELO DE\nDATOS DEL SOFTWARE DE ACUERDO CON LAS\nESPECIFICACIONES DEL ANÁLISIS.",
+        "220501095 - Diseñar la solución de software de\nacuerdo con procedimientos y requisitos técnicos"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593103 - 01 ELABORAR LOS ARTEFACTOS DE\nDISEÑO DEL SOFTWARE SIGUIENDO LAS\nPRÁCTICAS DE LA METODOLOGÍA\nSELECCIONADA.",
+        "220501095 - Diseñar la solución de software de\nacuerdo con procedimientos y requisitos técnicos"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593106 - 01 PLANEAR ACTIVIDADES DE\nCONSTRUCCIÓN DEL SOFTWARE DE ACUERDO\nCON EL DISEÑO ESTABLECIDO.",
+        "220501096 - DESARROLLAR LA SOLUCIÓN DE\nSOFTWARE DE ACUERDO CON EL DISEÑO Y\nMETODOLOGÍAS DE DESARROLLO"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593111 - 01 PLANEAR ACTIVIDADES DE\nIMPLANTACIÓN DEL SOFTWARE DE ACUERDO\nCON LAS CONDICIONES DEL SISTEMA.",
+        "220501097 - Implementar la solución de software de\nacuerdo con los requisitos de operación y modelos de\nreferencia"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593114 - 04 IMPLEMENTAR ACCIONES DE\nMEJORA RELACIONADAS CON EL USO DE\nEXPRESIONES, ESTRUCTURAS Y DESEMPEÑO\nSEGÚN LOS RESULTADOS DE APRENDIZAJE\nFORMULADOS PARA EL PROGRAMA.",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS\nCRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593118 - 03 DISCUTIR SOBRE POSIBLES\nSOLUCIONES A PROBLEMAS DENTRO DE UN\nRANGO VARIADO DE CONTEXTOS SOCIALES Y",
+        "240202501 - INTERACTUAR EN LENGUA INGLESA\nDE FORMA ORAL Y ESCRITA DENTRO DE\nCONTEXTOS SOCIALES Y LABORALES SEGÚN LOS"
+      ]
+    ]
+  },
+  {
+    "page": 10,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 10,
+    "table": [
+      [
+        "",
+        "",
+        "LABORALES.",
+        "CRITERIOS ESTABLECIDOS POR EL MARCO\nCOMÚN EUROPEO DE REFERENCIA PARA LAS"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593120 - 01 DESARROLLAR HABILIDADES\nPSICOMOTRICES EN EL CONTEXTO\nPRODUCTIVO Y SOCIAL.",
+        "230101507 - GENERAR HÁBITOS SALUDABLES DE\nVIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS\nDE ACTIVIDAD FÍSICA EN LOS CONTEXTOS\nPRODUCTIVOS Y SOCIALES."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593148 - 03 PROMOVER EL USO RACIONAL DE\nLOS RECURSOS NATURALES A PARTIR DE\nCRITERIOS DE SOSTENIBILIDAD Y\nSUSTENTABILIDAD ÉTICA Y NORMATIVA",
+        "240201526 - Enrique Low Murtra-Interactuar en el\ncontexto productivo y social de acuerdo con principios\néticos para la construcción de una cultura de paz."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593149 - 01 PROMOVER MI DIGNIDAD Y LA DEL\nOTRO A PARTIR DE LOS PRINCIPIOS Y VALORES\nÉTICOS COMO APORTE EN LA INSTAURACIÓN DE\nUNA CULTURA DE PAZ.",
+        "240201526 - Enrique Low Murtra-Interactuar en el\ncontexto productivo y social de acuerdo con principios\néticos para la construcción de una cultura de paz."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593152 - 04 OPTIMIZAR LOS RESULTADOS, DE\nACUERDO CON LA VERIFICACIÓN.",
+        "220501046 - Utilizar herramientas informáticas de\nacuerdo con las necesidades de manejo de información"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593224 - 03 RELACIONAR LOS PROCESOS\nCOMUNICATIVOS TENIENDO EN CUENTA\nCRITERIOS DE LÓGICA Y RACIONALIDAD.",
+        "240201524 - DESARROLLAR PROCESOS DE\nCOMUNICACIÓN EFICACES Y EFECTIVOS,\nTENIENDO EN CUENTA SITUACIONES DE ORDEN\nSOCIAL, PERSONAL Y PRODUCTIVO."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593238 - 02 ESTRUCTURAR EL PROYECTO DE\nACUERDO A CRITERIOS DE LA INVESTIGACIÓN.",
+        "240201064 - Orientar investigación formativa según\nreferentes técnicos"
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593243 - 01- Reconocer el trabajo como factor de\nmovilidad social y transformación vital con referencia a\nla fenomenología y a los derechos fundamentales en\nel trabajo.",
+        "210201501 - Ejercer derechos fundamentales del\ntrabajo en el marco de la constitución política y los\nconvenios internacionales."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593258 - 02 PLANTEAR PROBLEMAS\nMATEMÁTICOS A PARTIR DE SITUACIONES\nGENERADAS EN EL CONTEXTO SOCIAL Y\nPRODUCTIVO.",
+        "240201528 - Razonar cuantitativamente frente a\nsituaciones susceptibles de ser abordadas de manera\nmatemática en contextos laborales, sociales y\npersonales."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593259 - 02 CARACTERIZAR LA IDEA DE\nNEGOCIO TENIENDO EN CUENTA LAS\nOPORTUNIDADES Y NECESIDADES DEL SECTOR\nPRODUCTIVO Y SOCIAL.",
+        "240201529 - Gestionar procesos propios de la cultura\nemprendedora y empresarial de acuerdo con el perfil\npersonal y los requerimientos de los contextos\nproductivo y social."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593342 - 01 INTEGRAR ELEMENTOS DE LA\nCULTURA EMPRENDEDORA TENIENDO EN\nCUENTA EL PERFIL PERSONAL Y EL CONTEXTO\nDE DESARROLLO SOCIAL.",
+        "240201529 - Gestionar procesos propios de la cultura\nemprendedora y empresarial de acuerdo con el perfil\npersonal y los requerimientos de los contextos\nproductivo y social."
+      ],
+      [
+        "PLANEACIÓN",
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593344 - 02 RECOLECTAR INFORMACIÓN DEL\nSOFTWARE A CONSTRUIR DE ACUERDO CON\nLAS NECESIDADES DEL CLIENTE.",
+        "220501092 - Establecer requisitos de la solución de\nsoftware de acuerdo con estándares y procedimiento\ntécnico"
+      ]
+    ]
+  },
+  {
+    "page": 11,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 11,
+    "table": [
+      [
+        "PLANEACIÓN",
+        null,
+        "3. DISEÑAR LA ARQUITECTURA DEL\nSOFTWARE SEGÚN LAS NECESIDADES\nDE LA EMPRESA",
+        "593347 - 03 ESTABLECER LOS REQUISITOS DEL\nSOFTWARE DE ACUERDO CON LA INFORMACIÓN\nRECOLECTADA.",
+        null,
+        "220501092 - Establecer requisitos de la solución de\nsoftware de acuerdo con estándares y procedimiento\ntécnico"
+      ],
+      [
+        "3.5 Organización del proyecto",
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "3.5.1 No. Instructores requeridos",
+        "12",
+        null,
+        "3.5.2 No. Aprendices sugeridos para\nparticipar en el proyecto",
+        "35",
+        null
+      ],
+      [
+        "3.6 Descripción del ambiente de aprendizaje requerido",
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Se requeire un ambiente de aprendizaje dotado con modernos computadores con sistema operativo windows, laravel, php storm, anaconda, powerbi, sql server, mysql todos debidamente licenciados",
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    ]
+  },
+  {
+    "page": 11,
+    "table": [
+      [
+        "3.7. Recursos estimados",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Actividades del proyecto",
+        "Duración\n(Meses)",
+        "Equipos / Herramientas",
+        null,
+        null,
+        null,
+        "Talento Humano (Instructores)",
+        null,
+        null,
+        null,
+        "Materiales de formación consumibles",
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        "Descripción",
+        "Cant.",
+        "V. Unit.",
+        "V. Total",
+        "Especialidad",
+        "Cant.",
+        "V. Unit.",
+        "V. Total",
+        "Descripción",
+        "Cant.",
+        "V. Unit.",
+        "V. Total"
+      ],
+      [
+        "1. DESARROLLAR EL\nPROCESO DE INDUCCION DE\nLA FORMACION\nPROFESIONAL INTEGRAL",
+        "0.3",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Técnico",
+        "1",
+        "$ 29,588,333",
+        "$ 29,588,333",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "COMPUTADORES",
+        "30",
+        "$ 3,000,000",
+        "$ 90,000,000",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "Software licenciado\nAzure",
+        "30",
+        "$ 700,000",
+        "$ 21,000,000",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "Software licenciado\npower BI",
+        "30",
+        "$ 500,000",
+        "$ 15,000,000",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS",
+        "1.6",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Borrador tablero acrilico",
+        "2",
+        "$ 8,000",
+        "$ 16,000"
+      ]
+    ]
+  },
+  {
+    "page": 12,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 12,
+    "table": [
+      [
+        "PARA EL MANEJO DE LOS\nREQUERIMIENTOS DE\nSOFTWARE EN LA EMPRESA",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Marcadores",
+        "5",
+        "$ 5,000",
+        "$ 25,000"
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Bilinguismo",
+        "1",
+        "$ 6,560,000",
+        "$ 6,560,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Ofimatica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "2. ANALIZAR Y CONOCER\nHERRAMIENTAS\nTECNOLÓGICAS\nNECESARIAS PARA EL\nMANEJO DE LOS\nREQUERIMIENTOS DE",
+        "1.6",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de SST y\nmedio ambiente",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "3. DISEÑAR LA\nARQUITECTURA DEL\nSOFTWARE SEGÚN LAS\nNECESIDADES DE LA\nEMPRESA",
+        "6.2",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de\nComunicaciones",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "3. DISEÑAR LA\nARQUITECTURA DEL\nSOFTWARE SEGÚN LAS\nNECESIDADES DE LA\nEMPRESA",
+        "6.2",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Etica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "3. DISEÑAR LA\nARQUITECTURA DEL\nSOFTWARE SEGÚN LAS\nNECESIDADES DE LA\nEMPRESA",
+        "6.2",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Fisica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "TELEVISOR",
+        "1",
+        "$ 3,000,000",
+        "$ 3,000,000",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "Tablero acrilico",
+        "1",
+        "$ 400,000",
+        "$ 400,000",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 13,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 13,
+    "table": [
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "",
+        "",
+        "",
+        "",
+        "Instructor Apoyo\nTécnico",
+        "1",
+        "$ 5,637,500",
+        "$ 5,637,500",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Cultura\nFisica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de\nEmprendimiento",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "4. CODIFICAR LOS MÓDULOS\nDEL SOFTWARE A\nDESARROLLAR",
+        "9.1",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de\nInvestigacion",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS\nAL SOFTWARE\nDESARROLLADO ACORDE A\nREQUISITOS DE LA",
+        "3.8",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de Derechos\nHumanos",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "5. CONSTRUIR Y REALIZAR\nSEGUMIENTO DE PRUEBAS\nAL SOFTWARE\nDESARROLLADO ACORDE A\nREQUISITOS DE LA",
+        "3.8",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de\nmatemáticas",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ],
+      [
+        "6- APLICAR\nCONOCIMIENTOS,\nHABILIDADES Y DESTREZAS\nEN LA EMPRESA",
+        "6",
+        "",
+        "",
+        "",
+        "",
+        "Instructor de\nSeguimiento",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "",
+        "",
+        "",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 13,
+    "table": [
+      [
+        "3.7.1 Detalle de los recursos estimados",
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Herramientas",
+        "Cantidad",
+        "Valor Unitario",
+        "Valor Total",
+        "Fuente Recurso"
+      ],
+      [
+        "Software licenciado Azure",
+        "30",
+        "$ 700,000",
+        "$ 21,000,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Software licenciado power BI",
+        "30",
+        "$ 500,000",
+        "$ 15,000,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Tablero acrilico",
+        "1",
+        "$ 400,000",
+        "$ 400,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Total:",
+        null,
+        null,
+        "$ 36,400,000",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 13,
+    "table": [
+      [
+        "Equipos",
+        "Cantidad",
+        "Valor Unitario",
+        "Valor Total",
+        "Fuente Recurso"
+      ]
+    ]
+  },
+  {
+    "page": 14,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 14,
+    "table": [
+      [
+        "COMPUTADORES",
+        "30",
+        "$ 3,000,000",
+        "$ 90,000,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "TELEVISOR",
+        "1",
+        "$ 3,000,000",
+        "$ 3,000,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Total:",
+        null,
+        null,
+        "$ 93,000,000",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 14,
+    "table": [
+      [
+        "Materiales",
+        "Cantidad",
+        "Valor Unitario",
+        "Valor Total",
+        "Fuente Recurso"
+      ],
+      [
+        "Marcadores",
+        "5",
+        "$ 5,000",
+        "$ 25,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Borrador tablero acrilico",
+        "2",
+        "$ 8,000",
+        "$ 16,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Total:",
+        null,
+        null,
+        "$ 41,000",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 14,
+    "table": [
+      [
+        "Talento Humano",
+        "Cantidad",
+        "Valor Unitario",
+        "Valor Total",
+        "Fuente Recurso"
+      ],
+      [
+        "Instructor de Seguimiento",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Cultura Fisica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de matemáticas",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Comunicaciones",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor Apoyo Técnico",
+        "1",
+        "$ 5,637,500",
+        "$ 5,637,500",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Ofimatica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Investigacion",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Emprendimiento",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Fisica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Técnico",
+        "1",
+        "$ 29,588,333",
+        "$ 29,588,333",
+        "CONTRATACION INSTRUCTORES"
+      ]
+    ]
+  },
+  {
+    "page": 15,
+    "table": [
+      [
+        "Modelo de Mejora",
+        "SERVICIO NACIONAL DE APRENDIZAJE SENA\nSistema Integrado de Gestión y Autocontrol\nProcedimiento Ejecución de la Formación\nPROYECTO FORMATIVO"
+      ]
+    ]
+  },
+  {
+    "page": 15,
+    "table": [
+      [
+        "Instructor de Bilinguismo",
+        "1",
+        "$ 6,560,000",
+        "$ 6,560,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Etica",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de SST y medio ambiente",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Instructor de Derechos Humanos",
+        "1",
+        "$ 820,000",
+        "$ 820,000",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Total:",
+        null,
+        null,
+        "$ 50,805,833",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 15,
+    "table": [
+      [
+        "4. Rubros presupuestales",
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "Recurso",
+        "Cantidad",
+        "Valor Unitario",
+        "Valor Total",
+        "Rubro presupuestal por el que se financiará el proyecto"
+      ],
+      [
+        "Equipos",
+        "1",
+        "$ 93,000,000",
+        "$ 93,000,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Herramientas",
+        "1",
+        "$ 36,400,000",
+        "$ 36,400,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Materiales de Formación",
+        "1",
+        "$ 41,000",
+        "$ 41,000",
+        "MATERIALES PARA FORMACION PROFESIONAL"
+      ],
+      [
+        "Talento Humano",
+        "13",
+        "$ 3,908,141",
+        "$ 50,805,833",
+        "CONTRATACION INSTRUCTORES"
+      ],
+      [
+        "Total:",
+        null,
+        null,
+        "$ 180,246,833",
+        ""
+      ]
+    ]
+  },
+  {
+    "page": 15,
+    "table": [
+      [
+        "5. Equipo que participó en la formulación del proyecto",
+        null,
+        null,
+        null
+      ],
+      [
+        "Nombre",
+        "Especialidad",
+        "Nombre Centro",
+        "Regional"
+      ],
+      [
+        "YURY LORENA FIERRO",
+        "EQUIPO DE DESARROLLO CURRICULAR",
+        "CENTRO TECNOLOGICO DE LA AMAZONIA",
+        "REGIONAL CAQUETÁ"
+      ],
+      [
+        "BEATRIZ ALMARIO",
+        "EQUIPO DE DESARROLLO CURRICULAR",
+        "CENTRO TECNOLOGICO DE LA AMAZONIA",
+        "REGIONAL CAQUETÁ"
+      ],
+      [
+        "OSCAR EDUARDO YANGUAS",
+        "EQUIPO DE DESARROLLO CURRICULAR",
+        "CENTRO TECNOLOGICO DE LA AMAZONIA",
+        "REGIONAL CAQUETÁ"
+      ]
+    ]
+  }
+]

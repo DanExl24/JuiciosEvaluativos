@@ -74,3 +74,8 @@ export function removeImportHistoryByFicha(ficha: string) {
   const currentEntries = readImportHistory()
   writeImportHistory(currentEntries.filter((entry) => entry.ficha !== ficha))
 }
+
+export function clearAllImportHistory() {
+  if (!isBrowserReady()) return
+  window.localStorage.removeItem(IMPORT_HISTORY_KEY)
+}

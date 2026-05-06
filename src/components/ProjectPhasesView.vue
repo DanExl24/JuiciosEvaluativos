@@ -1,10 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import * as pdfjs from 'pdfjs-dist'
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
-
-pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
-
 import ProjectPhasesDetailView from './ProjectPhasesDetailView.vue'
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
@@ -14,17 +9,6 @@ interface ProjectPhase {
   activity: string
   competencyCodes: string[]
   resultCodes: string[]
-  rawText: string
-}
-
-interface ProjectImportPayload {
-  projectCode: string
-  projectName: string
-  executionTime: string
-  regional: string
-  center: string
-  programCode: string
-  phases: ProjectPhase[]
 }
 
 interface ProjectData {
@@ -37,20 +21,6 @@ interface ProjectData {
   id_programa: number
   programa_codigo: string
   programa_nombre: string
-}
-
-interface PdfTextItem {
-  str: string
-  transform: number[]
-  width: number
-  height: number
-}
-
-interface ParsedLine {
-  text: string
-  x: number
-  y: number
-  page: number
 }
 
 const isParsing = ref(false)
@@ -75,202 +45,6 @@ async function fetchProjects() {
 
 function openProject(project: ProjectData) {
   activeProject.value = project
-}
-
-function normalizePhaseLabel(value: string) {
-  const normalized = value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-    .trim()
-
-  if (normalized.includes('PLANEACION')) return 'PLANEACIÓN'
-  if (normalized.includes('EJECUCION')) return 'EJECUCIÓN'
-  if (normalized.includes('EVALUACION')) return 'EVALUACIÓN'
-  return 'ANÁLISIS'
-}
-
-function detectPhaseLabel(value: string) {
-  const normalized = value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toUpperCase()
-
-  if (normalized.includes('ANALISIS')) return 'ANÁLISIS'
-  if (normalized.includes('PLANEACION')) return 'PLANEACIÓN'
-  if (normalized.includes('EJECUCION')) return 'EJECUCIÓN'
-  if (normalized.includes('EVALUACION')) return 'EVALUACIÓN'
-  return null
-}
-
-function buildPageLines(items: PdfTextItem[], pageNumber: number): ParsedLine[] {
-  const filtered = items
-    .filter((item) => item.str && item.str.trim())
-    .map((item) => ({
-      str: item.str.trim(),
-      x: item.transform[4] ?? 0,
-      y: item.transform[5] ?? 0,
-      width: item.width ?? 0
-    }))
-    .sort((a, b) => {
-      if (Math.abs(b.y - a.y) > 1.5) return b.y - a.y
-      return a.x - b.x
-    })
-
-  const rows: Array<{ y: number; items: typeof filtered }> = []
-
-  for (const item of filtered) {
-    const existingRow = rows.find((row) => Math.abs(row.y - item.y) <= 2.5)
-    if (existingRow) {
-      existingRow.items.push(item)
-      existingRow.y = (existingRow.y + item.y) / 2
-    } else {
-      rows.push({ y: item.y, items: [item] })
-    }
-  }
-
-  return rows
-    .map((row) => {
-      const ordered = row.items.sort((a, b) => a.x - b.x)
-      let text = ''
-      let lastRight = -Infinity
-
-      for (const item of ordered) {
-        const gap = item.x - lastRight
-        if (text && gap > 6) {
-          text += ' '
-        }
-        text += item.str
-        lastRight = item.x + item.width
-      }
-
-      return {
-        text: text.replace(/\s+/g, ' ').trim(),
-        x: ordered[0]?.x ?? 0,
-        y: row.y,
-        page: pageNumber
-      }
-    })
-    .filter((line) => line.text)
-}
-
-function extractPhasesFromLines(lines: ParsedLine[]) {
-  const phaseMap: Record<string, ProjectPhase> = {}
-  const orderedAll = [...lines].sort((a, b) => {
-    if (a.page !== b.page) return a.page - b.page
-    return b.y - a.y
-  })
-
-  const sectionStartIndex = orderedAll.findIndex((line) => /3\.4\b/i.test(line.text) && /Competencia Asociada/i.test(line.text))
-  const rawSectionEndIndex = orderedAll.findIndex((line, index) => index > sectionStartIndex && /3\.(5|6|7)\b/i.test(line.text))
-  const ordered =
-    sectionStartIndex >= 0
-      ? orderedAll.slice(sectionStartIndex, rawSectionEndIndex > sectionStartIndex ? rawSectionEndIndex : undefined)
-      : orderedAll
-
-  const markers = ordered
-    .map((line, index) => ({ line, index, phase: line.x < 120 ? detectPhaseLabel(line.text) : null }))
-    .filter((entry): entry is { line: ParsedLine; index: number; phase: string } => Boolean(entry.phase))
-
-  for (let i = 0; i < markers.length; i += 1) {
-    const marker = markers[i]
-    const nextIndex = markers[i + 1]?.index ?? ordered.length
-    const block = ordered.slice(marker.index, nextIndex)
-
-    const activityLines = block
-      .filter((line) => line.x >= 170 && line.x < 355)
-      .map((line) => line.text)
-
-    const competencyCodes = new Set<string>()
-    const resultCodes = new Set<string>()
-    for (const line of block) {
-      if (line.x >= 340 && line.x < 520) {
-        const resultMatches = line.text.match(/\b\d{6}\b/g) ?? []
-        for (const match of resultMatches) {
-          resultCodes.add(match)
-        }
-      }
-
-      if (line.x >= 520) {
-        const matches = line.text.match(/\b\d{6,9}\b/g) ?? []
-        for (const match of matches) {
-          competencyCodes.add(match)
-        }
-      }
-    }
-
-    const phaseName = normalizePhaseLabel(marker.phase)
-    const activity = activityLines.join(' ').replace(/\s+/g, ' ').trim()
-
-    if (!phaseMap[phaseName]) {
-      phaseMap[phaseName] = {
-        name: phaseName,
-        activity,
-        competencyCodes: Array.from(competencyCodes),
-        resultCodes: Array.from(resultCodes),
-        rawText: block.map((line) => line.text).join('\n')
-      }
-      continue
-    }
-
-    const current = phaseMap[phaseName]
-    if (activity.length > current.activity.length) {
-      current.activity = activity
-    }
-    for (const code of competencyCodes) {
-      if (!current.competencyCodes.includes(code)) {
-        current.competencyCodes.push(code)
-      }
-    }
-    for (const code of resultCodes) {
-      if (!current.resultCodes.includes(code)) {
-        current.resultCodes.push(code)
-      }
-    }
-    current.rawText += `\n${block.map((line) => line.text).join('\n')}`
-  }
-
-  return Object.values(phaseMap)
-}
-
-async function parsePdfContent(file: File): Promise<ProjectImportPayload> {
-  const data = await file.arrayBuffer()
-  const doc = await pdfjs.getDocument({ data: new Uint8Array(data) }).promise
-  let text = ''
-  const lines: ParsedLine[] = []
-  
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i)
-    const content = await page.getTextContent()
-    const pageLines = buildPageLines(content.items as PdfTextItem[], i)
-    lines.push(...pageLines)
-    text += pageLines.map((line) => line.text).join('\n') + '\n'
-  }
-
-  const extractValue = (pattern: RegExp) => text.match(pattern)?.[1]?.replace(/\s+/g, ' ').trim() ?? ''
-
-  const projectCode = extractValue(/Código\s+Proyecto\s+SOFIA:\s*(\d+)/i)
-  const programCode = extractValue(/Código\s+del\s+Programa\s+SOFIA:\s*(\d+)/i)
-  const projectName = extractValue(/1\.3\s+Nombre\s+del\s+proyecto:\s*(.+?)\s*1\.4/i)
-  const executionTime = extractValue(/1\.5\s+Tiempo\s+estimado\s+de[\s\S]*?proyecto\s*\(meses\):\s*(\d+)/i)
-  const regional = extractValue(/1\.2\s+Regional:\s*(.+?)\s*1\.3/i)
-  const center = extractValue(/1\.1\s+Centro\s+de\s+Formación:\s*(.+?)\s*1\.2/i)
-
-  const phases = extractPhasesFromLines(lines)
-
-  if (!projectCode || !programCode || phases.length === 0) {
-    throw new Error('No se pudo extraer la información clave del PDF. Asegúrate de que es un Proyecto Formativo válido.')
-  }
-
-  return {
-    projectCode,
-    projectName,
-    executionTime,
-    regional,
-    center,
-    programCode,
-    phases
-  }
 }
 
 async function handleFileDrop(event: DragEvent) {
@@ -299,27 +73,42 @@ async function processFile(file: File) {
   importMessage.value = ''
 
   try {
-    const payload = await parsePdfContent(file)
+    // 1. Send PDF to backend for extraction (using Python)
+    const formData = new FormData()
+    formData.append('pdf', file)
+
+    const extractResponse = await fetch(`${apiBaseUrl}/api/extract/project`, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!extractResponse.ok) {
+      const errorBody = await extractResponse.json().catch(() => null)
+      throw new Error(errorBody?.error ?? 'Error al extraer información del PDF.')
+    }
+
+    const payload = await extractResponse.json()
     isParsing.value = false
     isImporting.value = true
 
-    const response = await fetch(`${apiBaseUrl}/api/import/project`, {
+    // 2. Import the extracted payload to the database
+    const importResponse = await fetch(`${apiBaseUrl}/api/import/project`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
 
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => null)
+    if (!importResponse.ok) {
+      const errorBody = await importResponse.json().catch(() => null)
       throw new Error(errorBody?.error ?? 'Error al importar el proyecto a la base de datos.')
     }
 
-    const result = await response.json()
-    importMessage.value = `¡Proyecto importado! Fases creadas/actualizadas: ${result.phasesInserted}, Competencias mapeadas: ${result.competenciesUpdated}.`
+    const result = await importResponse.json()
+    importMessage.value = `¡Proyecto importado exitosamente! Fases creadas/actualizadas: ${result.phasesInserted}, Competencias mapeadas: ${result.competenciesUpdated}.`
     await fetchProjects()
     setTimeout(() => {
       isModalOpen.value = false
-    }, 2000)
+    }, 2500)
 
   } catch (error) {
     importError.value = error instanceof Error ? error.message : 'Error inesperado.'
@@ -430,7 +219,7 @@ onMounted(() => {
         <div class="p-6">
           <div class="mb-6 space-y-2">
             <p class="text-sm leading-relaxed text-slate-600">
-              Sube el archivo PDF del proyecto formativo para extraer su información básica, generar sus fases y asignar las competencias automáticamente.
+              Sube el archivo PDF del proyecto formativo para extraer su información básica, generar sus fases y asignar las competencias automáticamente (Procesado con Python).
             </p>
           </div>
 
@@ -464,7 +253,7 @@ onMounted(() => {
           <div class="mt-6 space-y-3">
             <div v-if="isParsing || isImporting" class="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-blue-800">
               <svg class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-              <p class="text-sm font-semibold">{{ isParsing ? 'Analizando el documento PDF...' : 'Guardando fases y competencias...' }}</p>
+              <p class="text-sm font-semibold">{{ isParsing ? 'Extrayendo información con Python...' : 'Guardando en la base de datos...' }}</p>
             </div>
             
             <p v-if="importMessage" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
