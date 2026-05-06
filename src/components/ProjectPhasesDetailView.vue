@@ -46,6 +46,11 @@ interface DesertedLearner {
   documento: string
   estado: string
   ultima_fecha: string | null
+  juicio_estado: string
+  competencia_codigo: string
+  competencia_nombre: string
+  resultado_codigo: string
+  resultado_detalle: string
 }
 
 interface PhaseLearnerStat {
@@ -153,7 +158,7 @@ async function handleAssign(phaseId: number | null) {
   isAssigning.value = true
   try {
     const endpoint = phaseId === null ? 'unassign' : 'assign'
-    const body = phaseId === null ? {} : { phaseId }
+    const body = phaseId === null ? { phaseId: currentPhase.value?.id_fase ?? null } : { phaseId }
     
     const res = await fetch(`${apiBaseUrl}/api/competencies/${selectedCompToAssign.value.id_competencia}/${endpoint}`, {
       method: 'POST',
@@ -350,7 +355,11 @@ function formatDate(value: string | null) {
                 <span class="inline-block rounded-lg bg-slate-950 px-3 py-1 text-[0.6rem] font-black uppercase tracking-widest text-white">{{ stat.nombre }}</span>
                 <h4 class="mt-2 text-2xl font-black text-slate-900">Estado de Aprendices</h4>
               </div>
-              <div class="grid grid-cols-3 gap-4">
+              <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-center">
+                  <p class="text-2xl font-black text-indigo-700">{{ stat.totalLearners }}</p>
+                  <p class="text-[0.6rem] font-bold uppercase text-indigo-600">Total</p>
+                </div>
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
                   <p class="text-2xl font-black text-emerald-700">{{ stat.approvedCount }}</p>
                   <p class="text-[0.6rem] font-bold uppercase text-emerald-600">Aprobados</p>
@@ -370,13 +379,15 @@ function formatDate(value: string | null) {
             <div v-if="stat.desertedLearners.length > 0" class="mb-8">
               <p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-rose-500">Listado de Desertores (Retirados/Trasladados en esta fase)</p>
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div v-for="learner in stat.desertedLearners" :key="learner.documento" class="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/30 p-3">
+                <div v-for="learner in stat.desertedLearners" :key="learner.documento" class="flex items-start gap-3 rounded-2xl border border-rose-100 bg-rose-50/30 p-3">
                   <div class="h-10 w-10 shrink-0 flex items-center justify-center rounded-xl bg-rose-100 text-rose-600">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="17" y1="8" x2="22" y2="13"></line><line x1="22" y1="8" x2="17" y2="13"></line></svg>
                   </div>
                   <div class="min-w-0">
                     <p class="text-xs font-black text-slate-900 truncate">{{ learner.nombre }}</p>
                     <p class="text-[0.65rem] text-rose-600 font-bold uppercase tracking-tighter">{{ learner.estado }} · {{ formatDate(learner.ultima_fecha) }}</p>
+                    <p class="mt-1 text-[0.65rem] font-semibold text-slate-600 truncate">{{ learner.competencia_codigo }} · {{ learner.competencia_nombre }}</p>
+                    <p class="text-[0.65rem] text-slate-500 truncate">{{ learner.resultado_codigo }} · {{ learner.juicio_estado }}</p>
                   </div>
                 </div>
               </div>
@@ -403,8 +414,8 @@ function formatDate(value: string | null) {
         <div class="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in-95 duration-200">
           <div class="bg-slate-950 p-8 text-white"><h3 class="text-xl font-bold tracking-tight">Gestionar Competencia</h3><p class="mt-2 text-xs text-slate-400 uppercase tracking-widest font-bold">Competencia seleccionada:</p><p class="mt-1 text-sm font-medium leading-relaxed text-slate-200">{{ selectedCompToAssign.nombre }}</p></div>
           <div class="p-8 space-y-6">
-            <div><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">{{ isSelectedCompUnassigned ? 'Asignar a Fase:' : 'Mover a otra Fase:' }}</p><div class="grid grid-cols-2 gap-2"><button v-for="phase in phases" :key="phase.id_fase" @click="handleAssign(phase.id_fase)" :disabled="isAssigning" class="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-100 p-4 text-center transition hover:border-slate-950 hover:bg-slate-50 disabled:opacity-50 group"><span class="text-[0.65rem] font-black uppercase tracking-tighter text-slate-400 group-hover:text-slate-900">Fase</span><span class="mt-0.5 text-xs font-bold text-slate-900">{{ phase.nombre }}</span></button></div></div>
-            <div v-if="!isSelectedCompUnassigned" class="pt-4 border-t border-slate-100"><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-rose-400">Opciones Críticas:</p><button @click="handleAssign(null)" :disabled="isAssigning" class="flex w-full items-center justify-between rounded-2xl border-2 border-rose-50 bg-rose-50/30 p-4 text-left transition hover:border-rose-500 hover:bg-rose-50 disabled:opacity-50"><div><p class="text-sm font-bold text-rose-600">Quitar de fase actual</p><p class="text-[0.65rem] text-rose-400">La competencia volverá a la lista de "Sueltas"</p></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+            <div><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">{{ isSelectedCompUnassigned ? 'Asignar a Fase:' : 'Agregar a otra Fase:' }}</p><div class="grid grid-cols-2 gap-2"><button v-for="phase in phases" :key="phase.id_fase" @click="handleAssign(phase.id_fase)" :disabled="isAssigning" class="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-100 p-4 text-center transition hover:border-slate-950 hover:bg-slate-50 disabled:opacity-50 group"><span class="text-[0.65rem] font-black uppercase tracking-tighter text-slate-400 group-hover:text-slate-900">Fase</span><span class="mt-0.5 text-xs font-bold text-slate-900">{{ phase.nombre }}</span></button></div></div>
+            <div v-if="!isSelectedCompUnassigned" class="pt-4 border-t border-slate-100"><p class="mb-3 text-[0.65rem] font-black uppercase tracking-widest text-rose-400">Opciones Críticas:</p><button @click="handleAssign(null)" :disabled="isAssigning" class="flex w-full items-center justify-between rounded-2xl border-2 border-rose-50 bg-rose-50/30 p-4 text-left transition hover:border-rose-500 hover:bg-rose-50 disabled:opacity-50"><div><p class="text-sm font-bold text-rose-600">Quitar de esta fase</p><p class="text-[0.65rem] text-rose-400">La competencia puede seguir vinculada a otras fases</p></div><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-rose-500"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
           </div>
           <div class="bg-slate-50 px-8 py-4 flex justify-center"><button @click="selectedCompToAssign = null" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-950 transition">Cerrar</button></div>
         </div>

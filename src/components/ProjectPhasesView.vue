@@ -13,6 +13,7 @@ interface ProjectPhase {
   name: string
   activity: string
   competencyCodes: string[]
+  resultCodes: string[]
   rawText: string
 }
 
@@ -36,6 +37,20 @@ interface ProjectData {
   id_programa: number
   programa_codigo: string
   programa_nombre: string
+}
+
+interface PdfTextItem {
+  str: string
+  transform: number[]
+  width: number
+  height: number
+}
+
+interface ParsedLine {
+  text: string
+  x: number
+  y: number
+  page: number
 }
 
 const isParsing = ref(false)
@@ -62,86 +77,186 @@ function openProject(project: ProjectData) {
   activeProject.value = project
 }
 
+function normalizePhaseLabel(value: string) {
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .trim()
+
+  if (normalized.includes('PLANEACION')) return 'PLANEACIÓN'
+  if (normalized.includes('EJECUCION')) return 'EJECUCIÓN'
+  if (normalized.includes('EVALUACION')) return 'EVALUACIÓN'
+  return 'ANÁLISIS'
+}
+
+function detectPhaseLabel(value: string) {
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+
+  if (normalized.includes('ANALISIS')) return 'ANÁLISIS'
+  if (normalized.includes('PLANEACION')) return 'PLANEACIÓN'
+  if (normalized.includes('EJECUCION')) return 'EJECUCIÓN'
+  if (normalized.includes('EVALUACION')) return 'EVALUACIÓN'
+  return null
+}
+
+function buildPageLines(items: PdfTextItem[], pageNumber: number): ParsedLine[] {
+  const filtered = items
+    .filter((item) => item.str && item.str.trim())
+    .map((item) => ({
+      str: item.str.trim(),
+      x: item.transform[4] ?? 0,
+      y: item.transform[5] ?? 0,
+      width: item.width ?? 0
+    }))
+    .sort((a, b) => {
+      if (Math.abs(b.y - a.y) > 1.5) return b.y - a.y
+      return a.x - b.x
+    })
+
+  const rows: Array<{ y: number; items: typeof filtered }> = []
+
+  for (const item of filtered) {
+    const existingRow = rows.find((row) => Math.abs(row.y - item.y) <= 2.5)
+    if (existingRow) {
+      existingRow.items.push(item)
+      existingRow.y = (existingRow.y + item.y) / 2
+    } else {
+      rows.push({ y: item.y, items: [item] })
+    }
+  }
+
+  return rows
+    .map((row) => {
+      const ordered = row.items.sort((a, b) => a.x - b.x)
+      let text = ''
+      let lastRight = -Infinity
+
+      for (const item of ordered) {
+        const gap = item.x - lastRight
+        if (text && gap > 6) {
+          text += ' '
+        }
+        text += item.str
+        lastRight = item.x + item.width
+      }
+
+      return {
+        text: text.replace(/\s+/g, ' ').trim(),
+        x: ordered[0]?.x ?? 0,
+        y: row.y,
+        page: pageNumber
+      }
+    })
+    .filter((line) => line.text)
+}
+
+function extractPhasesFromLines(lines: ParsedLine[]) {
+  const phaseMap: Record<string, ProjectPhase> = {}
+  const orderedAll = [...lines].sort((a, b) => {
+    if (a.page !== b.page) return a.page - b.page
+    return b.y - a.y
+  })
+
+  const sectionStartIndex = orderedAll.findIndex((line) => /3\.4\b/i.test(line.text) && /Competencia Asociada/i.test(line.text))
+  const rawSectionEndIndex = orderedAll.findIndex((line, index) => index > sectionStartIndex && /3\.(5|6|7)\b/i.test(line.text))
+  const ordered =
+    sectionStartIndex >= 0
+      ? orderedAll.slice(sectionStartIndex, rawSectionEndIndex > sectionStartIndex ? rawSectionEndIndex : undefined)
+      : orderedAll
+
+  const markers = ordered
+    .map((line, index) => ({ line, index, phase: line.x < 120 ? detectPhaseLabel(line.text) : null }))
+    .filter((entry): entry is { line: ParsedLine; index: number; phase: string } => Boolean(entry.phase))
+
+  for (let i = 0; i < markers.length; i += 1) {
+    const marker = markers[i]
+    const nextIndex = markers[i + 1]?.index ?? ordered.length
+    const block = ordered.slice(marker.index, nextIndex)
+
+    const activityLines = block
+      .filter((line) => line.x >= 170 && line.x < 355)
+      .map((line) => line.text)
+
+    const competencyCodes = new Set<string>()
+    const resultCodes = new Set<string>()
+    for (const line of block) {
+      if (line.x >= 340 && line.x < 520) {
+        const resultMatches = line.text.match(/\b\d{6}\b/g) ?? []
+        for (const match of resultMatches) {
+          resultCodes.add(match)
+        }
+      }
+
+      if (line.x >= 520) {
+        const matches = line.text.match(/\b\d{6,9}\b/g) ?? []
+        for (const match of matches) {
+          competencyCodes.add(match)
+        }
+      }
+    }
+
+    const phaseName = normalizePhaseLabel(marker.phase)
+    const activity = activityLines.join(' ').replace(/\s+/g, ' ').trim()
+
+    if (!phaseMap[phaseName]) {
+      phaseMap[phaseName] = {
+        name: phaseName,
+        activity,
+        competencyCodes: Array.from(competencyCodes),
+        resultCodes: Array.from(resultCodes),
+        rawText: block.map((line) => line.text).join('\n')
+      }
+      continue
+    }
+
+    const current = phaseMap[phaseName]
+    if (activity.length > current.activity.length) {
+      current.activity = activity
+    }
+    for (const code of competencyCodes) {
+      if (!current.competencyCodes.includes(code)) {
+        current.competencyCodes.push(code)
+      }
+    }
+    for (const code of resultCodes) {
+      if (!current.resultCodes.includes(code)) {
+        current.resultCodes.push(code)
+      }
+    }
+    current.rawText += `\n${block.map((line) => line.text).join('\n')}`
+  }
+
+  return Object.values(phaseMap)
+}
+
 async function parsePdfContent(file: File): Promise<ProjectImportPayload> {
   const data = await file.arrayBuffer()
   const doc = await pdfjs.getDocument({ data: new Uint8Array(data) }).promise
   let text = ''
+  const lines: ParsedLine[] = []
   
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i)
     const content = await page.getTextContent()
-    text += content.items.map((item: any) => item.str).join(' ') + '\n'
+    const pageLines = buildPageLines(content.items as PdfTextItem[], i)
+    lines.push(...pageLines)
+    text += pageLines.map((line) => line.text).join('\n') + '\n'
   }
 
-  const basicInfoMatch = text.match(/1\.\s*Información básica del proyecto\s+(\d+)\s+(\d+)\s+Código del Programa SOFIA/i)
-  let projectCode = ''
-  let programCode = ''
-  if (basicInfoMatch) {
-    projectCode = basicInfoMatch[1]
-    programCode = basicInfoMatch[2]
-  } else {
-    // fallback
-    const codeMatch = text.match(/2480542\s+(\d+)/)
-    if(codeMatch) {
-      projectCode = '2480542'
-      programCode = codeMatch[1]
-    }
-  }
+  const extractValue = (pattern: RegExp) => text.match(pattern)?.[1]?.replace(/\s+/g, ' ').trim() ?? ''
 
-  const nameMatch = text.match(/1\.3 Nombre del proyecto:\s*(.+?)\s*1\.4/i)
-  const projectName = nameMatch ? nameMatch[1].trim() : ''
+  const projectCode = extractValue(/Código\s+Proyecto\s+SOFIA:\s*(\d+)/i)
+  const programCode = extractValue(/Código\s+del\s+Programa\s+SOFIA:\s*(\d+)/i)
+  const projectName = extractValue(/1\.3\s+Nombre\s+del\s+proyecto:\s*(.+?)\s*1\.4/i)
+  const executionTime = extractValue(/1\.5\s+Tiempo\s+estimado\s+de[\s\S]*?proyecto\s*\(meses\):\s*(\d+)/i)
+  const regional = extractValue(/1\.2\s+Regional:\s*(.+?)\s*1\.3/i)
+  const center = extractValue(/1\.1\s+Centro\s+de\s+Formación:\s*(.+?)\s*1\.2/i)
 
-  const timeMatch = text.match(/1\.5 Tiempo estimado de ejecución del proyecto \(meses\):\s*(\d+)/i)
-  const executionTime = timeMatch ? timeMatch[1] : ''
-
-  const regionalMatch = text.match(/1\.2 Regional:\s*(.+?)\s*1\.3/i)
-  const regional = regionalMatch ? regionalMatch[1].trim() : ''
-
-  const centerMatch = text.match(/1\.1 Centro de Formación:\s*(.+?)\s*1\.2/i)
-  const center = centerMatch ? centerMatch[1].trim() : ''
-
-  const phaseMap: Record<string, ProjectPhase> = {}
-  const phaseSectionMatch = text.match(/3\.4\.?\s*Competencia Asociada(.*?)3\.5\.?\s*Organización del proyecto/s)
-  
-  const phaseText = phaseSectionMatch ? phaseSectionMatch[1] : text
-  const phaseRegex = /(ANÁLISIS|PLANEACIÓN|EJECUCIÓN|EVALUACIÓN)\s+(.*?)(?=(?:ANÁLISIS|PLANEACIÓN|EJECUCIÓN|EVALUACIÓN)\s+\d|$)/gs
-  let match
-
-  while ((match = phaseRegex.exec(phaseText)) !== null) {
-    const phaseName = match[1]
-    const phaseContent = match[2]
-    
-    const activityMatch = phaseContent.match(/^\d+\.\s+(.*?)(?=\s+\d{6}\s*-)/s)
-    const activity = activityMatch ? activityMatch[1].trim() : phaseContent.substring(0, 150).trim()
-    
-    const compRegex = /\b(\d{9})\b/g
-    const comps = new Set<string>()
-    let cMatch
-    while ((cMatch = compRegex.exec(phaseContent)) !== null) {
-      comps.add(cMatch[1])
-    }
-    
-    if (!phaseMap[phaseName]) {
-      phaseMap[phaseName] = {
-        name: phaseName,
-        activity: activity,
-        competencyCodes: Array.from(comps),
-        rawText: phaseContent
-      }
-    } else {
-      if (activity.length > phaseMap[phaseName].activity.length) {
-        phaseMap[phaseName].activity = activity
-      }
-      comps.forEach(c => {
-        if (!phaseMap[phaseName].competencyCodes.includes(c)) {
-          phaseMap[phaseName].competencyCodes.push(c)
-        }
-      })
-      phaseMap[phaseName].rawText += '\n' + phaseContent
-    }
-  }
-
-  const phases = Object.values(phaseMap)
+  const phases = extractPhasesFromLines(lines)
 
   if (!projectCode || !programCode || phases.length === 0) {
     throw new Error('No se pudo extraer la información clave del PDF. Asegúrate de que es un Proyecto Formativo válido.')

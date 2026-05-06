@@ -132,6 +132,39 @@ async function ensureSchemaCompatibility() {
         id_programa INTEGER NOT NULL UNIQUE REFERENCES programa(id_programa) ON DELETE CASCADE
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fase_competencia (
+      id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
+      id_competencia INTEGER NOT NULL REFERENCES competencia(id_competencia) ON DELETE CASCADE,
+      PRIMARY KEY (id_fase, id_competencia)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fase_resultado (
+      id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
+      id_resultado INTEGER NOT NULL REFERENCES resultados_aprendizaje(id_resultado) ON DELETE CASCADE,
+      PRIMARY KEY (id_fase, id_resultado)
+    );
+  `);
+
+  await pool.query(`
+    INSERT INTO fase_competencia (id_fase, id_competencia)
+    SELECT c.id_fase, c.id_competencia
+    FROM competencia c
+    WHERE c.id_fase IS NOT NULL
+    ON CONFLICT DO NOTHING
+  `);
+
+  await pool.query(`
+    INSERT INTO fase_resultado (id_fase, id_resultado)
+    SELECT c.id_fase, r.id_resultado
+    FROM competencia c
+    JOIN resultados_aprendizaje r ON r.id_competencia = c.id_competencia
+    WHERE c.id_fase IS NOT NULL
+    ON CONFLICT DO NOTHING
+  `);
 }
 
 function buildLogFileName(fileName: string) {
@@ -353,13 +386,18 @@ app.post('/api/competencies/:id/assign', async (req, res) => {
 
 app.post('/api/competencies/:id/unassign', async (req, res) => {
   const competencyId = Number(req.params.id);
+  const { phaseId } = req.body;
   if (!competencyId) {
     res.status(400).json({ error: 'ID de competencia no valido.' });
     return;
   }
+  if (!Number.isInteger(Number(phaseId)) || Number(phaseId) <= 0) {
+    res.status(400).json({ error: 'ID de fase no valido.' });
+    return;
+  }
 
   try {
-    const success = await unassignCompetency(pool, competencyId);
+    const success = await unassignCompetency(pool, competencyId, Number(phaseId));
     if (success) {
       res.json({ message: 'Competencia desasignada correctamente.' });
     } else {
