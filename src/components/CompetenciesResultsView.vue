@@ -520,7 +520,7 @@ onMounted(() => {
 
 <template>
   <main class="grid w-full min-w-0 gap-6 xl:grid-cols-[1fr_300px] items-start">
-    <div class="sticky top-[7.5rem] z-30 order-1 xl:order-2 self-start w-full min-w-0">
+    <div class="sticky top-[5rem] z-30 order-1 xl:order-2 self-start w-full min-w-0 max-h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar">
       <article class="rounded-2xl border border-slate-200/80 bg-slate-50/90 p-4 shadow-sm backdrop-blur">
         <!-- Header -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-200/70">

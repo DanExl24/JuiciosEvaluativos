@@ -10,131 +10,156 @@ Enum estado_formacion_enum {
   "cancelada"
 }
 
+Enum fase_nombre_enum {
+  ANALISIS
+  PLANEACION
+  EJECUCION
+  EVALUACION
+}
+
 Enum juicio_estado_enum {
-  "aprobado"
-  "desaprobado"
+  aprobado
+  desaprobado
   "por evaluar"
 }
 
 Enum modalidad_enum {
-  "presencial"
-  "virtual"
+  presencial
+  virtual
   "a distancia"
 }
 
-Enum fase_nombre_enum {
-  "ANALISIS"
-  "PLANEACION"
-  "EJECUCION"
-  "EVALUACION"
-}
+Table aprendiz {
+  id_aprendiz int [pk, increment]
+  documento varchar(20)
+  tipo_documento varchar(20)
+  nombres varchar(100)
+  apellidos varchar(100)
+  estado estado_aprendiz_enum
+  id_formacion int
 
-Table programa {
-  id_programa int [pk, increment]
-  nombre text [not null]
-  codigo varchar(50) [not null, unique]
-  version varchar(20) [not null]
-}
-
-Table proyecto_formativo {
-  id_proyecto int [pk, increment]
-  codigo_proyecto varchar(50) [not null, unique]
-  nombre text [not null]
-  tiempo_ejecucion varchar(100)
-  regional varchar(100)
-  centro_formacion varchar(200)
-  id_programa int [not null]
-}
-
-Table formacion {
-  id_formacion int [pk, increment]
-  ficha_caracterizacion varchar(100) [not null, unique]
-  estado estado_formacion_enum [not null]
-  modalidad modalidad_enum
-  id_programa int [not null]
-}
-
-Table fases {
-  id_fase int [pk, increment]
-  nombre fase_nombre_enum [not null]
-  actividad text [not null]
-  id_programa int [not null]
-
-  Indexes {
-    (nombre, id_programa) [unique]
+  indexes {
+    (documento, id_formacion) [unique]
   }
 }
 
 Table competencia {
   id_competencia int [pk, increment]
-  codigo varchar(50) [not null]
-  nombre text [not null]
-  id_programa int [not null]
+  codigo varchar(50)
+  nombre text
+  id_programa int
 
-  Indexes {
+  indexes {
     (codigo, id_programa) [unique]
   }
 }
 
-Table resultados_aprendizaje {
-  id_resultado int [pk, increment]
-  codigo varchar(50) [not null]
-  detalle text [not null]
-  id_competencia int [not null]
+Table fases {
+  id_fase int [pk, increment]
+  nombre fase_nombre_enum
+  actividad text
+  id_programa int
 
-  Indexes {
-    (codigo, id_competencia) [unique]
+  indexes {
+    (nombre, id_programa) [unique]
   }
 }
 
 Table fase_competencia {
-  id_fase int [pk]
-  id_competencia int [pk]
+  id_fase int
+  id_competencia int
+
+  indexes {
+    (id_fase, id_competencia) [pk]
+  }
 }
 
-Table aprendiz {
-  id_aprendiz int [pk, increment]
-  documento varchar(20) [not null]
-  tipo_documento varchar(20) [not null]
-  nombres varchar(100) [not null]
-  apellidos varchar(100) [not null]
-  estado estado_aprendiz_enum [not null]
-  id_formacion int
+Table fase_resultado {
+  id_fase int
+  id_resultado int
 
-  Indexes {
-    (documento, id_formacion) [unique]
+  indexes {
+    (id_fase, id_resultado) [pk]
   }
+}
+
+Table formacion {
+  id_formacion int [pk, increment]
+  ficha_caracterizacion varchar(100) [unique]
+  estado estado_formacion_enum
+  modalidad modalidad_enum
+  id_programa int
 }
 
 Table funcionario {
   id_funcionario int [pk, increment]
-  documento varchar(20) [not null, unique]
-  tipo_documento varchar(20) [not null]
-  nombre varchar(100) [not null]
-  apellido varchar(100) [not null]
+  documento varchar(20) [unique]
+  tipo_documento varchar(20)
+  nombre varchar(100)
+  apellido varchar(100)
 }
 
 Table juicios_evaluativos {
   id_juicio int [pk, increment]
-  id_resultado int [not null]
-  id_aprendiz int [not null]
-  estado juicio_estado_enum [not null, default: "por evaluar"]
+  id_resultado int
+  id_aprendiz int
+  estado juicio_estado_enum [default: "por evaluar"]
   fecha timestamp
   id_funcionario int
 
-  Indexes {
+  indexes {
     (id_resultado, id_aprendiz) [unique]
   }
 }
 
-Ref: proyecto_formativo.id_programa > programa.id_programa [delete: cascade, update: cascade]
-Ref: formacion.id_programa > programa.id_programa [delete: cascade, update: cascade]
-Ref: fases.id_programa > programa.id_programa [delete: cascade, update: cascade]
-Ref: competencia.id_programa > programa.id_programa [delete: cascade, update: cascade]
-Ref: resultados_aprendizaje.id_competencia > competencia.id_competencia [delete: cascade, update: cascade]
-Ref: fase_competencia.id_fase > fases.id_fase [delete: cascade]
-Ref: fase_competencia.id_competencia > competencia.id_competencia [delete: cascade]
-Ref: aprendiz.id_formacion > formacion.id_formacion [delete: set null, update: cascade]
-Ref: juicios_evaluativos.id_aprendiz > aprendiz.id_aprendiz [delete: cascade, update: cascade]
-Ref: juicios_evaluativos.id_resultado > resultados_aprendizaje.id_resultado [delete: cascade, update: cascade]
-Ref: juicios_evaluativos.id_funcionario > funcionario.id_funcionario [delete: set null, update: cascade]
+Table programa {
+  id_programa int [pk, increment]
+  nombre text
+  codigo varchar(50) [unique]
+  version varchar(20)
+}
+
+Table proyecto_formativo {
+  id_proyecto int [pk, increment]
+  codigo_proyecto varchar(50) [unique]
+  nombre text
+  tiempo_ejecucion varchar(100)
+  regional varchar(100)
+  centro_formacion varchar(200)
+  id_programa int [unique]
+}
+
+Table resultados_aprendizaje {
+  id_resultado int [pk, increment]
+  codigo varchar(50)
+  detalle text
+  id_competencia int
+
+  indexes {
+    (codigo, id_competencia) [unique]
+  }
+}
+
+/* RELACIONES */
+
+Ref: aprendiz.id_formacion > formacion.id_formacion
+
+Ref: competencia.id_programa > programa.id_programa
+
+Ref: fases.id_programa > programa.id_programa
+
+Ref: formacion.id_programa > programa.id_programa
+
+Ref: proyecto_formativo.id_programa > programa.id_programa
+
+Ref: resultados_aprendizaje.id_competencia > competencia.id_competencia
+
+Ref: fase_competencia.id_fase > fases.id_fase
+Ref: fase_competencia.id_competencia > competencia.id_competencia
+
+Ref: fase_resultado.id_fase > fases.id_fase
+Ref: fase_resultado.id_resultado > resultados_aprendizaje.id_resultado
+
+Ref: juicios_evaluativos.id_aprendiz > aprendiz.id_aprendiz
+Ref: juicios_evaluativos.id_resultado > resultados_aprendizaje.id_resultado
+Ref: juicios_evaluativos.id_funcionario > funcionario.id_funcionario

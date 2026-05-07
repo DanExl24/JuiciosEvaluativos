@@ -274,6 +274,16 @@ async function saveAssignChanges() {
   }
 }
 
+const phasesWithIssues = computed(() =>
+  phases.value.filter(p => !p.actividad || !(p.competencies && p.competencies.length > 0))
+)
+
+watch(phasesWithIssues, (issues) => {
+  if (issues.length > 0) {
+    console.warn('Algunas fases tienen datos incompletos:', issues.map(i => i.nombre).join(', '))
+  }
+}, { immediate: true })
+
 async function handleDeleteProject() {
   if (!confirm('¿Estás seguro de que deseas eliminar este proyecto formativo? Esta acción no se puede deshacer.')) return
   

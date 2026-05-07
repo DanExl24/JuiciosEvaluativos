@@ -49,40 +49,38 @@ onBeforeUnmount(() => {
 
 <template>
   <header ref="headerElement" class="fixed inset-x-0 top-0 z-40 border-b border-emerald-950/10 bg-white/88 backdrop-blur shadow-sm">
-    <div class="mx-auto flex w-full max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between py-3">
-        <div class="flex items-center gap-4">
-          <div>
-            <p class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-emerald-700 leading-none">Juicios Evaluativos</p>
-            <h1 class="text-sm font-black tracking-tight text-slate-900 mt-0.5">Seguimiento Académico</h1>
-          </div>
+    <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-6">
+        <div class="shrink-0 border-r border-slate-200 pr-6">
+          <p class="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-emerald-700 leading-none">Juicios Evaluativos</p>
+          <h1 class="text-sm font-black tracking-tight text-slate-900 mt-0.5">Seguimiento Académico</h1>
         </div>
 
-        <button
-          class="inline-flex items-center rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
-          type="button"
-          @click="emit('open-imports')"
-        >
-          Archivos importados
-        </button>
+        <nav class="flex space-x-1 overflow-x-auto no-scrollbar">
+          <button
+            v-for="view in views"
+            :key="view.id"
+            class="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition"
+            :class="
+              activeView === view.id
+                ? 'bg-emerald-50 text-emerald-800 border-b-2 border-emerald-500'
+                : 'text-slate-600 hover:bg-emerald-50/50 hover:text-emerald-700'
+            "
+            type="button"
+            @click="emit('navigate', view.id)"
+          >
+            {{ view.label }}
+          </button>
+        </nav>
       </div>
 
-      <nav class="flex space-x-1 overflow-x-auto border-t border-slate-100 py-2 no-scrollbar">
-        <button
-          v-for="view in views"
-          :key="view.id"
-          class="shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition"
-          :class="
-            activeView === view.id
-              ? 'bg-emerald-50 text-emerald-800 border-b-2 border-emerald-500'
-              : 'text-slate-600 hover:bg-emerald-50/50 hover:text-emerald-700'
-          "
-          type="button"
-          @click="emit('navigate', view.id)"
-        >
-          {{ view.label }}
-        </button>
-      </nav>
+      <button
+        class="inline-flex items-center rounded-xl bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 shrink-0"
+        type="button"
+        @click="emit('open-imports')"
+      >
+        Archivos importados
+      </button>
     </div>
   </header>
 </template>

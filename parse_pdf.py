@@ -83,22 +83,43 @@ def extract_project_data(pdf_path):
         # Extract metadata from full text
         def extract_value(pattern, text):
             match = re.search(pattern, text, re.IGNORECASE | re.MULTILINE)
-            return match.group(1).strip() if match else ""
+            if match:
+                val = match.group(1).strip()
+                # Normalize internal whitespace (convert newlines/tabs to single spaces)
+                return re.sub(r'\s+', ' ', val)
+            return ""
 
-        project_metadata["projectCode"] = extract_value(r'Cdigo\s+Proyecto\s+SOFIA:\s*(\d+)', full_text)
+        # Project Code
+        project_metadata["projectCode"] = extract_value(r'(?:1\.\d+\s+)?Cdigo\s+Proyecto\s+SOFIA:\s*(\d+)', full_text)
         if not project_metadata["projectCode"]:
-             project_metadata["projectCode"] = extract_value(r'Código\s+Proyecto\s+SOFIA:\s*(\d+)', full_text)
+             project_metadata["projectCode"] = extract_value(r'(?:1\.\d+\s+)?Código\s+Proyecto\s+SOFIA:\s*(\d+)', full_text)
              
-        project_metadata["programCode"] = extract_value(r'Cdigo\s+del\s+Programa\s+SOFIA:\s*(\d+)', full_text)
+        # Program Code
+        project_metadata["programCode"] = extract_value(r'(?:1\.\d+\s+)?Cdigo\s+del\s+Programa\s+SOFIA:\s*(\d+)', full_text)
         if not project_metadata["programCode"]:
-            project_metadata["programCode"] = extract_value(r'Código\s+del\s+Programa\s+SOFIA:\s*(\d+)', full_text)
+            project_metadata["programCode"] = extract_value(r'(?:1\.\d+\s+)?Código\s+del\s+Programa\s+SOFIA:\s*(\d+)', full_text)
 
-        project_metadata["projectName"] = extract_value(r'1\.3\s+Nombre\s+del\s+proyecto:\s*(.+?)\s*1\.4', full_text)
+        # Project Name
+        project_metadata["projectName"] = extract_value(r'1\.3\s+Nombre\s+del\s+proyecto:\s*([\s\S]+?)\s*(?:1\.4|Programa|$)', full_text)
+        if not project_metadata["projectName"]:
+            project_metadata["projectName"] = extract_value(r'Nombre\s+del\s+proyecto:\s*([\s\S]+?)\s*(?:1\.4|Programa|$)', full_text)
+
+        # Execution Time
         project_metadata["executionTime"] = extract_value(r'1\.5\s+Tiempo\s+estimado\s+de[\s\S]*?proyecto\s*\(meses\):\s*(\d+)', full_text)
-        project_metadata["regional"] = extract_value(r'1\.2\s+Regional:\s*(.+?)\s*1\.3', full_text)
-        project_metadata["center"] = extract_value(r'1\.1\s+Centro\s+de\s+Formacin:\s*(.+?)\s*1\.2', full_text)
+        if not project_metadata["executionTime"]:
+            project_metadata["executionTime"] = extract_value(r'Tiempo\s+estimado\s+de[\s\S]*?proyecto\s*\(meses\):\s*(\d+)', full_text)
+
+        # Regional
+        project_metadata["regional"] = extract_value(r'1\.2\s+Regional:\s*([\s\S]+?)\s*(?:1\.3|Nombre|$)', full_text)
+        if not project_metadata["regional"]:
+            project_metadata["regional"] = extract_value(r'Regional:\s*([\s\S]+?)\s*(?:1\.3|Nombre|$)', full_text)
+
+        # Center
+        project_metadata["center"] = extract_value(r'1\.1\s+Centro\s+de\s+Formacin:\s*([\s\S]+?)\s*(?:1\.2|Regional|$)', full_text)
         if not project_metadata["center"]:
-             project_metadata["center"] = extract_value(r'1\.1\s+Centro\s+de\s+Formación:\s*(.+?)\s*1\.2', full_text)
+             project_metadata["center"] = extract_value(r'1\.1\s+Centro\s+de\s+Formación:\s*([\s\S]+?)\s*(?:1\.2|Regional|$)', full_text)
+        if not project_metadata["center"]:
+             project_metadata["center"] = extract_value(r'Centro\s+de\s+Formación:\s*([\s\S]+?)\s*(?:1\.2|Regional|$)', full_text)
 
     # Convert sets to lists
     final_phases = []

@@ -129,7 +129,7 @@ onMounted(() => {
       :project-id="activeProject.id_proyecto"
       :project-code="activeProject.codigo_proyecto"
       :project-name="activeProject.proyecto_nombre"
-      @close="activeProject = null"
+      @close="activeProject = null; fetchProjects()"
     />
   </div>
   

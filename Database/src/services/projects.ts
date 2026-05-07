@@ -318,7 +318,7 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
       WHERE fc.id_fase = $1
     `, [phase.id_fase]);
 
-    phase.competencies = compsRes.rows;
+    phase.competencies = compsRes.rows || [];
 
     // Get results for competencies
     for (const comp of phase.competencies) {
