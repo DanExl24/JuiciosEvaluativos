@@ -469,6 +469,10 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
 
   const phasesRes = await pool.query('SELECT id_fase, nombre FROM fases WHERE id_programa = $1 ORDER BY id_fase ASC', [idPrograma]);
   const phases = phasesRes.rows;
+  const orderedPhaseIds = phases.map((phase) => Number(phase.id_fase));
+  const phaseIndexById = new Map<number, number>(
+    orderedPhaseIds.map((phaseId, index) => [phaseId, index]),
+  );
 
   const activeProgressRes = await pool.query(`
     WITH phase_expected_results AS (
@@ -531,18 +535,17 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
 
   const referenceDatesRes = await pool.query(`
     SELECT
-      fc.id_fase,
+      fr.id_fase,
       MAX(je.fecha) AS reference_date
     FROM juicios_evaluativos je
     JOIN resultados_aprendizaje ra ON je.id_resultado = ra.id_resultado
-    JOIN competencia c ON ra.id_competencia = c.id_competencia
-    JOIN fase_competencia fc ON fc.id_competencia = c.id_competencia
+    JOIN fase_resultado fr ON fr.id_resultado = ra.id_resultado
     JOIN aprendiz a ON je.id_aprendiz = a.id_aprendiz
     JOIN formacion f ON a.id_formacion = f.id_formacion
     WHERE f.id_programa = $1
       AND a.estado = 'en formacion'
       AND ($2::int IS NULL OR a.id_formacion = $2)
-    GROUP BY fc.id_fase
+    GROUP BY fr.id_fase
   `, [idPrograma, fichaId || null]);
 
   const referenceDateByPhase = new Map<number, Date | null>(
@@ -562,7 +565,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
       -- Obtenemos el ultimo juicio de cada aprendiz
       SELECT DISTINCT ON (je.id_aprendiz)
         je.id_aprendiz,
-        fr.id_fase,
+        je.id_resultado,
         je.fecha AS ultima_fecha,
         je.estado AS ultimo_juicio_estado,
         ra.codigo AS resultado_codigo,
@@ -572,7 +575,6 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
       FROM juicios_evaluativos je
       JOIN resultados_aprendizaje ra ON je.id_resultado = ra.id_resultado
       JOIN competencia c ON ra.id_competencia = c.id_competencia
-      JOIN fase_resultado fr ON fr.id_resultado = je.id_resultado
       JOIN retired_learners rl ON rl.id_aprendiz = je.id_aprendiz
       WHERE (je.estado <> 'por evaluar' OR je.fecha IS NOT NULL)
       ORDER BY je.id_aprendiz, je.fecha DESC NULLS LAST, je.id_juicio DESC
@@ -585,26 +587,68 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
       rl.estado,
       lj.ultima_fecha,
       lj.ultimo_juicio_estado,
+      lj.id_resultado,
       lj.resultado_codigo,
       lj.resultado_detalle,
-      lj.id_fase,
       lj.competencia_codigo,
       lj.competencia_nombre
     FROM retired_learners rl
     JOIN latest_judgement lj ON lj.id_aprendiz = rl.id_aprendiz
   `, [idPrograma, fichaId || null]);
 
+  const retiredResultPhaseRes = await pool.query<{
+    id_resultado: number;
+    id_fase: number;
+  }>(`
+    SELECT fr.id_resultado, fr.id_fase
+    FROM fase_resultado fr
+    JOIN fases fase ON fase.id_fase = fr.id_fase
+    WHERE fase.id_programa = $1
+    ORDER BY fr.id_resultado, fr.id_fase
+  `, [idPrograma]);
+
+  const phaseIdsByResultId = new Map<number, number[]>();
+  for (const row of retiredResultPhaseRes.rows) {
+    const resultId = Number(row.id_resultado);
+    const phaseId = Number(row.id_fase);
+    const current = phaseIdsByResultId.get(resultId) ?? [];
+    current.push(phaseId);
+    phaseIdsByResultId.set(resultId, current);
+  }
+
   const desertedLearnersByPhase = new Map<number, any[]>();
 
   for (const row of desertedRes.rows) {
-    const phaseId = Number(row.id_fase);
-    // Si el aprendiz desertor tiene un juicio en esta fase, lo incluimos
-    // Eliminamos el filtro de referenceTime que era demasiado restrictivo
-    if (row.ultima_fecha === null && row.ultimo_juicio_estado === 'por evaluar') {
-      // Opcional: podrías decidir si mostrar desertores que nunca tuvieron actividad
+    const resultPhaseIds = phaseIdsByResultId.get(Number(row.id_resultado)) ?? [];
+    const basePhaseId = resultPhaseIds.find((phaseId) => phaseIndexById.has(phaseId));
+
+    if (basePhaseId === undefined) {
+      continue;
     }
 
-    const learners = desertedLearnersByPhase.get(phaseId) ?? [];
+    let assignedPhaseId = basePhaseId;
+    const basePhaseIndex = phaseIndexById.get(basePhaseId) ?? 0;
+
+    if (row.ultima_fecha !== null) {
+      const learnerLastDate = new Date(row.ultima_fecha);
+      for (let index = basePhaseIndex; index < orderedPhaseIds.length; index += 1) {
+        const candidatePhaseId = orderedPhaseIds[index];
+        if (candidatePhaseId === undefined) {
+          continue;
+        }
+        const referenceDate = referenceDateByPhase.get(candidatePhaseId);
+        if (referenceDate && referenceDate > learnerLastDate) {
+          assignedPhaseId = candidatePhaseId;
+          break;
+        }
+      }
+    }
+
+    if (row.ultima_fecha === null && row.ultimo_juicio_estado === 'por evaluar') {
+      // Conservamos la fase base cuando no hay fecha trazable del ultimo juicio.
+    }
+
+    const learners = desertedLearnersByPhase.get(assignedPhaseId) ?? [];
     learners.push({
       nombre: `${row.nombres} ${row.apellidos}`,
       documento: row.documento,
@@ -616,7 +660,7 @@ export async function getPhaseLearnerStats(pool: Pool, projectId: number, fichaI
       resultado_codigo: row.resultado_codigo,
       resultado_detalle: row.resultado_detalle,
     });
-    desertedLearnersByPhase.set(phaseId, learners);
+    desertedLearnersByPhase.set(assignedPhaseId, learners);
   }
 
   return phases.map((phase) => {
