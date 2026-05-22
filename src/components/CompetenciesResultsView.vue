@@ -643,7 +643,7 @@ onMounted(() => {
       </article>
     </div>
 
-    <div class="grid w-full min-w-0 gap-6 order-2 xl:order-1">
+    <div class="grid w-full min-w-0 gap-6 order-2 xl:order-1 xl:max-w-[calc(100vw-24rem)]">
       <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
         <article class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur">
           <p class="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Competencias de la ficha</p>
@@ -682,7 +682,7 @@ onMounted(() => {
       {{ learnerError }}
     </p>
 
-    <section v-if="learnerDetail" class="rounded-[2rem] border border-emerald-950/10 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+    <section v-if="learnerDetail" class="min-w-0 overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
       <div class="grid gap-4 border-b border-slate-200/80 px-6 py-5 xl:grid-cols-[1fr_auto] xl:px-7">
         <div>
           <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Detalle del aprendiz</span>
@@ -699,37 +699,41 @@ onMounted(() => {
       <!-- Competency Progress Bar Chart -->
       <div class="px-6 py-4 xl:px-7 border-b border-slate-100 bg-slate-50/30">
         <p class="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Progreso por competencia (%)</p>
-        <div class="h-64">
-          <Bar 
-            :data="{
-              labels: learnerDetail.competencies.map(c => c.code),
-              datasets: [{
-                label: 'Avance %',
-                data: learnerDetail.competencies.map(c => c.progress),
-                backgroundColor: learnerDetail.competencies.map(c => c.progress === 100 ? '#10b981' : '#0f172a'),
-                borderRadius: 8
-              }]
-            }"
-            :options="{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { 
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    afterLabel: (context) => {
-                      const comp = learnerDetail?.competencies[context.dataIndex];
-                      return comp ? comp.name : '';
+        <div class="overflow-x-auto">
+          <div class="h-64 min-w-[640px]">
+            <Bar 
+              :data="{
+                labels: learnerDetail.competencies.map(c => c.code),
+                datasets: [{
+                  label: 'Avance %',
+                  data: learnerDetail.competencies.map(c => c.progress),
+                  backgroundColor: learnerDetail.competencies.map(c => c.progress === 100 ? '#10b981' : '#0f172a'),
+                  borderRadius: 8,
+                  barThickness: 18,
+                  maxBarThickness: 18
+                }]
+              }"
+              :options="{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      afterLabel: (context) => {
+                        const comp = learnerDetail?.competencies[context.dataIndex];
+                        return comp ? comp.name : '';
+                      }
                     }
                   }
+                },
+                scales: {
+                  y: { beginAtZero: true, max: 100, ticks: { callback: (v) => `${v}%` } },
+                  x: { grid: { display: false } }
                 }
-              },
-              scales: {
-                y: { beginAtZero: true, max: 100, ticks: { callback: (v) => `${v}%` } },
-                x: { grid: { display: false } }
-              }
-            }"
-          />
+              }"
+            />
+          </div>
         </div>
       </div>
 
@@ -828,7 +832,7 @@ onMounted(() => {
       </div>
     </section>
 
-    <section v-else class="rounded-[2rem] border border-emerald-950/10 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+    <section v-else class="min-w-0 overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
       <div class="border-b border-slate-200/80 px-6 py-5 xl:px-7">
         <span class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700">Catalogo de la ficha</span>
         <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">

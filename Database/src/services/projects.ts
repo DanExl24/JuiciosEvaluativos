@@ -333,14 +333,14 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
             FROM juicios_evaluativos je
             JOIN aprendiz a ON je.id_aprendiz = a.id_aprendiz
             WHERE je.id_resultado = r.id_resultado AND je.estado = 'aprobado'
-              AND ($2::int IS NULL OR a.id_formacion = $2)
+              AND ($3::int IS NULL OR a.id_formacion = $3)
           ) as approved_count,
           (
             SELECT count(*)
             FROM aprendiz a
             JOIN formacion f ON a.id_formacion = f.id_formacion
             WHERE f.id_programa = (SELECT id_programa FROM competencia WHERE id_competencia = $1)
-              AND ($2::int IS NULL OR a.id_formacion = $2)
+              AND ($3::int IS NULL OR a.id_formacion = $3)
               AND (
                 a.estado = 'en formacion'
                 OR EXISTS (
@@ -350,8 +350,10 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
               )
           ) as total_count
         FROM resultados_aprendizaje r
+        JOIN fase_resultado fr ON fr.id_resultado = r.id_resultado
         WHERE r.id_competencia = $1
-      `, [comp.id_competencia, fichaId || null]);
+          AND fr.id_fase = $2
+      `, [comp.id_competencia, phase.id_fase, fichaId || null]);
 
       comp.learningOutcomes = resultsRes.rows.map((row: any) => {
         const approved = Number(row.approved_count);

@@ -4,13 +4,6 @@ import ProjectPhasesDetailView from './ProjectPhasesDetailView.vue'
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
-interface ProjectPhase {
-  name: string
-  activity: string
-  competencyCodes: string[]
-  resultCodes: string[]
-}
-
 interface ProjectData {
   id_proyecto: number
   codigo_proyecto: string

@@ -3,6 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue'
 import { Line } from 'vue-chartjs'
 import { 
   Chart as ChartJS, 
+  type ChartOptions,
   Title, 
   Tooltip, 
   Legend, 
@@ -194,13 +195,6 @@ function setGlobalFilter(filter: 'all' | 'approved' | 'pending') {
   }
 }
 
-function getPhaseStats(phase: PhaseDetail) {
-  const total = phase.competencies.length
-  const approved = phase.competencies.filter(c => c.isApproved).length
-  const pending = total - approved
-  return { total, approved, pending }
-}
-
 function getFilteredCompetencies(phase: PhaseDetail) {
   let filtered = phase.competencies
 
@@ -333,7 +327,7 @@ const desertionChartData = computed(() => ({
   }]
 }))
 
-const desertionChartOptions = computed(() => ({
+const desertionChartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -366,16 +360,16 @@ const desertionChartOptions = computed(() => ({
       ticks: { 
         precision: 0,
         stepSize: 1,
-        font: { size: 10, weight: '600' }, 
+        font: { size: 10, weight: 600 }, 
         color: '#64748b' 
       }
     },
     x: {
       grid: { display: false },
-      ticks: { font: { size: 10, weight: '700' }, color: '#94a3b8' }
+      ticks: { font: { size: 10, weight: 700 }, color: '#94a3b8' }
     }
   }
-}))
+}
 </script>
 
 <template>
@@ -541,7 +535,7 @@ const desertionChartOptions = computed(() => ({
               <div class="flex shrink-0 gap-2">
                 <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
                   <span class="text-lg font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
-                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-slate-400">Total Res.</span>
+                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-slate-400">Carga Esperada</span>
                 </div>
                 <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-center">
                   <span class="text-lg font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
@@ -553,6 +547,9 @@ const desertionChartOptions = computed(() => ({
                 </div>
               </div>
             </div>
+            <p class="mt-3 max-w-3xl text-[0.7rem] text-slate-500">
+              Esta vista resume la carga estructural de la fase usando solo los resultados ligados a esta fase en <span class="font-semibold text-slate-700">fase_resultado</span>, no todos los resultados de la competencia.
+            </p>
           </div>
           <div class="divide-y divide-slate-100">
             <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
@@ -630,6 +627,9 @@ const desertionChartOptions = computed(() => ({
         </div>
 
         <div class="grid grid-cols-1 gap-8">
+          <div class="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-5 py-4 text-sm text-indigo-900 shadow-sm">
+            Estas tarjetas muestran progreso de aprendices, no la estructura curricular de la fase. El total se calcula desde <span class="font-bold">fase_resultado</span>; los aprendices retirados o trasladados solo cuentan en la fase donde tuvieron actividad registrada.
+          </div>
           <div v-for="stat in learnerStats" :key="stat.id_fase" class="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
               <div>
@@ -639,15 +639,15 @@ const desertionChartOptions = computed(() => ({
               <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <div class="flex flex-col rounded-2xl bg-slate-50 p-3 text-center">
                   <p class="text-2xl font-black text-slate-700">{{ stat.expectedResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-slate-500">Total Resultados</p>
+                  <p class="text-[0.6rem] font-bold uppercase text-slate-500">Esperados en Aprendices</p>
                 </div>
                 <div class="flex flex-col rounded-2xl bg-emerald-50 p-3 text-center">
                   <p class="text-2xl font-black text-emerald-700">{{ stat.approvedResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-emerald-600">Res. Aprobados</p>
+                  <p class="text-[0.6rem] font-bold uppercase text-emerald-600">Aprobados</p>
                 </div>
                 <div class="flex flex-col rounded-2xl bg-amber-50 p-3 text-center">
                   <p class="text-2xl font-black text-amber-600">{{ stat.pendingResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-amber-600">Res. Pendientes</p>
+                  <p class="text-[0.6rem] font-bold uppercase text-amber-600">Pendientes</p>
                 </div>
                 <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-center">
                   <p class="text-2xl font-black text-rose-700">{{ stat.desertedCount }}</p>
