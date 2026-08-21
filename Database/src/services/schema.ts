@@ -242,15 +242,38 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
     }
   }
 
-  // Backfill fase_resultado.id_actividad if any are null
+  // Backfill fase_resultado.id_actividad smartly
   await pool.query(`
+    -- First, default single-activity phases to their only activity
     UPDATE fase_resultado fr
-    SET id_actividad = sub.first_act_id
+    SET id_actividad = sub.only_act_id
     FROM (
-      SELECT fa.id_fase, MIN(fa.id_actividad) as first_act_id
+      SELECT fa.id_fase, MIN(fa.id_actividad) as only_act_id
       FROM fase_actividad fa
       GROUP BY fa.id_fase
+      HAVING COUNT(fa.id_actividad) = 1
     ) sub
-    WHERE fr.id_fase = sub.id_fase AND fr.id_actividad IS NULL;
+    WHERE fr.id_fase = sub.id_fase;
+
+    -- Second, for multi-activity phases (like ANALISIS):
+    -- Assign Induccion to Actividad 1
+    UPDATE fase_resultado fr
+    SET id_actividad = act1.id_actividad
+    FROM fase_actividad act1, resultados_aprendizaje r, competencia c
+    WHERE fr.id_resultado = r.id_resultado
+      AND r.id_competencia = c.id_competencia
+      AND fr.id_fase = act1.id_fase 
+      AND (act1.numero = 1 OR act1.descripcion ILIKE '%INDUCCI%')
+      AND (c.nombre ILIKE '%INDUCCI%' OR c.codigo_juicio = '36182' OR c.codigo_proyecto = '240201530' OR c.codigo = '36182');
+
+    -- Assign non-induccion in multi-activity phases to Actividad 2
+    UPDATE fase_resultado fr
+    SET id_actividad = act2.id_actividad
+    FROM fase_actividad act2, resultados_aprendizaje r, competencia c
+    WHERE fr.id_resultado = r.id_resultado
+      AND r.id_competencia = c.id_competencia
+      AND fr.id_fase = act2.id_fase 
+      AND (act2.numero = 2 OR NOT (act2.numero = 1 OR act2.descripcion ILIKE '%INDUCCI%'))
+      AND NOT (c.nombre ILIKE '%INDUCCI%' OR c.codigo_juicio = '36182' OR c.codigo_proyecto = '240201530' OR c.codigo = '36182');
   `);
 }
