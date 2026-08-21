@@ -322,11 +322,18 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
 
   const idPrograma = projRes.rows[0].id_programa;
 
-  // Get phases
+  // Get phases ordered chronologically
   const phasesRes = await pool.query(`
     SELECT id_fase, nombre, actividad 
     FROM fases 
     WHERE id_programa = $1
+    ORDER BY CASE nombre
+      WHEN 'ANALISIS' THEN 1
+      WHEN 'PLANEACION' THEN 2
+      WHEN 'EJECUCION' THEN 3
+      WHEN 'EVALUACION' THEN 4
+      ELSE 5
+    END ASC
   `, [idPrograma]);
 
   const phases = phasesRes.rows;

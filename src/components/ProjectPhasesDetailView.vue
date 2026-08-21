@@ -157,9 +157,9 @@ async function fetchDetails() {
 
     const phaseOrder: Record<string, number> = {
       'ANALISIS': 1,
-      'EJECUCION': 2,
-      'EVALUACION': 3,
-      'PLANEACION': 4
+      'PLANEACION': 2,
+      'EJECUCION': 3,
+      'EVALUACION': 4
     }
 
     const sortPhases = (a: { nombre: string }, b: { nombre: string }) => {
@@ -247,6 +247,15 @@ const currentPhaseActivities = computed(() => {
   }
   return [currentPhase.value.actividad]
 })
+
+function getActivityNumber(act: string, idx: number): string | number {
+  const match = act.match(/^(\d+)/)
+  return match ? match[1] : (idx + 1)
+}
+
+function cleanActivityText(act: string): string {
+  return act.replace(/^\d+[\.\-\)]\s*/, '').trim()
+}
 
 async function saveAssignChanges() {
   if (!selectedCompToAssign.value) return
@@ -563,12 +572,14 @@ const desertionChartOptions: ChartOptions<'line'> = {
                   <div 
                     v-for="(act, idx) in currentPhaseActivities" 
                     :key="idx"
-                    class="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 text-xs text-slate-700 shadow-xs backdrop-blur-xs transition hover:border-slate-300 hover:shadow-sm"
+                    class="flex items-start gap-3 rounded-xl border border-slate-200/90 bg-white p-3 text-xs shadow-xs transition hover:border-slate-300 hover:shadow-sm"
                   >
-                    <div class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[0.6rem] font-bold text-emerald-800">
-                      {{ idx + 1 }}
-                    </div>
-                    <p class="leading-relaxed font-medium text-slate-800">{{ act }}</p>
+                    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-[0.7rem] font-bold text-emerald-700 border border-emerald-200">
+                      {{ getActivityNumber(act, idx) }}
+                    </span>
+                    <p class="leading-relaxed font-medium text-slate-800 text-xs">
+                      {{ cleanActivityText(act) }}
+                    </p>
                   </div>
                 </div>
                 <p v-else class="text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
