@@ -167,7 +167,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
     const activityIdMap = new Map<string, number>();
     for (const actText of activitiesToInsert) {
       const numMatch = actText.match(/^(\d+)/);
-      const numero = numMatch ? parseInt(numMatch[1], 10) : null;
+      const numero = numMatch && numMatch[1] ? parseInt(numMatch[1], 10) : null;
       const insRes = await client.query(`
         INSERT INTO fase_actividad (id_fase, numero, descripcion)
         VALUES ($1, $2, $3)
@@ -227,17 +227,17 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
 
   for (const phase of persistedPhases) {
     const actIdMap = (phase as any).activityIdMap as Map<string, number> || new Map();
-    const phaseMappings = phase.mappings || [];
+    const phaseMappings = (phase as any).mappings || [];
 
     if (phaseMappings.length > 0) {
       for (const m of phaseMappings) {
         let actId = actIdMap.get(m.activity) || null;
         if (!actId && m.activity) {
           const mNumMatch = m.activity.match(/^(\d+)/);
-          const mNum = mNumMatch ? parseInt(mNumMatch[1], 10) : null;
+          const mNum = mNumMatch && mNumMatch[1] ? parseInt(mNumMatch[1], 10) : null;
           for (const [actText, id] of actIdMap.entries()) {
             const numMatch = actText.match(/^(\d+)/);
-            const num = numMatch ? parseInt(numMatch[1], 10) : null;
+            const num = numMatch && numMatch[1] ? parseInt(numMatch[1], 10) : null;
             if (mNum !== null && mNum === num) {
               actId = id;
               break;
@@ -510,7 +510,7 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
           const numMatch = desc.match(/^(\d+)/);
           return {
             id_actividad: idx + 1,
-            numero: numMatch ? parseInt(numMatch[1], 10) : idx + 1,
+            numero: numMatch && numMatch[1] ? parseInt(numMatch[1], 10) : idx + 1,
             descripcion: desc,
             competencies: []
           };
@@ -658,7 +658,7 @@ export async function unassignCompetency(pool: Pool, competencyId: number, phase
   }
 }
 
-export async function deleteProject(pool: Pool, projectId: number) {
+export async function deleteProject(pool: Pool | PoolClient, projectId: number) {
   const result = await pool.query('DELETE FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   return (result.rowCount !== null && result.rowCount > 0);
 }

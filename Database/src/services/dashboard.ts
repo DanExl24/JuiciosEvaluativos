@@ -191,6 +191,8 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
   const learnerPendingCompetencies = new Map<number, Set<string>>();
   const competenciaMap = new Map<string, {
     code: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
     name: string;
     program: string;
     ficha: string;

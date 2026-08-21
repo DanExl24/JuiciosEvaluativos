@@ -105,8 +105,14 @@ export async function getLogs(_req: Request, res: Response): Promise<void> {
 }
 
 export async function getLogByFileName(req: Request, res: Response): Promise<void> {
+  const fileName = String(req.params.fileName || '');
+  if (!fileName) {
+    res.status(400).json({ error: 'Nombre de archivo invalido.' });
+    return;
+  }
+
   try {
-    const data = await readImportLog(req.params.fileName);
+    const data = await readImportLog(fileName);
     if (!data) {
       res.status(404).json({ error: 'Log no encontrado.' });
       return;

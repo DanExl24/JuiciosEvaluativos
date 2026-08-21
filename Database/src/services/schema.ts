@@ -233,7 +233,7 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
 
     for (const actText of actTexts) {
       const numMatch = actText.match(/^(\d+)/);
-      const numero = numMatch ? parseInt(numMatch[1], 10) : null;
+      const numero = numMatch && numMatch[1] ? parseInt(numMatch[1], 10) : null;
       await pool.query(`
         INSERT INTO fase_actividad (id_fase, numero, descripcion)
         VALUES ($1, $2, $3)

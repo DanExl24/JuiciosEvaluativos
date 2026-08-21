@@ -15,7 +15,8 @@ export async function getFormationCompetencies(req: Request, res: Response): Pro
 }
 
 export async function deleteFormation(req: Request, res: Response): Promise<void> {
-  const ficha = req.params.ficha?.trim();
+  const rawFicha = req.params.ficha;
+  const ficha = typeof rawFicha === 'string' ? rawFicha.trim() : (Array.isArray(rawFicha) ? rawFicha[0]?.trim() : '');
 
   if (!ficha) {
     res.status(400).json({ error: 'Debes indicar la ficha a eliminar.' });
