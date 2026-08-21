@@ -18,10 +18,12 @@ function openImportsModal() {
   />
 
   <main
-    class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pb-8 sm:px-6 lg:px-8"
+    class="mx-auto flex min-h-screen w-full max-w-7xl min-w-0 flex-col gap-6 px-4 pb-8 sm:px-6 lg:px-8"
     :style="{ paddingTop: `${headerHeight + 20}px` }"
   >
-    <router-view />
+    <div class="w-full min-w-0">
+      <router-view />
+    </div>
   </main>
 
   <ImportsHistoryModal

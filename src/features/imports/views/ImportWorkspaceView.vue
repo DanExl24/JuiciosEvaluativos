@@ -143,9 +143,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="grid gap-6">
+  <div class="grid w-full min-w-0 max-w-full gap-6">
     <!-- Header Section -->
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4 min-w-0">
       <div>
         <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
           <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -174,7 +174,7 @@ onMounted(() => {
     </div>
 
     <!-- Collapsible Ficha Management Drawer -->
-    <div v-if="showManageFichas" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition animate-in fade-in duration-150">
+    <div v-if="showManageFichas" class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition animate-in fade-in duration-150 min-w-0">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
           <h3 class="text-sm font-bold text-slate-900">Eliminación y Depuración de Fichas</h3>
@@ -215,10 +215,10 @@ onMounted(() => {
     </div>
 
     <!-- Main Workspace Container -->
-    <div class="grid gap-6">
+    <div class="grid w-full min-w-0 max-w-full gap-6">
       <!-- Upload Dropzone -->
       <div
-        class="relative flex min-h-[16rem] flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition duration-150"
+        class="relative flex min-h-[16rem] w-full min-w-0 flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition duration-150"
         :class="isDragActive ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-300 bg-white hover:border-emerald-500/60 shadow-xs'"
         @dragenter.prevent="isDragActive = true"
         @dragover.prevent="isDragActive = true"
@@ -262,14 +262,14 @@ onMounted(() => {
       </p>
 
       <!-- Summary & Preview Section -->
-      <div v-if="summary" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs animate-in fade-in duration-200">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5">
-          <div class="space-y-1">
+      <div v-if="summary" class="w-full min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs animate-in fade-in duration-200 overflow-hidden">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-5 min-w-0">
+          <div class="space-y-1 min-w-0">
             <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
               Listo para Importar
             </span>
-            <h3 class="text-lg font-bold text-slate-900">{{ summary.fileName }}</h3>
-            <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
+            <h3 class="text-lg font-bold text-slate-900 truncate">{{ summary.fileName }}</h3>
+            <div class="flex items-center gap-3 text-xs text-slate-500 font-medium flex-wrap">
               <span>{{ summary.rowCount }} aprendices</span>
               <span>·</span>
               <span>{{ summary.columnCount }} columnas</span>
@@ -278,7 +278,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2.5 shrink-0">
             <button
               class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
               type="button"
@@ -301,19 +301,19 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Preview Table -->
-        <div class="mt-5 overflow-x-auto rounded-xl border border-slate-200">
-          <table class="w-full border-collapse text-left text-xs">
+        <!-- Preview Table with Horizontal Scroll Containment -->
+        <div class="mt-5 w-full min-w-0 max-w-full overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full min-w-max border-collapse text-left text-xs">
             <thead>
               <tr class="bg-slate-50/80 text-slate-700">
-                <th v-for="col in columns.slice(0, 10)" :key="col" class="border-b border-slate-200 px-3.5 py-2.5 font-bold uppercase tracking-wider text-[0.65rem] text-slate-500">
+                <th v-for="col in columns.slice(0, 10)" :key="col" class="border-b border-slate-200 px-3.5 py-2.5 font-bold uppercase tracking-wider text-[0.65rem] text-slate-500 whitespace-nowrap">
                   {{ col }}
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-slate-600">
               <tr v-for="(row, idx) in rows.slice(0, 6)" :key="idx" class="hover:bg-slate-50/60 transition">
-                <td v-for="col in columns.slice(0, 10)" :key="col" class="max-w-xs truncate px-3.5 py-2.5">
+                <td v-for="col in columns.slice(0, 10)" :key="col" class="max-w-xs truncate px-3.5 py-2.5 whitespace-nowrap">
                   {{ row[col] || '-' }}
                 </td>
               </tr>
