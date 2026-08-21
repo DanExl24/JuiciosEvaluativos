@@ -68,6 +68,27 @@ const visibleFormationCompetencies = computed(() =>
   filterCatalog(catalogSearch.value, filters.value.juicio),
 )
 
+// Filtered list of general formation competencies with search and status filter
+const allFilteredFormationCompetencies = computed(() => {
+  const comps = visibleFormationCompetencies.value
+  return comps.filter((comp) => {
+    if (competencyStatusFilter.value === 'pending') {
+      return comp.progress < 100
+    }
+    if (competencyStatusFilter.value === 'completed') {
+      return comp.progress >= 100
+    }
+    return true
+  })
+})
+
+// Paginated general formation competencies
+const paginatedFormationCompetencies = computed(() => {
+  if (itemsPerPage.value === 0) return allFilteredFormationCompetencies.value
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return allFilteredFormationCompetencies.value.slice(start, start + itemsPerPage.value)
+})
+
 // Filtered list of learner competencies with search and status filter
 const allFilteredLearnerCompetencies = computed(() => {
   if (!learnerDetail.value) return []
@@ -124,13 +145,23 @@ const paginatedLearnerCompetencies = computed(() => {
   return allFilteredLearnerCompetencies.value.slice(start, start + itemsPerPage.value)
 })
 
+const currentTotalCount = computed(() => {
+  return selectedLearnerId.value
+    ? allFilteredLearnerCompetencies.value.length
+    : allFilteredFormationCompetencies.value.length
+})
+
 const totalPages = computed(() => {
-  if (itemsPerPage.value === 0 || !allFilteredLearnerCompetencies.value.length) return 1
-  return Math.ceil(allFilteredLearnerCompetencies.value.length / itemsPerPage.value)
+  if (itemsPerPage.value === 0 || !currentTotalCount.value) return 1
+  return Math.ceil(currentTotalCount.value / itemsPerPage.value)
 })
 
 function expandAllCompetencies() {
-  allFilteredLearnerCompetencies.value.forEach((comp) => {
+  const targetList = selectedLearnerId.value
+    ? allFilteredLearnerCompetencies.value
+    : allFilteredFormationCompetencies.value
+
+  targetList.forEach((comp) => {
     if (!expandedCompetencies.value.includes(comp.code)) {
       expandedCompetencies.value.push(comp.code)
     }
@@ -140,6 +171,10 @@ function expandAllCompetencies() {
 function collapseAllCompetencies() {
   expandedCompetencies.value = []
 }
+
+watch([catalogSearch, competencyStatusFilter, () => filters.value.juicio, itemsPerPage], () => {
+  currentPage.value = 1
+})
 
 function selectLearner(id: number | null) {
   selectedLearnerId.value = id
@@ -570,60 +605,171 @@ onMounted(() => {
         </div>
 
         <!-- MODE B: General Formation Catalog View -->
-        <div v-else class="space-y-3 animate-in fade-in duration-150">
-          <div
-            v-for="comp in visibleFormationCompetencies"
-            :key="comp.code"
-            class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
-          >
-            <button
-              class="flex w-full items-center justify-between p-3.5 text-left transition hover:bg-slate-50/60"
-              type="button"
-              @click="toggleCompetencyAccordion(comp.code)"
-            >
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Cód: {{ comp.codigo_juicio || comp.code }}</span>
-                  <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
-                    Proyecto: {{ comp.codigo_proyecto }}
-                  </span>
-                </div>
-                <h4 class="mt-1 text-xs font-bold text-slate-900">{{ comp.name }}</h4>
-                <p class="text-[0.7rem] text-slate-400 mt-0.5">Ficha {{ comp.ficha }} · {{ comp.program }}</p>
-              </div>
-              <div class="flex items-center gap-3 shrink-0">
-                <span class="text-xs text-slate-500">{{ comp.results.length }} RAPs</span>
-                <span class="text-xs font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
-              </div>
-            </button>
+        <div v-else class="space-y-4 animate-in fade-in duration-150">
+          <!-- Controls Bar: Status Filter + Expand/Collapse All + Page Indexing -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+            <!-- Filter by Status -->
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[0.65rem] font-bold uppercase text-slate-400 mr-1">Filtrar:</span>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'all' ? 'bg-slate-900 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                type="button"
+                @click="competencyStatusFilter = 'all'; currentPage = 1"
+              >
+                Todas ({{ visibleFormationCompetencies.length }})
+              </button>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'pending' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'"
+                type="button"
+                @click="competencyStatusFilter = 'pending'; currentPage = 1"
+              >
+                Con Pendientes
+              </button>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'"
+                type="button"
+                @click="competencyStatusFilter = 'completed'; currentPage = 1"
+              >
+                100% Completas
+              </button>
+            </div>
 
-            <!-- Results Grid inside Accordion -->
-            <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-3 bg-slate-50/40">
-              <div class="grid gap-2.5 sm:grid-cols-2">
-                <div
-                  v-for="res in comp.results"
-                  :key="res.code"
-                  class="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-2xs"
-                >
-                  <div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs font-bold text-slate-800">{{ res.codigo_juicio || res.code }}</span>
-                      <span class="text-xs font-bold text-emerald-600">{{ formatPercent(res.progress) }}</span>
-                    </div>
-                    <p class="mt-1 text-xs text-slate-600 line-clamp-2">{{ res.detail }}</p>
-                  </div>
-                  <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-[0.7rem] text-slate-500">
-                    <span>{{ res.approvedLearners }}/{{ res.totalLearners }} aprobados</span>
-                    <button
-                      class="font-semibold text-emerald-700 hover:underline"
-                      type="button"
-                      @click="openResultModal(comp, res)"
+            <!-- Quick Expand/Collapse and Items per page -->
+            <div class="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[0.7rem] font-semibold text-slate-600 hover:bg-white"
+                type="button"
+                @click="expandAllCompetencies"
+              >
+                Expandir Todas
+              </button>
+              <button
+                class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[0.7rem] font-semibold text-slate-600 hover:bg-white"
+                type="button"
+                @click="collapseAllCompetencies"
+              >
+                Colapsar Todas
+              </button>
+            </div>
+          </div>
+
+          <!-- Paginated Formation Competencies Cards -->
+          <div class="space-y-3">
+            <div
+              v-for="comp in paginatedFormationCompetencies"
+              :key="comp.code"
+              class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
+            >
+              <button
+                class="flex w-full items-center justify-between p-3.5 text-left transition hover:bg-slate-50/60"
+                type="button"
+                @click="toggleCompetencyAccordion(comp.code)"
+              >
+                <div class="pr-2">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Cód: {{ comp.codigo_juicio || comp.code }}</span>
+                    <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
+                      Proyecto: {{ comp.codigo_proyecto }}
+                    </span>
+                    <span
+                      v-if="comp.progress >= 100"
+                      class="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200"
                     >
-                      Ver aprendices →
-                    </button>
+                      Completada
+                    </span>
+                  </div>
+                  <h4 class="mt-1 text-xs font-bold text-slate-900 leading-snug">{{ comp.name }}</h4>
+                  <p class="text-[0.7rem] text-slate-400 mt-0.5">Ficha {{ comp.ficha }} · {{ comp.program }}</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="text-xs text-slate-500 font-medium">{{ comp.results.length }} RAPs</span>
+                  <span class="text-xs font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
+                  <svg
+                    class="h-4 w-4 text-slate-400 transition-transform"
+                    :class="expandedCompetencies.includes(comp.code) ? 'rotate-180' : ''"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </button>
+
+              <!-- Results Grid inside Accordion -->
+              <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-3 bg-slate-50/40">
+                <div class="grid gap-2.5 sm:grid-cols-2">
+                  <div
+                    v-for="res in comp.results"
+                    :key="res.code"
+                    class="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-2xs"
+                  >
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-800">{{ res.codigo_juicio || res.code }}</span>
+                        <span class="text-xs font-bold text-emerald-600">{{ formatPercent(res.progress) }}</span>
+                      </div>
+                      <p class="mt-1 text-xs text-slate-600 line-clamp-2">{{ res.detail }}</p>
+                    </div>
+                    <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-[0.7rem] text-slate-500">
+                      <span>{{ res.approvedLearners }}/{{ res.totalLearners }} aprobados</span>
+                      <button
+                        class="font-semibold text-emerald-700 hover:underline"
+                        type="button"
+                        @click="openResultModal(comp, res)"
+                      >
+                        Ver aprendices →
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div v-if="!allFilteredFormationCompetencies.length" class="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-xs text-slate-400">
+              No se encontraron competencias con el filtro seleccionado.
+            </div>
+          </div>
+
+          <!-- Pagination Bar for General Catalog -->
+          <div v-if="totalPages > 1" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs">
+            <span class="text-xs text-slate-500 font-medium">
+              Mostrando página <b class="text-slate-900">{{ currentPage }}</b> de <b class="text-slate-900">{{ totalPages }}</b> ({{ allFilteredFormationCompetencies.length }} competencias)
+            </span>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                :disabled="currentPage <= 1"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                type="button"
+                @click="currentPage--"
+              >
+                ← Anterior
+              </button>
+
+              <button
+                v-for="page in totalPages"
+                :key="page"
+                class="hidden sm:inline-block rounded-lg px-3 py-1.5 text-xs font-semibold transition"
+                :class="currentPage === page ? 'bg-emerald-600 text-white shadow-2xs' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'"
+                type="button"
+                @click="currentPage = page"
+              >
+                {{ page }}
+              </button>
+
+              <button
+                :disabled="currentPage >= totalPages"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                type="button"
+                @click="currentPage++"
+              >
+                Siguiente →
+              </button>
             </div>
           </div>
         </div>
