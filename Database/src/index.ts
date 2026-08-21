@@ -157,6 +157,16 @@ async function ensureSchemaCompatibility() {
     );
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fase_actividad (
+      id_actividad SERIAL PRIMARY KEY,
+      id_fase INTEGER NOT NULL REFERENCES fases(id_fase) ON DELETE CASCADE,
+      numero INTEGER,
+      descripcion TEXT NOT NULL,
+      CONSTRAINT uq_fase_actividad UNIQUE (id_fase, descripcion)
+    );
+  `);
+
   // Migrate legacy id_fase if column exists
   await pool.query(`
     DO $$

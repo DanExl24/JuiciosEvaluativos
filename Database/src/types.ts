@@ -30,6 +30,7 @@ export interface DashboardFilters {
 export interface ProjectPhase {
   name: string;
   activity: string;
+  activities?: string[];
   rawText: string;
   competencyCodes: string[];
   resultCodes: string[];

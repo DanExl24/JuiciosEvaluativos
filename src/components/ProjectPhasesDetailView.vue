@@ -47,10 +47,17 @@ interface Competency {
   learningOutcomes: LearningOutcome[]
 }
 
+interface ActivityDetail {
+  id_actividad?: number
+  numero?: number | null
+  descripcion: string
+}
+
 interface PhaseDetail {
   id_fase: number
   nombre: string
   actividad: string
+  actividades?: ActivityDetail[]
   competencies: Competency[]
 }
 
@@ -223,6 +230,22 @@ function toggleCompetency(id: number) {
 const currentPhase = computed(() => {
   if (typeof activePhaseId.value !== 'number') return null
   return phases.value.find(p => p.id_fase === activePhaseId.value) || null
+})
+
+const currentPhaseActivities = computed(() => {
+  if (!currentPhase.value) return []
+  if (currentPhase.value.actividades && currentPhase.value.actividades.length > 0) {
+    return currentPhase.value.actividades.map(a => a.descripcion)
+  }
+  if (!currentPhase.value.actividad) return []
+  // Fallback: split by newline or " / " if legacy data
+  if (currentPhase.value.actividad.includes('\n')) {
+    return currentPhase.value.actividad.split('\n').map(s => s.trim()).filter(Boolean)
+  }
+  if (currentPhase.value.actividad.includes(' / ')) {
+    return currentPhase.value.actividad.split(' / ').map(s => s.trim()).filter(Boolean)
+  }
+  return [currentPhase.value.actividad]
 })
 
 async function saveAssignChanges() {
@@ -528,9 +551,27 @@ const desertionChartOptions: ChartOptions<'line'> = {
       <div v-if="currentPhase" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div class="border-b border-slate-100 bg-slate-50 px-6 py-5">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div class="space-y-1.5 min-w-0">
-                <span class="inline-block rounded-md bg-slate-950 px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(currentPhase.nombre) }}</span>
-                <p class="max-w-2xl text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
+              <div class="space-y-2.5 min-w-0 max-w-3xl">
+                <div class="flex items-center gap-2">
+                  <span class="inline-block rounded-md bg-slate-950 px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(currentPhase.nombre) }}</span>
+                  <span v-if="currentPhaseActivities.length > 1" class="text-[0.65rem] font-semibold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-full">
+                    {{ currentPhaseActivities.length }} Actividades del proyecto
+                  </span>
+                </div>
+                
+                <div v-if="currentPhaseActivities.length > 0" class="space-y-2">
+                  <div 
+                    v-for="(act, idx) in currentPhaseActivities" 
+                    :key="idx"
+                    class="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 text-xs text-slate-700 shadow-xs backdrop-blur-xs transition hover:border-slate-300 hover:shadow-sm"
+                  >
+                    <div class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[0.6rem] font-bold text-emerald-800">
+                      {{ idx + 1 }}
+                    </div>
+                    <p class="leading-relaxed font-medium text-slate-800">{{ act }}</p>
+                  </div>
+                </div>
+                <p v-else class="text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
               </div>
               <div class="flex shrink-0 gap-2">
                 <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">

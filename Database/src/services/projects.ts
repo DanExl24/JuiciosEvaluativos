@@ -153,6 +153,23 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
       rawText: phase.rawText,
       activity: phase.activity,
     });
+
+    // Save structured activities to fase_actividad
+    await client.query('DELETE FROM fase_actividad WHERE id_fase = $1', [idFase]);
+    const activitiesToInsert = phase.activities && phase.activities.length > 0
+      ? phase.activities
+      : (phase.activity ? phase.activity.split('\n').map(a => a.trim()).filter(Boolean) : []);
+
+    for (const actText of activitiesToInsert) {
+      const numMatch = actText.match(/^(\d+)/);
+      const numero = numMatch ? parseInt(numMatch[1], 10) : null;
+      await client.query(`
+        INSERT INTO fase_actividad (id_fase, numero, descripcion)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id_fase, descripcion) DO UPDATE SET
+          numero = EXCLUDED.numero
+      `, [idFase, numero, actText]);
+    }
   }
 
   await client.query(`
@@ -314,8 +331,16 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
 
   const phases = phasesRes.rows;
 
-  // Get competencies for these phases
+  // Get competencies and activities for these phases
   for (const phase of phases) {
+    const actRes = await pool.query(`
+      SELECT id_actividad, numero, descripcion
+      FROM fase_actividad
+      WHERE id_fase = $1
+      ORDER BY COALESCE(numero, 999) ASC, id_actividad ASC
+    `, [phase.id_fase]);
+    phase.actividades = actRes.rows || [];
+
     const compsRes = await pool.query(`
       SELECT DISTINCT c.id_competencia, c.codigo, c.nombre
       FROM competencia c

@@ -176,6 +176,22 @@ def extract_project_data(pdf_path):
                 if section_3_ended:
                     break
 
+        def deduplicate_activities(act_list):
+            cleaned = []
+            for act in sorted(act_list, key=len, reverse=True):
+                act_clean = clean_spacing(act)
+                if not act_clean or len(act_clean) < 4:
+                    continue
+                if any(act_clean in longer for longer in cleaned):
+                    continue
+                cleaned.append(act_clean)
+            
+            def sort_key(s):
+                m = re.match(r'^(\d+)', s)
+                return int(m.group(1)) if m else 999
+                
+            return sorted(cleaned, key=sort_key)
+
         # Process extracted items for each phase
         final_phases = []
         for phase_name in ["ANALISIS", "PLANEACION", "EJECUCION", "EVALUACION"]:
@@ -202,13 +218,14 @@ def extract_project_data(pdf_path):
                 for c_code in comp_matches:
                     pdata['competencyCodes'].add(c_code)
 
-            # Build representative activity string
-            activity_str = " / ".join(sorted(list(act_set))) if act_set else ""
+            clean_acts = deduplicate_activities(list(act_set))
+            activity_str = "\n".join(clean_acts) if clean_acts else ""
 
             if pdata['resultCodes'] or pdata['competencyCodes']:
                 final_phases.append({
                     "name": phase_name,
                     "activity": activity_str,
+                    "activities": clean_acts,
                     "rawText": clean_spacing(" ".join(raw_texts)),
                     "competencyCodes": sorted(list(pdata['competencyCodes'])),
                     "resultCodes": sorted(list(pdata['resultCodes']))
