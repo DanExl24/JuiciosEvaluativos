@@ -30,7 +30,10 @@ const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 
 interface LearningOutcome {
   id_resultado: number
+  id_actividad?: number
   codigo: string
+  codigo_juicio?: string
+  codigo_proyecto?: string
   detalle: string
   approvedCount: number
   totalCount: number
@@ -40,6 +43,8 @@ interface LearningOutcome {
 interface Competency {
   id_competencia: number
   codigo: string
+  codigo_juicio?: string
+  codigo_proyecto?: string
   nombre: string
   approvedResults: number
   totalResults: number
@@ -51,6 +56,7 @@ interface ActivityDetail {
   id_actividad?: number
   numero?: number | null
   descripcion: string
+  competencies?: Competency[]
 }
 
 interface PhaseDetail {
@@ -64,6 +70,8 @@ interface PhaseDetail {
 interface UnassignedCompetency {
   id_competencia: number
   codigo: string
+  codigo_juicio?: string
+  codigo_proyecto?: string
   nombre: string
 }
 
@@ -202,21 +210,30 @@ function setGlobalFilter(filter: 'all' | 'approved' | 'pending') {
   }
 }
 
-function getFilteredCompetencies(phase: PhaseDetail) {
-  let filtered = phase.competencies
+function filterCompetenciesList(competencies: Competency[] | undefined, phaseId: number) {
+  let filtered = competencies || []
 
   if (!isEditMode.value) {
-    const filter = phaseFilters.value[phase.id_fase] || 'all'
+    const filter = phaseFilters.value[phaseId] || 'all'
     if (filter === 'approved') filtered = filtered.filter(c => c.isApproved)
     else if (filter === 'pending') filtered = filtered.filter(c => !c.isApproved)
   }
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase().trim()
-    filtered = filtered.filter(c => c.codigo.toLowerCase().includes(q) || c.nombre.toLowerCase().includes(q))
+    filtered = filtered.filter(c => 
+      (c.codigo && c.codigo.toLowerCase().includes(q)) || 
+      (c.codigo_juicio && c.codigo_juicio.toLowerCase().includes(q)) ||
+      (c.codigo_proyecto && c.codigo_proyecto.toLowerCase().includes(q)) ||
+      (c.nombre && c.nombre.toLowerCase().includes(q))
+    )
   }
 
   return filtered
+}
+
+function getFilteredCompetencies(phase: PhaseDetail) {
+  return filterCompetenciesList(phase.competencies, phase.id_fase)
 }
 
 function toggleCompetency(id: number) {
@@ -603,7 +620,100 @@ const desertionChartOptions: ChartOptions<'line'> = {
               Esta vista resume la carga estructural de la fase usando solo los resultados ligados a esta fase en <span class="font-semibold text-slate-700">fase_resultado</span>, no todos los resultados de la competencia.
             </p>
           </div>
-          <div class="divide-y divide-slate-100">
+
+          <!-- Hierarchical View: Activities -> Competencies -> Learning Outcomes -->
+          <div v-if="currentPhase.actividades && currentPhase.actividades.length > 0 && currentPhase.actividades.some(a => (a.competencies || []).length > 0)" class="p-6 space-y-6">
+            <div 
+              v-for="(act, aIdx) in currentPhase.actividades" 
+              :key="act.id_actividad || aIdx"
+              class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs"
+            >
+              <!-- Activity Header -->
+              <div class="border-b border-slate-100 bg-slate-50/80 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-start gap-3 min-w-0 flex-1">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xs font-black text-emerald-700 border border-emerald-200">
+                    {{ getActivityNumber(act.descripcion, aIdx) }}
+                  </span>
+                  <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-slate-900 leading-snug">
+                      {{ cleanActivityText(act.descripcion) }}
+                    </h4>
+                    <span class="text-[0.65rem] text-slate-500 font-medium">
+                      {{ (filterCompetenciesList(act.competencies, currentPhase.id_fase)).length }} Competencias
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Competencies inside this activity -->
+              <div class="divide-y divide-slate-100">
+                <div 
+                  v-for="comp in filterCompetenciesList(act.competencies, currentPhase.id_fase)" 
+                  :key="comp.id_competencia" 
+                  class="transition hover:bg-slate-50/60 relative"
+                >
+                  <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
+                    <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>
+                      Gestionar
+                    </button>
+                  </div>
+
+                  <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
+                    <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
+                      <svg class="h-4 w-4 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
+                          JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
+                        </span>
+                        <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+                          PROYECTO_FORMATIVO: {{ comp.codigo_proyecto }}
+                        </span>
+                        <span v-if="comp.isApproved" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                          <div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Aprobada
+                        </span>
+                        <span v-else class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[0.65rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
+                          <div class="h-1.5 w-1.5 rounded-full bg-amber-400"></div>
+                          {{ comp.approvedResults }}/{{ comp.totalResults }} Resultados
+                        </span>
+                      </div>
+                      <p class="mt-0.5 text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
+                    </div>
+                  </button>
+
+                  <div v-show="expandedCompetencies.has(comp.id_competencia)" class="pb-6 pl-16 pr-6 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <ul class="grid gap-2">
+                      <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
+                        <div class="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
+                          <svg v-if="res.isApproved" class="h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                          <div v-else class="text-[0.6rem] font-black text-amber-500">{{ Math.round((res.approvedCount / (res.totalCount || 1)) * 100) }}%</div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[0.6rem] font-bold text-slate-700">
+                              JUICIO_EVALUATIVO: {{ res.codigo_juicio || res.codigo }}
+                            </span>
+                            <span v-if="res.codigo_proyecto" class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[0.6rem] font-bold text-emerald-700 border border-emerald-200">
+                              PROYECTO_FORMATIVO: {{ res.codigo_proyecto }}
+                            </span>
+                            <span v-if="!res.isApproved && res.approvedCount > 0" class="text-[0.55rem] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                              {{ res.approvedCount }}/{{ res.totalCount }} Aprobados
+                            </span>
+                          </div>
+                          <p class="text-xs leading-relaxed text-slate-700 font-medium">{{ res.detalle }}</p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fallback Flat Competencies View -->
+          <div v-else class="divide-y divide-slate-100">
             <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
             <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
               <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>Gestionar</button>
@@ -611,8 +721,13 @@ const desertionChartOptions: ChartOptions<'line'> = {
             <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
               <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition"><svg class="h-4 w-4 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">{{ comp.codigo }}</span>
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
+                    JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
+                  </span>
+                  <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+                    PROYECTO_FORMATIVO: {{ comp.codigo_proyecto }}
+                  </span>
                   <span v-if="comp.isApproved" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
                     <div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Aprobada
                   </span>
@@ -625,18 +740,25 @@ const desertionChartOptions: ChartOptions<'line'> = {
               </div>
             </button>
             <div v-show="expandedCompetencies.has(comp.id_competencia)" class="pb-6 pl-16 pr-6 animate-in fade-in slide-in-from-top-1 duration-200">
-              <ul class="grid gap-1.5">
-                <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-2.5 rounded-lg border px-3 py-2 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-100 bg-emerald-50/60' : 'border-slate-200 bg-slate-50/50'">
+              <ul class="grid gap-2">
+                <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
                   <div class="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
-                    <svg v-if="res.isApproved" class="h-3.5 w-3.5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
+                    <svg v-if="res.isApproved" class="h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
                     <div v-else class="text-[0.6rem] font-black text-amber-500">{{ Math.round((res.approvedCount / (res.totalCount || 1)) * 100) }}%</div>
                   </div>
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                      <span class="text-[0.6rem] font-bold text-slate-400">{{ res.codigo }}</span>
-                      <span v-if="!res.isApproved && res.approvedCount > 0" class="text-[0.55rem] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">{{ res.approvedCount }}/{{ res.totalCount }}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap mb-1">
+                      <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[0.6rem] font-bold text-slate-700">
+                        JUICIO_EVALUATIVO: {{ res.codigo_juicio || res.codigo }}
+                      </span>
+                      <span v-if="res.codigo_proyecto" class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[0.6rem] font-bold text-emerald-700 border border-emerald-200">
+                        PROYECTO_FORMATIVO: {{ res.codigo_proyecto }}
+                      </span>
+                      <span v-if="!res.isApproved && res.approvedCount > 0" class="text-[0.55rem] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                        {{ res.approvedCount }}/{{ res.totalCount }} Aprobados
+                      </span>
                     </div>
-                    <p class="text-xs leading-5 text-slate-700">{{ res.detalle }}</p>
+                    <p class="text-xs leading-relaxed text-slate-700 font-medium">{{ res.detalle }}</p>
                   </div>
                 </li>
               </ul>

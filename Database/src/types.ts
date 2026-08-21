@@ -27,10 +27,19 @@ export interface DashboardFilters {
   aprendiz?: string;
 }
 
+export interface ProjectPhaseMapping {
+  activity: string;
+  competencyCode?: string;
+  competencyName?: string;
+  resultCode?: string;
+  resultName?: string;
+}
+
 export interface ProjectPhase {
   name: string;
   activity: string;
   activities?: string[];
+  mappings?: ProjectPhaseMapping[];
   rawText: string;
   competencyCodes: string[];
   resultCodes: string[];

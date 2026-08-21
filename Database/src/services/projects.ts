@@ -152,6 +152,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
       resultCodes: phase.resultCodes,
       rawText: phase.rawText,
       activity: phase.activity,
+      mappings: (phase as any).mappings
     });
 
     // Save structured activities to fase_actividad
@@ -160,16 +161,22 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
       ? phase.activities
       : (phase.activity ? phase.activity.split('\n').map(a => a.trim()).filter(Boolean) : []);
 
+    const activityIdMap = new Map<string, number>();
     for (const actText of activitiesToInsert) {
       const numMatch = actText.match(/^(\d+)/);
       const numero = numMatch ? parseInt(numMatch[1], 10) : null;
-      await client.query(`
+      const insRes = await client.query(`
         INSERT INTO fase_actividad (id_fase, numero, descripcion)
         VALUES ($1, $2, $3)
         ON CONFLICT (id_fase, descripcion) DO UPDATE SET
           numero = EXCLUDED.numero
+        RETURNING id_actividad
       `, [idFase, numero, actText]);
+      if (insRes.rows[0]) {
+        activityIdMap.set(actText, insRes.rows[0].id_actividad);
+      }
     }
+    (phase as any).activityIdMap = activityIdMap;
   }
 
   await client.query(`
@@ -191,13 +198,13 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   `, [idPrograma]);
 
   const compsRes = await client.query(`
-    SELECT c.id_competencia, c.codigo, c.nombre
+    SELECT c.id_competencia, c.codigo, c.codigo_juicio, c.codigo_proyecto, c.nombre
     FROM competencia c
     WHERE c.id_programa = $1
   `, [idPrograma]);
 
   const resultsRes = await client.query(`
-    SELECT r.id_resultado, r.codigo, r.detalle, r.id_competencia
+    SELECT r.id_resultado, r.codigo, r.codigo_juicio, r.codigo_proyecto, r.detalle, r.id_competencia
     FROM resultados_aprendizaje r
     JOIN competencia c ON r.id_competencia = c.id_competencia
     WHERE c.id_programa = $1
@@ -205,58 +212,103 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
 
   const resultByCode = new Map<string, Array<{ id_resultado: number; id_competencia: number }>>();
   for (const row of resultsRes.rows) {
-    const key = String(row.codigo);
-    const list = resultByCode.get(key) ?? [];
-    list.push({ id_resultado: row.id_resultado, id_competencia: row.id_competencia });
-    resultByCode.set(key, list);
+    const codes = [String(row.codigo), String(row.codigo_juicio), String(row.codigo_proyecto)].filter(Boolean);
+    for (const key of codes) {
+      const list = resultByCode.get(key) ?? [];
+      list.push({ id_resultado: row.id_resultado, id_competencia: row.id_competencia });
+      resultByCode.set(key, list);
+    }
   }
 
   const linkedCompetencies = new Set<number>();
 
   for (const phase of persistedPhases) {
-    for (const resultCode of phase.resultCodes) {
-      const linkedResults = resultByCode.get(resultCode) ?? [];
-      for (const linkedResult of linkedResults) {
-        // Link Result to Phase (Explicitly like before)
-        await client.query(`
-          INSERT INTO fase_resultado (id_fase, id_resultado)
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING
-        `, [phase.id_fase, linkedResult.id_resultado]);
+    const actIdMap = (phase as any).activityIdMap as Map<string, number> || new Map();
+    const phaseMappings = phase.mappings || [];
 
-        // Link Competency to Phase
-        const compRes = await client.query(`
-          INSERT INTO fase_competencia (id_fase, id_competencia)
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING
-          RETURNING id_competencia
-        `, [phase.id_fase, linkedResult.id_competencia]);
-        
-        if ((compRes.rowCount ?? 0) > 0) {
-          competenciesUpdated += 1;
+    if (phaseMappings.length > 0) {
+      for (const m of phaseMappings) {
+        const actId = actIdMap.get(m.activity) || (actIdMap.values().next().value ?? null);
+        const resCode = m.resultCode ? String(m.resultCode) : '';
+        const compCode = m.competencyCode ? String(m.competencyCode) : '';
+
+        const linkedResults = resCode ? (resultByCode.get(resCode) ?? []) : [];
+        for (const linkedResult of linkedResults) {
+          await client.query(`
+            INSERT INTO fase_resultado (id_fase, id_resultado, id_actividad)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (id_fase, id_resultado) DO UPDATE SET
+              id_actividad = COALESCE(EXCLUDED.id_actividad, fase_resultado.id_actividad)
+          `, [phase.id_fase, linkedResult.id_resultado, actId]);
+
+          if (resCode) {
+            await client.query(`
+              UPDATE resultados_aprendizaje
+              SET codigo_proyecto = $1
+              WHERE id_resultado = $2 AND (codigo_proyecto IS NULL OR codigo_proyecto = '')
+            `, [resCode, linkedResult.id_resultado]);
+          }
+
+          const compRes = await client.query(`
+            INSERT INTO fase_competencia (id_fase, id_competencia)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+            RETURNING id_competencia
+          `, [phase.id_fase, linkedResult.id_competencia]);
+
+          if (compCode) {
+            await client.query(`
+              UPDATE competencia
+              SET codigo_proyecto = $1
+              WHERE id_competencia = $2 AND (codigo_proyecto IS NULL OR codigo_proyecto = '')
+            `, [compCode, linkedResult.id_competencia]);
+          }
+
+          if ((compRes.rowCount ?? 0) > 0) {
+            competenciesUpdated += 1;
+          }
+          linkedCompetencies.add(linkedResult.id_competencia);
         }
-        linkedCompetencies.add(linkedResult.id_competencia);
+      }
+    } else {
+      for (const resultCode of phase.resultCodes) {
+        const linkedResults = resultByCode.get(resultCode) ?? [];
+        for (const linkedResult of linkedResults) {
+          const firstActId = actIdMap.values().next().value ?? null;
+          await client.query(`
+            INSERT INTO fase_resultado (id_fase, id_resultado, id_actividad)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (id_fase, id_resultado) DO UPDATE SET
+              id_actividad = COALESCE(EXCLUDED.id_actividad, fase_resultado.id_actividad)
+          `, [phase.id_fase, linkedResult.id_resultado, firstActId]);
+
+          const compRes = await client.query(`
+            INSERT INTO fase_competencia (id_fase, id_competencia)
+            VALUES ($1, $2)
+            ON CONFLICT DO NOTHING
+            RETURNING id_competencia
+          `, [phase.id_fase, linkedResult.id_competencia]);
+          
+          if ((compRes.rowCount ?? 0) > 0) {
+            competenciesUpdated += 1;
+          }
+          linkedCompetencies.add(linkedResult.id_competencia);
+        }
       }
     }
   }
 
-  // Only use heuristic matching for competencies that have NOT been linked to any phase yet
   for (const comp of compsRes.rows) {
-    if (linkedCompetencies.has(comp.id_competencia)) {
-      continue;
-    }
+    if (linkedCompetencies.has(comp.id_competencia)) continue;
 
     const matchingPhases: number[] = [];
-
     for (const phase of persistedPhases) {
-      const score = scoreCompetencyAgainstPhase(comp, phase);
-      if (score > 0) {
+      if (scoreCompetencyAgainstPhase(comp, phase) > 0) {
         matchingPhases.push(phase.id_fase);
       }
     }
 
     const distinctPhaseIds = [...new Set(matchingPhases)];
-
     for (const phaseId of distinctPhaseIds) {
       const compRes = await client.query(`
         INSERT INTO fase_competencia (id_fase, id_competencia)
@@ -268,8 +320,6 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
       if ((compRes.rowCount ?? 0) > 0) {
         competenciesUpdated += 1;
       }
-
-      // Also link results of this matched competency to this phase if not linked elsewhere
       const compResults = resultsRes.rows.filter(r => r.id_competencia === comp.id_competencia);
       for (const r of compResults) {
         await client.query(`
@@ -279,13 +329,13 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
         `, [phaseId, r.id_resultado]);
       }
     }
-
-    if (distinctPhaseIds.length > 0) {
-      linkedCompetencies.add(comp.id_competencia);
-    }
   }
 
-  return { idProyecto, phasesInserted, competenciesUpdated };
+  return {
+    projectId: idProyecto,
+    phasesCount: persistedPhases.length,
+    competenciesUpdated,
+  };
 }
 
 export async function getProjects(pool: Pool) {
@@ -315,14 +365,27 @@ export async function getFichasByProject(pool: Pool, projectId: number) {
   return fichasRes.rows;
 }
 
+export async function getProjectFichas(pool: Pool, projectId: number) {
+  const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
+  if (projRes.rowCount === 0) return [];
+  const idPrograma = projRes.rows[0].id_programa;
+
+  const fichasRes = await pool.query(`
+    SELECT f.id_formacion, f.codigo_ficha, f.nombre, f.estado, f.modalidad
+    FROM formacion f
+    WHERE f.id_programa = $1
+    ORDER BY f.codigo_ficha ASC
+  `, [idPrograma]);
+
+  return fichasRes.rows;
+}
+
 export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: number) {
-  // First get program ID from project
   const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   if (projRes.rowCount === 0) return null;
 
   const idPrograma = projRes.rows[0].id_programa;
 
-  // Get phases ordered chronologically
   const phasesRes = await pool.query(`
     SELECT id_fase, nombre, actividad 
     FROM fases 
@@ -338,7 +401,6 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
 
   const phases = phasesRes.rows;
 
-  // Get competencies and activities for these phases
   for (const phase of phases) {
     const actRes = await pool.query(`
       SELECT id_actividad, numero, descripcion
@@ -349,22 +411,29 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
     phase.actividades = actRes.rows || [];
 
     const compsRes = await pool.query(`
-      SELECT DISTINCT c.id_competencia, c.codigo, c.nombre
+      SELECT DISTINCT 
+        c.id_competencia, 
+        c.codigo, 
+        c.codigo_juicio, 
+        c.codigo_proyecto, 
+        c.nombre
       FROM competencia c
       JOIN fase_competencia fc ON fc.id_competencia = c.id_competencia
       WHERE fc.id_fase = $1
+      ORDER BY c.id_competencia ASC
     `, [phase.id_fase]);
 
     phase.competencies = compsRes.rows || [];
 
-    // Get results for competencies
     for (const comp of phase.competencies) {
-      // Get results for this competency and phase, with their approval counts
       const resultsRes = await pool.query(`
         SELECT 
           r.id_resultado, 
           r.codigo, 
+          r.codigo_juicio, 
+          r.codigo_proyecto, 
           r.detalle,
+          fr.id_actividad,
           (
             SELECT count(*)
             FROM juicios_evaluativos je
@@ -390,6 +459,7 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
         JOIN fase_resultado fr ON fr.id_resultado = r.id_resultado
         WHERE r.id_competencia = $1
           AND fr.id_fase = $2
+        ORDER BY r.id_resultado ASC
       `, [comp.id_competencia, phase.id_fase, fichaId || null]);
 
       comp.learningOutcomes = resultsRes.rows.map((row: any) => {
@@ -397,7 +467,10 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
         const total = Number(row.total_count);
         return {
           id_resultado: row.id_resultado,
-          codigo: row.codigo,
+          id_actividad: row.id_actividad,
+          codigo: row.codigo_proyecto || row.codigo_juicio || row.codigo,
+          codigo_juicio: row.codigo_juicio || row.codigo,
+          codigo_proyecto: row.codigo_proyecto || null,
           detalle: row.detalle,
           approvedCount: approved,
           totalCount: total,
@@ -405,10 +478,36 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
         };
       });
 
-      // Stats for the competency
       comp.totalResults = comp.learningOutcomes.reduce((acc: number, r: any) => acc + r.totalCount, 0);
       comp.approvedResults = comp.learningOutcomes.reduce((acc: number, r: any) => acc + r.approvedCount, 0);
       comp.isApproved = comp.totalResults > 0 && comp.approvedResults === comp.totalResults;
+    }
+
+    for (const act of phase.actividades) {
+      const actCompetenciesMap = new Map<number, any>();
+      for (const comp of phase.competencies) {
+        const matchingOutcomes = comp.learningOutcomes.filter((out: any) => out.id_actividad === act.id_actividad);
+        if (matchingOutcomes.length > 0) {
+          const totalRes = matchingOutcomes.reduce((acc: number, r: any) => acc + r.totalCount, 0);
+          const approvedRes = matchingOutcomes.reduce((acc: number, r: any) => acc + r.approvedCount, 0);
+          actCompetenciesMap.set(comp.id_competencia, {
+            id_competencia: comp.id_competencia,
+            codigo: comp.codigo,
+            codigo_juicio: comp.codigo_juicio || comp.codigo,
+            codigo_proyecto: comp.codigo_proyecto || null,
+            nombre: comp.nombre,
+            learningOutcomes: matchingOutcomes,
+            totalResults: totalRes,
+            approvedResults: approvedRes,
+            isApproved: totalRes > 0 && approvedRes === totalRes
+          });
+        }
+      }
+      if (actCompetenciesMap.size === 0 && phase.actividades.length === 1) {
+        act.competencies = phase.competencies;
+      } else {
+        act.competencies = Array.from(actCompetenciesMap.values());
+      }
     }
   }
 
@@ -416,14 +515,13 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
 }
 
 export async function getUnassignedCompetencies(pool: Pool, projectId: number) {
-  // Get program ID
   const projRes = await pool.query('SELECT id_programa FROM proyecto_formativo WHERE id_proyecto = $1', [projectId]);
   if (projRes.rowCount === 0) return [];
   const idPrograma = projRes.rows[0].id_programa;
 
   // Get competencies for this program where id_fase is null
   const compsRes = await pool.query(`
-    SELECT c.id_competencia, c.codigo, c.nombre
+    SELECT c.id_competencia, c.codigo, c.codigo_juicio, c.codigo_proyecto, c.nombre
     FROM competencia c
     WHERE c.id_programa = $1
       AND NOT EXISTS (

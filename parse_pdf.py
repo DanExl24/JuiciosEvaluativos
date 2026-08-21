@@ -176,21 +176,31 @@ def extract_project_data(pdf_path):
                 if section_3_ended:
                     break
 
+        def get_act_num(s):
+            m = re.match(r'^(\d+)', clean_spacing(s))
+            return int(m.group(1)) if m else None
+
         def deduplicate_activities(act_list):
-            cleaned = []
+            canonical_acts = []
             for act in sorted(act_list, key=len, reverse=True):
                 act_clean = clean_spacing(act)
                 if not act_clean or len(act_clean) < 4:
                     continue
-                if any(act_clean in longer for longer in cleaned):
-                    continue
-                cleaned.append(act_clean)
-            
+                act_num = get_act_num(act_clean)
+                is_sub = False
+                for longer in canonical_acts:
+                    longer_num = get_act_num(longer)
+                    if (act_num is None or act_num == longer_num) and act_clean in longer:
+                        is_sub = True
+                        break
+                if not is_sub:
+                    canonical_acts.append(act_clean)
+
             def sort_key(s):
-                m = re.match(r'^(\d+)', s)
-                return int(m.group(1)) if m else 999
+                n = get_act_num(s)
+                return n if n is not None else 999
                 
-            return sorted(cleaned, key=sort_key)
+            return sorted(canonical_acts, key=sort_key)
 
         # Process extracted items for each phase
         final_phases = []
@@ -198,6 +208,7 @@ def extract_project_data(pdf_path):
             pdata = phases_dict[phase_name]
             act_set = set()
             raw_texts = []
+            mappings = []
 
             for item in pdata['items']:
                 act = item['activity_raw']
@@ -209,23 +220,61 @@ def extract_project_data(pdf_path):
                 raw_texts.append(f"{act} {res_raw} {comp_raw}")
 
                 # Extract 6-digit result codes
-                res_matches = re.findall(r'\b(\d{6})\b', res_raw)
-                for r_code in res_matches:
-                    pdata['resultCodes'].add(r_code)
+                res_code = ""
+                res_desc = res_raw
+                res_m = re.search(r'(\d{6})\s*[-:]?\s*(.*)', res_raw)
+                if res_m:
+                    res_code = res_m.group(1).strip()
+                    res_desc = res_m.group(2).strip()
+                    pdata['resultCodes'].add(res_code)
+                else:
+                    res_matches = re.findall(r'\b(\d{6})\b', res_raw)
+                    for r_code in res_matches:
+                        res_code = r_code
+                        pdata['resultCodes'].add(r_code)
 
                 # Extract competency codes
-                comp_matches = re.findall(r'\b(\d{6,9})\b', comp_raw)
-                for c_code in comp_matches:
-                    pdata['competencyCodes'].add(c_code)
+                comp_code = ""
+                comp_name = comp_raw
+                comp_m = re.search(r'(\d{6,9})\s*[-:]?\s*(.*)', comp_raw)
+                if comp_m:
+                    comp_code = comp_m.group(1).strip()
+                    comp_name = comp_m.group(2).strip()
+                    pdata['competencyCodes'].add(comp_code)
+                else:
+                    comp_matches = re.findall(r'\b(\d{6,9})\b', comp_raw)
+                    for c_code in comp_matches:
+                        comp_code = c_code
+                        pdata['competencyCodes'].add(c_code)
+
+                if res_code or comp_code:
+                    mappings.append({
+                        "activity": act,
+                        "competencyCode": comp_code,
+                        "competencyName": comp_name,
+                        "resultCode": res_code,
+                        "resultName": res_desc
+                    })
 
             clean_acts = deduplicate_activities(list(act_set))
             activity_str = "\n".join(clean_acts) if clean_acts else ""
+
+            # Canonicalize mapping activities
+            for m in mappings:
+                m_raw = clean_spacing(m["activity"])
+                m_num = get_act_num(m_raw)
+                for canon in clean_acts:
+                    c_num = get_act_num(canon)
+                    if (m_num is None or m_num == c_num) and (m_raw in canon or canon in m_raw):
+                        m["activity"] = canon
+                        break
 
             if pdata['resultCodes'] or pdata['competencyCodes']:
                 final_phases.append({
                     "name": phase_name,
                     "activity": activity_str,
                     "activities": clean_acts,
+                    "mappings": mappings,
                     "rawText": clean_spacing(" ".join(raw_texts)),
                     "competencyCodes": sorted(list(pdata['competencyCodes'])),
                     "resultCodes": sorted(list(pdata['resultCodes']))

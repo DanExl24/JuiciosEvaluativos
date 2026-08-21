@@ -1,0 +1,762 @@
+{
+  "metadata_proyecto": {
+    "projectCode": "2480542",
+    "projectName": "ANÁLISIS Y DESARROLLO DE SOFTWARE A LA MEDIDA PARA EL SECTOR SERVICIOS EN EL MUNICIPIO DE FLORENCIA",
+    "executionTime": "27",
+    "regional": "REGIONAL CAQUETÁ",
+    "center": "CENTRO TECNOLOGICO DE LA AMAZONIA",
+    "programCode": "228118"
+  },
+  "resumen_general": {
+    "total_fases": 4,
+    "total_actividades": 5,
+    "total_competencias_asignadas": 55,
+    "total_resultados_aprendizaje": 73
+  },
+  "fases_proyecto": [
+    {
+      "fase": "ANÁLISIS",
+      "total_actividades": 2,
+      "total_competencias": 9,
+      "total_resultados_aprendizaje": 10,
+      "actividades": [
+        {
+          "actividad": "1. DESARROLLAR EL PROCESO DE INDUCCION DE LA FORMACION PROFESIONAL INTEGRAL",
+          "numero": 1,
+          "total_competencias": 1,
+          "competencias": [
+            {
+              "codigo": "240201530",
+              "nombre": "Resultado de Aprendizaje de la Inducción.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593343",
+                  "descripcion": "01 IDENTIFICAR LA DINÁMICA ORGANIZACIONAL DEL SENA Y EL ROL DE LA FORMACIÓN PROFESIONAL INTEGRAL DE ACUERDO CON SU PROYECTO DE VIDA Y EL DESARROLLO PROFESIONAL."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "actividad": "2. ANALIZAR Y CONOCER HERRAMIENTAS TECNOLÓGICAS NECESARIAS PARA EL MANEJO DE LOS REQUERIMIENTOS DE SOFTWARE EN LA EMPRESA",
+          "numero": 2,
+          "total_competencias": 8,
+          "competencias": [
+            {
+              "codigo": "240202501",
+              "nombre": "INTERACTUAR EN LENGUA INGLESA DE FORMA ORAL Y ESCRITA DENTRO DE CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS CRITERIOS ESTABLECIDOS POR EL MARCO COMÚN EUROPEO DE REFERENCIA PARA LAS",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593115",
+                  "descripcion": "02 INTERCAMBIAR OPINIONES SOBRE SITUACIONES COTIDIANAS Y LABORALES ACTUALES, PASADAS Y FUTURAS EN CONTEXTOS SOCIALES ORALES Y ESCRITOS."
+                },
+                {
+                  "codigo": "593117",
+                  "descripcion": "01 COMPRENDER INFORMACIÓN SOBRE SITUACIONES COTIDIANAS Y LABORALES ACTUALES Y FUTURAS A TRAVÉS DE INTERACCIONES SOCIALES DE FORMA ORAL Y ESCRITA."
+                }
+              ]
+            },
+            {
+              "codigo": "220501046",
+              "nombre": "Utilizar herramientas informáticas de acuerdo con las necesidades de manejo de información",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593154",
+                  "descripcion": "01 ALISTAR HERRAMIENTAS DE TECNOLOGÍAS DE LA INFORMACIÓN Y LA COMUNICACIÓN (TIC), DE ACUERDO CON LAS NECESIDADES DE PROCESAMIENTO DE INFORMACIÓN Y COMUNICACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "220601501",
+              "nombre": "APLICAR PRÁCTICAS DE PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS ORGANIZACIONALES Y LA NORMATIVIDAD VIGENTE.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593156",
+                  "descripcion": "01 ANALIZAR LAS ESTRATEGIAS PARA LA PREVENCIÓN Y CONTROL DE LOS IMPACTOS AMBIENTALES Y DE LOS ACCIDENTES Y ENFERMEDADES LABORALES (ATEL) DE ACUERDO CON LAS POLÍTICAS ORGANIZACIONALES Y EL ENTORNO SOCIAL."
+                }
+              ]
+            },
+            {
+              "codigo": "220201501",
+              "nombre": "APLICACIÓN DE CONOCIMIENTOS DE LAS CIENCIAS NATURALES DE ACUERDO CON SITUACIONES DEL CONTEXTO PRODUCTIVO Y SOCIAL.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593162",
+                  "descripcion": "01 IDENTIFICAR LOS PRINCIPIOS Y LEYES DE LA FÍSICA EN LA SOLUCIÓN DE PROBLEMAS DE ACUERDO AL CONTEXTO PRODUCTIVO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201524",
+              "nombre": "DESARROLLAR PROCESOS DE COMUNICACIÓN EFICACES Y EFECTIVOS, TENIENDO EN CUENTA SITUACIONES DE ORDEN SOCIAL, PERSONAL Y PRODUCTIVO.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593225",
+                  "descripcion": "01 ANALIZAR LOS COMPONENTES DE LA COMUNICACIÓN SEGÚN SUS CARACTERÍSTICAS, INTENCIONALIDAD Y CONTEXTO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201064",
+              "nombre": "Orientar investigación formativa según referentes técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593236",
+                  "descripcion": "01 ANALIZAR EL CONTEXTO PRODUCTIVO SEGÚN SUS CARACTERÍSTICAS Y NECESIDADES."
+                }
+              ]
+            },
+            {
+              "codigo": "240201528",
+              "nombre": "Razonar cuantitativamente frente a situaciones susceptibles de ser abordadas de manera matemática en contextos laborales, sociales y personales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593256",
+                  "descripcion": "01 IDENTIFICAR MODELOS MATEMÁTICOS DE ACUERDO CON LOS REQUERIMIENTOS DEL PROBLEMA PLANTEADO CONTEXTOS SOCIALES Y PRODUCTIVO."
+                }
+              ]
+            },
+            {
+              "codigo": "220501092",
+              "nombre": "Establecer requisitos de la solución de software de acuerdo con estándares y procedimiento técnico",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593346",
+                  "descripcion": "01 CARACTERIZAR LOS PROCESOS DE LA ORGANIZACIÓN DE ACUERDO CON EL SOFTWARE A CONSTRUIR."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fase": "PLANEACIÓN",
+      "total_actividades": 1,
+      "total_competencias": 15,
+      "total_resultados_aprendizaje": 20,
+      "actividades": [
+        {
+          "actividad": "3. DISEÑAR LA ARQUITECTURA DEL SOFTWARE SEGÚN LAS NECESIDADES DE LA EMPRESA",
+          "numero": 3,
+          "total_competencias": 15,
+          "competencias": [
+            {
+              "codigo": "220501093",
+              "nombre": "Evaluar requisitos de la solución de software de acuerdo con metodologías de análisis y estándares",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "592375",
+                  "descripcion": "01 PLANEAR ACTIVIDADES DE ANÁLISIS DE ACUERDO CON LA METODOLOGÍA SELECCIONADA."
+                }
+              ]
+            },
+            {
+              "codigo": "220501094",
+              "nombre": "Estructurar propuesta técnica de servicio de tecnología de la información según requisitos técnicos y normativa",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593060",
+                  "descripcion": "01 DEFINIR ESPECIFICACIONES TÉCNICAS DEL SOFTWARE DE ACUERDO CON LAS CARACTERÍSTICAS DEL SOFTWARE A"
+                }
+              ]
+            },
+            {
+              "codigo": "220501095",
+              "nombre": "Diseñar la solución de software de acuerdo con procedimientos y requisitos técnicos",
+              "total_resultados": 3,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593100",
+                  "descripcion": "03 DETERMINAR LAS CARACTERÍSTICAS TÉCNICAS DE LA INTERFAZ GRÁFICA DEL SOFTWARE ADOPTANDO ESTÁNDARES."
+                },
+                {
+                  "codigo": "593101",
+                  "descripcion": "02 ESTRUCTURAR EL MODELO DE DATOS DEL SOFTWARE DE ACUERDO CON LAS ESPECIFICACIONES DEL ANÁLISIS."
+                },
+                {
+                  "codigo": "593103",
+                  "descripcion": "01 ELABORAR LOS ARTEFACTOS DE DISEÑO DEL SOFTWARE SIGUIENDO LAS PRÁCTICAS DE LA METODOLOGÍA SELECCIONADA."
+                }
+              ]
+            },
+            {
+              "codigo": "220501096",
+              "nombre": "DESARROLLAR LA SOLUCIÓN DE SOFTWARE DE ACUERDO CON EL DISEÑO Y METODOLOGÍAS DE DESARROLLO",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593106",
+                  "descripcion": "01 PLANEAR ACTIVIDADES DE CONSTRUCCIÓN DEL SOFTWARE DE ACUERDO CON EL DISEÑO ESTABLECIDO."
+                }
+              ]
+            },
+            {
+              "codigo": "220501097",
+              "nombre": "Implementar la solución de software de acuerdo con los requisitos de operación y modelos de referencia",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593111",
+                  "descripcion": "01 PLANEAR ACTIVIDADES DE IMPLANTACIÓN DEL SOFTWARE DE ACUERDO CON LAS CONDICIONES DEL SISTEMA."
+                }
+              ]
+            },
+            {
+              "codigo": "240202501",
+              "nombre": "INTERACTUAR EN LENGUA INGLESA DE FORMA ORAL Y ESCRITA DENTRO DE CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS CRITERIOS ESTABLECIDOS POR EL MARCO COMÚN EUROPEO DE REFERENCIA PARA LAS",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593118",
+                  "descripcion": "03 DISCUTIR SOBRE POSIBLES SOLUCIONES A PROBLEMAS DENTRO DE UN RANGO VARIADO DE CONTEXTOS SOCIALES Y LABORALES."
+                }
+              ]
+            },
+            {
+              "codigo": "230101507",
+              "nombre": "GENERAR HÁBITOS SALUDABLES DE VIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS DE ACTIVIDAD FÍSICA EN LOS CONTEXTOS PRODUCTIVOS Y SOCIALES.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593120",
+                  "descripcion": "01 DESARROLLAR HABILIDADES PSICOMOTRICES EN EL CONTEXTO PRODUCTIVO Y SOCIAL."
+                }
+              ]
+            },
+            {
+              "codigo": "240201526",
+              "nombre": "Enrique Low Murtra-Interactuar en el contexto productivo y social de acuerdo con principios éticos para la construcción de una cultura de paz.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593148",
+                  "descripcion": "03 PROMOVER EL USO RACIONAL DE LOS RECURSOS NATURALES A PARTIR DE CRITERIOS DE SOSTENIBILIDAD Y SUSTENTABILIDAD ÉTICA Y NORMATIVA"
+                },
+                {
+                  "codigo": "593149",
+                  "descripcion": "01 PROMOVER MI DIGNIDAD Y LA DEL OTRO A PARTIR DE LOS PRINCIPIOS Y VALORES ÉTICOS COMO APORTE EN LA INSTAURACIÓN DE UNA CULTURA DE PAZ."
+                }
+              ]
+            },
+            {
+              "codigo": "220501046",
+              "nombre": "Utilizar herramientas informáticas de acuerdo con las necesidades de manejo de información",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593152",
+                  "descripcion": "04 OPTIMIZAR LOS RESULTADOS, DE ACUERDO CON LA VERIFICACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "240201524",
+              "nombre": "DESARROLLAR PROCESOS DE COMUNICACIÓN EFICACES Y EFECTIVOS, TENIENDO EN CUENTA SITUACIONES DE ORDEN SOCIAL, PERSONAL Y PRODUCTIVO.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593224",
+                  "descripcion": "03 RELACIONAR LOS PROCESOS COMUNICATIVOS TENIENDO EN CUENTA CRITERIOS DE LÓGICA Y RACIONALIDAD."
+                }
+              ]
+            },
+            {
+              "codigo": "240201064",
+              "nombre": "Orientar investigación formativa según referentes técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593238",
+                  "descripcion": "02 ESTRUCTURAR EL PROYECTO DE ACUERDO A CRITERIOS DE LA INVESTIGACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "210201501",
+              "nombre": "Ejercer derechos fundamentales del trabajo en el marco de la constitución política y los convenios internacionales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593243",
+                  "descripcion": "01- Reconocer el trabajo como factor de movilidad social y transformación vital con referencia a la fenomenología y a los derechos fundamentales en el trabajo."
+                }
+              ]
+            },
+            {
+              "codigo": "240201528",
+              "nombre": "Razonar cuantitativamente frente a situaciones susceptibles de ser abordadas de manera matemática en contextos laborales, sociales y personales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593258",
+                  "descripcion": "02 PLANTEAR PROBLEMAS MATEMÁTICOS A PARTIR DE SITUACIONES GENERADAS EN EL CONTEXTO SOCIAL Y PRODUCTIVO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201529",
+              "nombre": "Gestionar procesos propios de la cultura emprendedora y empresarial de acuerdo con el perfil personal y los requerimientos de los contextos productivo y social.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593259",
+                  "descripcion": "02 CARACTERIZAR LA IDEA DE NEGOCIO TENIENDO EN CUENTA LAS OPORTUNIDADES Y NECESIDADES DEL SECTOR PRODUCTIVO Y SOCIAL."
+                },
+                {
+                  "codigo": "593342",
+                  "descripcion": "01 INTEGRAR ELEMENTOS DE LA CULTURA EMPRENDEDORA TENIENDO EN CUENTA EL PERFIL PERSONAL Y EL CONTEXTO DE DESARROLLO SOCIAL."
+                }
+              ]
+            },
+            {
+              "codigo": "220501092",
+              "nombre": "Establecer requisitos de la solución de software de acuerdo con estándares y procedimiento técnico",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593344",
+                  "descripcion": "02 RECOLECTAR INFORMACIÓN DEL SOFTWARE A CONSTRUIR DE ACUERDO CON LAS NECESIDADES DEL CLIENTE."
+                },
+                {
+                  "codigo": "593347",
+                  "descripcion": "03 ESTABLECER LOS REQUISITOS DEL SOFTWARE DE ACUERDO CON LA INFORMACIÓN RECOLECTADA."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fase": "EJECUCIÓN",
+      "total_actividades": 1,
+      "total_competencias": 16,
+      "total_resultados_aprendizaje": 26,
+      "actividades": [
+        {
+          "actividad": "4. CODIFICAR LOS MÓDULOS DEL SOFTWARE A DESARROLLAR",
+          "numero": 4,
+          "total_competencias": 16,
+          "competencias": [
+            {
+              "codigo": "220501093",
+              "nombre": "Evaluar requisitos de la solución de software de acuerdo con metodologías de análisis y estándares",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "592373",
+                  "descripcion": "02 MODELAR LAS FUNCIONES DEL SOFTWARE DE ACUERDO CON EL INFORME DE REQUISITOS."
+                },
+                {
+                  "codigo": "592376",
+                  "descripcion": "03 DESARROLLAR PROCESOS LÓGICOS A TRAVÉS DE LA IMPLEMENTACIÓN DE ALGORITMOS."
+                }
+              ]
+            },
+            {
+              "codigo": "220501094",
+              "nombre": "Estructurar propuesta técnica de servicio de tecnología de la información según requisitos técnicos y normativa",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593062",
+                  "descripcion": "02 ELABORAR PROPUESTA TÉCNICA DEL SOFTWARE DE ACUERDO CON LAS ESPECIFICACIONES TÉCNICAS DEFINIDAS."
+                }
+              ]
+            },
+            {
+              "codigo": "220501096",
+              "nombre": "DESARROLLAR LA SOLUCIÓN DE SOFTWARE DE ACUERDO CON EL DISEÑO Y METODOLOGÍAS DE DESARROLLO",
+              "total_resultados": 3,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593104",
+                  "descripcion": "03 CREAR COMPONENTES FRONT-END DEL SOFTWARE DE ACUERDO CON EL DISEÑO."
+                },
+                {
+                  "codigo": "593107",
+                  "descripcion": "02 CONSTRUIR LA BASE DE DATOS PARA EL SOFTWARE A PARTIR DEL MODELO DE DATOS."
+                },
+                {
+                  "codigo": "593108",
+                  "descripcion": "04 CODIFICAR EL SOFTWARE DE ACUERDO CON EL DISEÑO ESTABLECIDO."
+                }
+              ]
+            },
+            {
+              "codigo": "220501097",
+              "nombre": "Implementar la solución de software de acuerdo con los requisitos de operación y modelos de referencia",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593110",
+                  "descripcion": "02 DESPLEGAR EL SOFTWARE DE ACUERDO CON LA ARQUITECTURA Y LAS POLÍTICAS ESTABLECIDAS."
+                },
+                {
+                  "codigo": "593112",
+                  "descripcion": "04 IMPLANTAR EL SOFTWARE DE ACUERDO CON LOS NIVELES DE SERVICIO ESTABLECIDOS CON EL CLIENTE."
+                }
+              ]
+            },
+            {
+              "codigo": "240202501",
+              "nombre": "INTERACTUAR EN LENGUA INGLESA DE FORMA ORAL Y ESCRITA DENTRO DE CONTEXTOS SOCIALES Y LABORALES SEGÚN LOS CRITERIOS ESTABLECIDOS POR EL MARCO COMÚN EUROPEO DE REFERENCIA PARA LAS",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593113",
+                  "descripcion": "06 EXPLICAR LAS FUNCIONES DE SU OCUPACIÓN LABORAL USANDO EXPRESIONES DE ACUERDO AL NIVEL REQUERIDO POR EL PROGRAMA DE FORMACIÓN."
+                },
+                {
+                  "codigo": "593116",
+                  "descripcion": "05 PRESENTAR UN PROCESO PARA LA REALIZACIÓN DE UNA ACTIVIDAD EN SU QUEHACER LABORAL DE ACUERDO CON LOS PROCEDIMIENTOS ESTABLECIDOS DESDE SU PROGRAMA DE FORMACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "230101507",
+              "nombre": "GENERAR HÁBITOS SALUDABLES DE VIDA MEDIANTE LA APLICACIÓN DE PROGRAMAS DE ACTIVIDAD FÍSICA EN LOS CONTEXTOS PRODUCTIVOS Y SOCIALES.",
+              "total_resultados": 3,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593119",
+                  "descripcion": "02 PRACTICAR HÁBITOS SALUDABLES MEDIANTE LA APLICACIÓN DE FUNDAMENTOS DE NUTRICIÓN E HIGIENE."
+                },
+                {
+                  "codigo": "593121",
+                  "descripcion": "03 EJECUTAR ACTIVIDADES DE ACONDICIONAMIENTO FÍSICO ORIENTADAS HACIA EL MEJORAMIENTO DE LA CONDICIÓN FÍSICA EN LOS CONTEXTOS PRODUCTIVO Y SOCIAL."
+                },
+                {
+                  "codigo": "593122",
+                  "descripcion": "04 IMPLEMENTAR UN PLAN DE ERGONOMÍA Y PAUSAS ACTIVAS SEGÚN LAS CARACTERÍSTICAS DE LA FUNCIÓN"
+                }
+              ]
+            },
+            {
+              "codigo": "220501098",
+              "nombre": "Controlar la calidad del servicio de software de acuerdo con los estándares técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593146",
+                  "descripcion": "01 INCORPORAR ACTIVIDADES DE ASEGURAMIENTO DE LA CALIDAD DEL SOFTWARE DE ACUERDO CON ESTÁNDARES DE LA INDUSTRIA."
+                }
+              ]
+            },
+            {
+              "codigo": "240201526",
+              "nombre": "Enrique Low Murtra-Interactuar en el contexto productivo y social de acuerdo con principios éticos para la construcción de una cultura de paz.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593147",
+                  "descripcion": "02 ESTABLECER RELACIONES DE CRECIMIENTO PERSONAL Y COMUNITARIO A PARTIR DEL BIEN COMÚN COMO APORTE PARA EL DESARROLLO SOCIAL."
+                },
+                {
+                  "codigo": "593150",
+                  "descripcion": "04 CONTRIBUIR CON EL FORTALECIMIENTO DE LA CULTURA DE PAZ A PARTIR DE LA DIGNIDAD HUMANA Y LAS ESTRATEGIAS PARA LA TRANSFORMACIÓN DE CONFLICTOS."
+                }
+              ]
+            },
+            {
+              "codigo": "220501046",
+              "nombre": "Utilizar herramientas informáticas de acuerdo con las necesidades de manejo de información",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593151",
+                  "descripcion": "02 APLICAR FUNCIONALIDADES DE HERRAMIENTAS Y SERVICIOS TIC, DE ACUERDO CON MANUALES DE USO, PROCEDIMIENTOS ESTABLECIDOS Y BUENAS PRÁCTICAS."
+                }
+              ]
+            },
+            {
+              "codigo": "220601501",
+              "nombre": "APLICAR PRÁCTICAS DE PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS ORGANIZACIONALES Y LA NORMATIVIDAD VIGENTE.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593157",
+                  "descripcion": "03 REALIZAR SEGUIMIENTO Y ACOMPAÑAMIENTO AL DESARROLLO DE LOS PLANES Y PROGRAMAS AMBIENTALES Y SST, SEGÚN EL ÁREA DE DESEMPEÑO."
+                },
+                {
+                  "codigo": "593158",
+                  "descripcion": "02 IMPLEMENTAR ESTRATEGIAS PARA EL CONTROL DE LOS IMPACTOS AMBIENTALES Y DE LOS ACCIDENTES Y ENFERMEDADES DE ACUERDO CON LOS PLANES Y PROGRAMAS ESTABLECIDOS POR LA ORGANIZACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "220201501",
+              "nombre": "APLICACIÓN DE CONOCIMIENTOS DE LAS CIENCIAS NATURALES DE ACUERDO CON SITUACIONES DEL CONTEXTO PRODUCTIVO Y SOCIAL.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593159",
+                  "descripcion": "02 SOLUCIONAR PROBLEMAS ASOCIADOS CON EL SECTOR PRODUCTIVO CON BASE EN LOS PRINCIPIOS Y LEYES DE LA FÍSICA."
+                }
+              ]
+            },
+            {
+              "codigo": "240201524",
+              "nombre": "DESARROLLAR PROCESOS DE COMUNICACIÓN EFICACES Y EFECTIVOS, EN CUENTA SITUACIONES DE ORDEN SOCIAL, PERSONAL Y PRODUCTIVO.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593227",
+                  "descripcion": "02 ARGUMENTAR EN FORMA ORAL Y ESCRITA ATENDIENDO LAS EXIGENCIAS Y PARTICULARIDADES DE LAS DIVERSAS SITUACIONES COMUNICATIVAS MEDIANTE LOS DISTINTOS SISTEMAS DE REPRESENTACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "240201064",
+              "nombre": "Orientar investigación formativa según referentes técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593237",
+                  "descripcion": "03 ARGUMENTAR ASPECTOS TEÓRICOS DEL PROYECTO SEGÚN REFERENTES NACIONALES E INTERNACIONALES."
+                }
+              ]
+            },
+            {
+              "codigo": "210201501",
+              "nombre": "Ejercer derechos fundamentales del trabajo en el marco de la constitución política y los convenios internacionales.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593244",
+                  "descripcion": "03- Practicar los derechos fundamentales en el trabajo de acuerdo con la Constitución Política y los Convenios Internacionales."
+                },
+                {
+                  "codigo": "593246",
+                  "descripcion": "04- Participar en acciones solidarias teniendo en cuenta el ejercicio de los derechos humanos, de los pueblos y de la naturaleza."
+                }
+              ]
+            },
+            {
+              "codigo": "240201528",
+              "nombre": "Razonar cuantitativamente frente a situaciones susceptibles de ser abordadas de manera matemática en contextos laborales, sociales y personales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593255",
+                  "descripcion": "03 RESOLVER PROBLEMAS MATEMÁTICOS A PARTIR DE SITUACIONES GENERADAS EN EL CONTEXTO SOCIAL Y PRODUCTIVO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201529",
+              "nombre": "Gestionar procesos propios de la cultura emprendedora y empresarial de acuerdo con el perfil personal y los requerimientos de los contextos productivo y social.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593340",
+                  "descripcion": "03 ESTRUCTURAR EL PLAN DE NEGOCIO DE ACUERDO CON LAS CARACTERÍSTICAS EMPRESARIALES Y TENDENCIAS DE MERCADO."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "fase": "EVALUACIÓN",
+      "total_actividades": 1,
+      "total_competencias": 15,
+      "total_resultados_aprendizaje": 17,
+      "actividades": [
+        {
+          "actividad": "5. CONSTRUIR Y REALIZAR SEGUMIENTO DE PRUEBAS AL SOFTWARE DESARROLLADO ACORDE A REQUISITOS DE LA EMPRESA",
+          "numero": 5,
+          "total_competencias": 15,
+          "competencias": [
+            {
+              "codigo": "220501093",
+              "nombre": "Evaluar requisitos de la solución de software de acuerdo con metodologías de análisis y estándares",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "592374",
+                  "descripcion": "04 VERIFICAR LOS MODELOS REALIZADOS EN LA FASE DE ANÁLISIS DE ACUERDO CON LO ESTABLECIDO EN EL INFORME DE REQUISITOS."
+                }
+              ]
+            },
+            {
+              "codigo": "220501094",
+              "nombre": "Estructurar propuesta técnica de servicio de tecnología de la información según requisitos técnicos y normativa",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593061",
+                  "descripcion": "03 VALIDAR LAS CONDICIONES DE LA PROPUESTA TÉCNICA DEL SOFTWARE DE ACUERDO CON LOS INTERESES DE LAS PARTES."
+                }
+              ]
+            },
+            {
+              "codigo": "220501095",
+              "nombre": "Diseñar la solución de software de acuerdo con procedimientos y requisitos técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593102",
+                  "descripcion": "04 VERIFICAR LOS ENTREGABLES DE LA FASE DE DISEÑO DEL SOFTWARE DE ACUERDO CON LO ESTABLECIDO EN EL INFORME DE ANÁLISIS."
+                }
+              ]
+            },
+            {
+              "codigo": "220501096",
+              "nombre": "DESARROLLAR LA SOLUCIÓN DE SOFTWARE DE ACUERDO CON EL DISEÑO Y METODOLOGÍAS DE DESARROLLO",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593105",
+                  "descripcion": "05 REALIZAR PRUEBAS AL SOFTWARE PARA VERIFICAR SU FUNCIONALIDAD."
+                }
+              ]
+            },
+            {
+              "codigo": "220501097",
+              "nombre": "Implementar la solución de software de acuerdo con los requisitos de operación y modelos de referencia",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593109",
+                  "descripcion": "03 DOCUMENTAR EL PROCESO DE IMPLANTACIÓN DE SOFTWARE SIGUIENDO ESTÁNDARES DE CALIDAD."
+                }
+              ]
+            },
+            {
+              "codigo": "220501098",
+              "nombre": "Controlar la calidad del servicio de software de acuerdo con los estándares técnicos",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593144",
+                  "descripcion": "02 VERIFICAR LA CALIDAD DEL SOFTWARE DE ACUERDO CON LAS PRÁCTICAS ASOCIADAS EN LOS PROCESOS DE"
+                },
+                {
+                  "codigo": "593145",
+                  "descripcion": "03 REALIZAR ACTIVIDADES DE MEJORA DE LA CALIDAD DEL SOFTWARE A PARTIR DE LOS RESULTADOS DE LA VERIFICACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "220501046",
+              "nombre": "Utilizar herramientas informáticas de acuerdo con las necesidades de manejo de información",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593153",
+                  "descripcion": "03 EVALUAR LOS RESULTADOS, DE ACUERDO CON LOS REQUERIMIENTOS."
+                }
+              ]
+            },
+            {
+              "codigo": "220601501",
+              "nombre": "APLICAR PRÁCTICAS DE PROTECCIÓN AMBIENTAL, SEGURIDAD Y SALUD EN EL TRABAJO DE ACUERDO CON LAS POLÍTICAS ORGANIZACIONALES Y LA NORMATIVIDAD VIGENTE.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593155",
+                  "descripcion": "04 PROPONER ACCIONES DE MEJORA PARA EL MANEJO AMBIENTAL Y EL CONTROL DE LA SST, DE ACUERDO CON ESTRATEGIAS DE TRABAJO, COLABORATIVO, COOPERATIVO Y COORDINADO EN EL CONTEXTO PRODUCTIVO Y SOCIAL."
+                }
+              ]
+            },
+            {
+              "codigo": "220201501",
+              "nombre": "APLICACIÓN DE CONOCIMIENTOS DE LAS CIENCIAS NATURALES DE ACUERDO CON SITUACIONES DEL CONTEXTO PRODUCTIVO Y SOCIAL.",
+              "total_resultados": 2,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593160",
+                  "descripcion": "04 PROPONER ACCIONES DE MEJORA EN LOS PROCESOS PRODUCTIVOS DE ACUERDO CON LOS PRINCIPIOS Y LEYES DE LA FÍSICA."
+                },
+                {
+                  "codigo": "593161",
+                  "descripcion": "03 VERIFICAR LAS TRANSFORMACIONES FÍSICAS DE LA MATERIA UTILIZANDO HERRAMIENTAS TECNOLÓGICAS."
+                }
+              ]
+            },
+            {
+              "codigo": "240201524",
+              "nombre": "DESARROLLAR PROCESOS DE COMUNICACIÓN EFICACES Y EFECTIVOS, TENIENDO EN CUENTA SITUACIONES DE ORDEN SOCIAL, PERSONAL Y PRODUCTIVO.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593226",
+                  "descripcion": "04 ESTABLECER PROCESOS DE ENRIQUECIMIENTO LEXICAL Y ACCIONES DE MEJORAMIENTO EN EL DESARROLLO DE PROCESOS COMUNICATIVOS SEGÚN REQUERIMIENTOS DEL CONTEXTO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201064",
+              "nombre": "Orientar investigación formativa según referentes técnicos",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593235",
+                  "descripcion": "04 PROPONER SOLUCIONES A LAS NECESIDADES DEL CONTEXTO SEGÚN RESULTADOS DE LA INVESTIGACIÓN."
+                }
+              ]
+            },
+            {
+              "codigo": "210201501",
+              "nombre": "Ejercer derechos fundamentales del trabajo en el marco de la constitución política y los convenios internacionales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593245",
+                  "descripcion": "02- Valorar la importancia de la ciudadanía laboral con base en el estudio de los derechos humanos y fundamentales en el trabajo."
+                }
+              ]
+            },
+            {
+              "codigo": "240201528",
+              "nombre": "Razonar cuantitativamente frente a situaciones susceptibles de ser abordadas de manera matemática en contextos laborales, sociales y personales.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593257",
+                  "descripcion": "04 PROPONER ACCIONES DE MEJORA FRENTE A LOS RESULTADOS DE LOS PROCEDIMIENTOS MATEMÁTICOS DE ACUERDO CON EL PROBLEMA PLANTEADO."
+                }
+              ]
+            },
+            {
+              "codigo": "240201529",
+              "nombre": "Gestionar procesos propios de la cultura emprendedora y empresarial de acuerdo con el perfil personal y los requerimientos de los contextos productivo y social.",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593341",
+                  "descripcion": "04 VALORAR LA PROPUESTA DE NEGOCIO CONFORME CON SU ESTRUCTURA Y NECESIDADES DEL SECTOR PRODUCTIVO Y SOCIAL."
+                }
+              ]
+            },
+            {
+              "codigo": "220501092",
+              "nombre": "Establecer requisitos de la solución de software de acuerdo con estándares y procedimiento técnico",
+              "total_resultados": 1,
+              "resultados_aprendizaje": [
+                {
+                  "codigo": "593345",
+                  "descripcion": "04 VALIDAR EL INFORME DE REQUISITOS DE ACUERDO CON LAS NECESIDADES DEL CLIENTE."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
