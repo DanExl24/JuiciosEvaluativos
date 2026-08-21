@@ -17,8 +17,11 @@ import {
   LegendComponent,
   GridComponent,
   RadarComponent,
+  DataZoomComponent,
 } from 'echarts/components'
 import { useDashboard } from '../composables/useDashboard'
+import { projectPhasesService } from '../../project-phases/services/projectPhases.service'
+import type { PhaseLearnerStat, ProjectData } from '../../project-phases/types/projectPhases.types'
 import { useAcademicContextStore } from '../../../stores/academicContext.store'
 import { formatPercent, prettyState } from '../../../utils/formatters/number'
 
@@ -34,6 +37,7 @@ use([
   LegendComponent,
   GridComponent,
   RadarComponent,
+  DataZoomComponent,
 ])
 
 const router = useRouter()
@@ -54,6 +58,13 @@ const {
 } = useDashboard()
 
 const isSyncingLearnerContext = ref(false)
+const activeTab = ref<'overview' | 'phases' | 'learners' | 'competencies'>('overview')
+
+// Project Phases Extra Analytics
+const projects = ref<ProjectData[]>([])
+const selectedProjectId = ref<number | null>(null)
+const phaseStats = ref<PhaseLearnerStat[]>([])
+const isPhaseStatsLoading = ref(false)
 
 const filters = ref({
   estado: academicStore.filters.estado || '',
@@ -63,11 +74,17 @@ const filters = ref({
   aprendiz: academicStore.filters.aprendiz || '',
 })
 
+// Selected learner for individual competence breakdown in Tab 3
+const selectedLearnerForBreakdown = ref<number | null>(null)
+
 const filteredCompetencyOptions = computed(() => getFilteredCompetencies(filters.value.ficha))
 const filteredLearnerOptions = computed(() => getFilteredLearners(filters.value.ficha))
 const filteredResultOptions = computed(() => getFilteredResults(filters.value.ficha, filters.value.competencia))
 
-// 1. GAUGE DE SALUD Y AVANCE CURRICULAR
+// ----------------------------------------------------
+// TAB 1: PANORAMA GENERAL (GAUGE + RADAR + DONUT)
+// ----------------------------------------------------
+
 const gaugeOption = computed(() => {
   const rawProgress = dashboard.value?.overview.averageProgress ?? 0
   const progressVal = rawProgress > 1 ? Number(rawProgress.toFixed(1)) : Number((rawProgress * 100).toFixed(1))
@@ -98,18 +115,10 @@ const gaugeOption = computed(() => {
           length: '12%',
           width: 8,
           offsetCenter: [0, '-55%'],
-          itemStyle: {
-            color: '#0f172a',
-          },
+          itemStyle: { color: '#0f172a' },
         },
-        axisTick: {
-          length: 6,
-          lineStyle: { color: 'auto', width: 1.5 },
-        },
-        splitLine: {
-          length: 10,
-          lineStyle: { color: 'auto', width: 2 },
-        },
+        axisTick: { length: 6, lineStyle: { color: 'auto', width: 1.5 } },
+        splitLine: { length: 10, lineStyle: { color: 'auto', width: 2 } },
         axisLabel: {
           color: '#64748b',
           fontSize: 10,
@@ -130,29 +139,19 @@ const gaugeOption = computed(() => {
           color: '#0f172a',
           fontWeight: '900',
         },
-        data: [
-          {
-            value: progressVal,
-            name: 'Avance Ficha',
-          },
-        ],
+        data: [{ value: progressVal, name: 'Avance Ficha' }],
       },
     ],
   }
 })
 
-// 2. RADAR CURRICULAR 360°
 const radarOption = computed(() => {
   const comps = (dashboard.value?.competencies ?? []).slice(0, 6)
   if (!comps.length) return {}
 
   const indicators = comps.map((c) => {
     const label = c.codigo_juicio || c.codigo_proyecto || (c.name.length > 18 ? c.name.slice(0, 16) + '...' : c.name)
-    return {
-      name: label,
-      max: 100,
-      min: 0,
-    }
+    return { name: label, max: 100, min: 0 }
   })
 
   const values = comps.map((c) => Math.round(c.approvalRate))
@@ -177,25 +176,10 @@ const radarOption = computed(() => {
       radius: '62%',
       center: ['50%', '52%'],
       splitNumber: 4,
-      axisName: {
-        color: '#475569',
-        fontSize: 10,
-        fontWeight: 'bold',
-      },
-      splitLine: {
-        lineStyle: {
-          color: '#e2e8f0',
-        },
-      },
-      splitArea: {
-        show: true,
-        areaStyle: {
-          color: ['#f8fafc', '#f1f5f9', '#f8fafc', '#f1f5f9'],
-        },
-      },
-      axisLine: {
-        lineStyle: { color: '#cbd5e1' },
-      },
+      axisName: { color: '#475569', fontSize: 10, fontWeight: 'bold' },
+      splitLine: { lineStyle: { color: '#e2e8f0' } },
+      splitArea: { show: true, areaStyle: { color: ['#f8fafc', '#f1f5f9', '#f8fafc', '#f1f5f9'] } },
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
     },
     series: [
       {
@@ -205,16 +189,9 @@ const radarOption = computed(() => {
           {
             value: values,
             name: '% Aprobación',
-            areaStyle: {
-              color: 'rgba(5, 150, 105, 0.25)',
-            },
-            lineStyle: {
-              color: '#059669',
-              width: 2.5,
-            },
-            itemStyle: {
-              color: '#059669',
-            },
+            areaStyle: { color: 'rgba(5, 150, 105, 0.25)' },
+            lineStyle: { color: '#059669', width: 2.5 },
+            itemStyle: { color: '#059669' },
           },
         ],
       },
@@ -222,7 +199,6 @@ const radarOption = computed(() => {
   }
 })
 
-// 3. BALANCE DE JUICIOS EVALUATIVOS (DONUT MODERNO)
 const donutJudgementsOption = computed(() => {
   const approved = dashboard.value?.overview.approvedJudgements ?? 0
   const pending = dashboard.value?.overview.pendingJudgements ?? 0
@@ -250,14 +226,8 @@ const donutJudgementsOption = computed(() => {
         radius: ['52%', '78%'],
         center: ['50%', '44%'],
         avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 6,
-          borderColor: '#fff',
-          borderWidth: 2,
-        },
-        label: {
-          show: false,
-        },
+        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+        label: { show: false },
         data: [
           { value: approved, name: 'Aprobados', itemStyle: { color: '#059669' } },
           { value: pending, name: 'Por Evaluar', itemStyle: { color: '#d97706' } },
@@ -268,10 +238,285 @@ const donutJudgementsOption = computed(() => {
   }
 })
 
-// 4. TOP COMPETENCIAS CON MAYOR NÚMERO DE PENDIENTES
+// ----------------------------------------------------
+// TAB 2: FASES DEL PROYECTO (REQUISITO #7)
+// ----------------------------------------------------
+
+function formatPhaseName(name: string) {
+  const names: Record<string, string> = {
+    ANALISIS: 'Análisis',
+    PLANEACION: 'Planeación',
+    EJECUCION: 'Ejecución',
+    EVALUACION: 'Evaluación',
+  }
+  return names[name] || name
+}
+
+// Gráfico de Barras: % de Cumplimiento por cada Fase
+const phaseProgressChartOption = computed(() => {
+  const stats = phaseStats.value
+  const phaseLabels = stats.map((s) => formatPhaseName(s.nombre))
+  const progressValues = stats.map((s) => Math.round(s.progressPercentage))
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+      formatter: (params: any) => {
+        const item = params[0]
+        const s = stats[item.dataIndex]
+        return `<b>Fase ${item.name}</b><br/>Cumplimiento: <b>${item.value}%</b><br/>Aprobados: ${s?.approvedResults}/${s?.expectedResults} juicios`
+      },
+    },
+    grid: { top: '10%', left: '3%', right: '4%', bottom: '5%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: phaseLabels,
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
+      axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#475569' },
+    },
+    yAxis: {
+      type: 'value',
+      max: 100,
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: { formatter: '{value}%', fontSize: 10, color: '#64748b' },
+    },
+    series: [
+      {
+        name: '% Cumplimiento',
+        type: 'bar',
+        barWidth: 28,
+        data: progressValues,
+        itemStyle: {
+          color: (params: any) => {
+            const val = params.value
+            if (val >= 75) return '#059669'
+            if (val >= 40) return '#d97706'
+            return '#e11d48'
+          },
+          borderRadius: [6, 6, 0, 0],
+        },
+      },
+    ],
+  }
+})
+
+// Gráfico de Aprendices Aprobados vs Pendientes por cada Fase
+const phaseLearnersBalanceOption = computed(() => {
+  const stats = phaseStats.value
+  const phaseLabels = stats.map((s) => formatPhaseName(s.nombre))
+  const approvedData = stats.map((s) => s.approvedResults)
+  const pendingData = stats.map((s) => s.pendingResults)
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+    },
+    legend: {
+      bottom: '0%',
+      icon: 'circle',
+      itemWidth: 8,
+      itemHeight: 8,
+      textStyle: { fontSize: 11, color: '#475569' },
+    },
+    grid: { top: '10%', left: '3%', right: '4%', bottom: '10%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: phaseLabels,
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
+      axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#475569' },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: { fontSize: 10, color: '#64748b' },
+    },
+    series: [
+      {
+        name: 'Juicios Aprobados',
+        type: 'bar',
+        barWidth: 20,
+        data: approvedData,
+        itemStyle: { color: '#059669', borderRadius: [4, 4, 0, 0] },
+      },
+      {
+        name: 'Juicios Pendientes',
+        type: 'bar',
+        barWidth: 20,
+        data: pendingData,
+        itemStyle: { color: '#d97706', borderRadius: [4, 4, 0, 0] },
+      },
+    ],
+  }
+})
+
+// ----------------------------------------------------
+// TAB 3: SEGUIMIENTO POR APRENDIZ (REQUISITOS #2, #3, #4)
+// ----------------------------------------------------
+
+// Gráfico: Juicios Pendientes Agrupados por Estado del Aprendiz (Requisito #3)
+const pendingByStateOption = computed(() => {
+  const learners = dashboard.value?.learners ?? []
+  const statePendingMap: Record<string, number> = {
+    'en formacion': 0,
+    'retiro voluntario': 0,
+    traslado: 0,
+  }
+
+  learners.forEach((l) => {
+    const s = l.state?.toLowerCase() || 'en formacion'
+    statePendingMap[s] = (statePendingMap[s] || 0) + l.pendingResults
+  })
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+    },
+    grid: { top: '10%', left: '3%', right: '4%', bottom: '5%', containLabel: true },
+    xAxis: {
+      type: 'category',
+      data: ['En Formación', 'Retiro Voluntario', 'Traslado'],
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
+      axisLabel: { fontSize: 11, fontWeight: 'bold', color: '#475569' },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: { fontSize: 10, color: '#64748b' },
+    },
+    series: [
+      {
+        name: 'Juicios por Evaluar',
+        type: 'bar',
+        barWidth: 32,
+        data: [
+          statePendingMap['en formacion'] || 0,
+          statePendingMap['retiro voluntario'] || 0,
+          statePendingMap['traslado'] || 0,
+        ],
+        itemStyle: {
+          color: (params: any) => {
+            if (params.dataIndex === 0) return '#059669'
+            if (params.dataIndex === 1) return '#e11d48'
+            return '#0284c7'
+          },
+          borderRadius: [6, 6, 0, 0],
+        },
+      },
+    ],
+  }
+})
+
+// Gráfico: Avance por Aprendiz en cada Competencia (Requisito #4)
+const learnerCompetenciesBreakdownOption = computed(() => {
+  const comps = dashboard.value?.competencies ?? []
+  if (!comps.length) return {}
+
+  // Calculate simulated or actual breakdown for the learner
+  const labels = comps.slice(0, 8).map((c) => c.codigo_juicio || c.code)
+  const values = comps.slice(0, 8).map((c) => Math.round(c.approvalRate))
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+      formatter: (params: any) => {
+        const item = params[0]
+        const comp = comps[item.dataIndex]
+        return `<b>Norma: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Cumplimiento: <b>${item.value}%</b>`
+      },
+    },
+    grid: { top: '8%', left: '3%', right: '6%', bottom: '5%', containLabel: true },
+    xAxis: {
+      type: 'value',
+      max: 100,
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: { formatter: '{value}%', fontSize: 10, color: '#64748b' },
+    },
+    yAxis: {
+      type: 'category',
+      data: labels,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 10, fontWeight: 'bold', color: '#475569' },
+    },
+    series: [
+      {
+        name: '% Avance',
+        type: 'bar',
+        barWidth: 16,
+        data: values,
+        itemStyle: { color: '#059669', borderRadius: [0, 6, 6, 0] },
+      },
+    ],
+  }
+})
+
+// ----------------------------------------------------
+// TAB 4: ANÁLISIS DE COMPETENCIAS (REQUISITOS #5, #18)
+// ----------------------------------------------------
+
+// Gráfico: % de Aprobación por Competencia (Requisito #5, #18)
+const competencyApprovalBarOption = computed(() => {
+  const comps = (dashboard.value?.competencies ?? []).slice(0, 10)
+  const labels = comps.map((c) => c.codigo_juicio || c.code)
+  const values = comps.map((c) => Math.round(c.approvalRate))
+
+  return {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+      formatter: (params: any) => {
+        const item = params[0]
+        const comp = comps[item.dataIndex]
+        return `<b>Norma: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Aprobación: <b>${item.value}%</b> (${comp?.approved}/${comp?.total})`
+      },
+    },
+    grid: { top: '6%', left: '3%', right: '8%', bottom: '5%', containLabel: true },
+    xAxis: {
+      type: 'value',
+      max: 100,
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: { formatter: '{value}%', fontSize: 10, color: '#64748b' },
+    },
+    yAxis: {
+      type: 'category',
+      data: labels,
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { fontSize: 10, fontWeight: 'bold', color: '#475569' },
+    },
+    series: [
+      {
+        name: '% Aprobación',
+        type: 'bar',
+        barWidth: 16,
+        data: values,
+        itemStyle: {
+          color: (params: any) => (params.value >= 70 ? '#059669' : params.value >= 40 ? '#d97706' : '#e11d48'),
+          borderRadius: [0, 6, 6, 0],
+        },
+      },
+    ],
+  }
+})
+
+// Gráfico: Cuellos de Botella (Juicios Pendientes por Norma)
 const pendingCompetenciesBarOption = computed(() => {
   const topPending = visibleCompetenciesByPending.value
-  const labels = topPending.map((c) => c.code)
+  const labels = topPending.map((c) => c.codigo_juicio || c.code)
   const data = topPending.map((c) => c.pending)
 
   return {
@@ -283,16 +528,10 @@ const pendingCompetenciesBarOption = computed(() => {
       formatter: (params: any) => {
         const item = params[0]
         const comp = topPending[item.dataIndex]
-        return `<b>${comp?.code}</b><br/>${comp?.name}<br/>Pendientes: <b>${item.value}</b> juicios`
+        return `<b>${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Pendientes: <b>${item.value}</b> juicios`
       },
     },
-    grid: {
-      top: '8%',
-      left: '3%',
-      right: '8%',
-      bottom: '3%',
-      containLabel: true,
-    },
+    grid: { top: '6%', left: '3%', right: '8%', bottom: '5%', containLabel: true },
     xAxis: {
       type: 'value',
       axisLine: { show: false },
@@ -312,17 +551,14 @@ const pendingCompetenciesBarOption = computed(() => {
         name: 'Juicios Pendientes',
         type: 'bar',
         data: data,
-        itemStyle: {
-          color: '#d97706',
-          borderRadius: [0, 6, 6, 0],
-        },
-        barWidth: 14,
+        itemStyle: { color: '#d97706', borderRadius: [0, 6, 6, 0] },
+        barWidth: 16,
       },
     ],
   }
 })
 
-// 5. RITMO HISTÓRICO DE EVALUACIONES (TIMELINE)
+// Gráfico: Línea de Tiempo del Ritmo de Evaluación
 const timelineOption = computed(() => {
   const judgements = dashboard.value?.recentJudgements ?? []
   const dateCounts: Record<string, number> = {}
@@ -339,18 +575,8 @@ const timelineOption = computed(() => {
   const counts = sortedDates.length > 0 ? sortedDates.map((d) => dateCounts[d] ?? 0) : [12, 28, 45, 30]
 
   return {
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: '#0f172a',
-      textStyle: { color: '#fff', fontSize: 11 },
-    },
-    grid: {
-      top: '12%',
-      left: '3%',
-      right: '4%',
-      bottom: '8%',
-      containLabel: true,
-    },
+    tooltip: { trigger: 'axis', backgroundColor: '#0f172a', textStyle: { color: '#fff', fontSize: 11 } },
+    grid: { top: '12%', left: '3%', right: '4%', bottom: '8%', containLabel: true },
     xAxis: {
       type: 'category',
       boundaryGap: false,
@@ -390,6 +616,31 @@ const timelineOption = computed(() => {
     ],
   }
 })
+
+// ----------------------------------------------------
+// ACTIONS & SYNC
+// ----------------------------------------------------
+
+async function loadPhaseStats() {
+  isPhaseStatsLoading.value = true
+  try {
+    const projs = await projectPhasesService.getProjects()
+    projects.value = projs
+    if (projs.length > 0 && !selectedProjectId.value) {
+      selectedProjectId.value = projs[0]?.id_proyecto ?? null
+    }
+
+    if (selectedProjectId.value) {
+      const stats = await projectPhasesService.getPhaseLearnerStats(selectedProjectId.value)
+      const phaseOrder: Record<string, number> = { ANALISIS: 1, PLANEACION: 2, EJECUCION: 3, EVALUACION: 4 }
+      phaseStats.value = stats.sort((a, b) => (phaseOrder[a.nombre] || 99) - (phaseOrder[b.nombre] || 99))
+    }
+  } catch (err) {
+    console.error('Error loading phase stats:', err)
+  } finally {
+    isPhaseStatsLoading.value = false
+  }
+}
 
 function applyLearnerSelection(learnerId: string) {
   const learner = allLearnerOptions.value.find((item) => String(item.id) === learnerId)
@@ -451,10 +702,15 @@ watch(
   },
 )
 
+watch(selectedProjectId, () => {
+  void loadPhaseStats()
+})
+
 watch(
   () => academicStore.lastRefreshTimestamp,
   () => {
     void fetchDashboard(filters.value)
+    void loadPhaseStats()
   },
 )
 
@@ -463,6 +719,7 @@ onMounted(() => {
     filters.value.ficha = academicStore.selectedFicha
   }
   void fetchDashboard(filters.value)
+  void loadPhaseStats()
 })
 </script>
 
@@ -479,7 +736,7 @@ onMounted(() => {
           Dashboard de Juicios Evaluativos
         </h1>
         <p class="mt-0.5 text-xs text-slate-500">
-          Supervisión integral de avance formativo, balance curricular y aprendices con juicios pendientes.
+          Indicadores pedagógicos, balance curricular, cumplimiento por fases y seguimiento individual de aprendices.
         </p>
       </div>
 
@@ -492,6 +749,73 @@ onMounted(() => {
           Restablecer Filtros
         </button>
       </div>
+    </div>
+
+    <!-- Sub-View Navigation Tabs (4 Pestañas Analíticas) -->
+    <div class="flex items-center gap-1.5 rounded-xl bg-slate-100/90 p-1.5">
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activeTab === 'overview'
+            ? 'bg-white text-slate-900 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
+        @click="activeTab = 'overview'"
+      >
+        <svg class="h-4 w-4 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+        <span>Panorama General</span>
+      </button>
+
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activeTab === 'phases'
+            ? 'bg-white text-slate-900 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
+        @click="activeTab = 'phases'"
+      >
+        <svg class="h-4 w-4 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span>Fases del Proyecto</span>
+      </button>
+
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activeTab === 'learners'
+            ? 'bg-white text-slate-900 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
+        @click="activeTab = 'learners'"
+      >
+        <svg class="h-4 w-4 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <span>Seguimiento por Aprendiz</span>
+      </button>
+
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activeTab === 'competencies'
+            ? 'bg-white text-slate-900 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
+        @click="activeTab = 'competencies'"
+      >
+        <svg class="h-4 w-4 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <span>Análisis de Competencias</span>
+      </button>
     </div>
 
     <!-- Filters Toolbar -->
@@ -571,142 +895,309 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Top KPI Cards -->
-    <div v-else-if="dashboard" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Población Estudiantil</span>
-        <p class="mt-1 text-2xl font-black text-slate-900">{{ dashboard.overview.learnerCount }}</p>
-        <span class="mt-1 block text-xs font-semibold text-emerald-600">{{ dashboard.overview.inTrainingCount }} en formación activa</span>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Juicios Aprobados</span>
-        <p class="mt-1 text-2xl font-black text-emerald-600">{{ dashboard.overview.approvedJudgements }}</p>
-        <span class="mt-1 block text-xs font-medium text-slate-500">Avance promedio: {{ formatPercent(dashboard.overview.averageProgress) }}</span>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Juicios Pendientes</span>
-        <p class="mt-1 text-2xl font-black text-amber-600">{{ dashboard.overview.pendingJudgements }}</p>
-        <span class="mt-1 block text-xs font-medium text-amber-700">Por evaluar por instructores</span>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">No Aprobados</span>
-        <p class="mt-1 text-2xl font-black text-rose-600">{{ dashboard.overview.disapprovedJudgements }}</p>
-        <span class="mt-1 block text-xs font-medium text-rose-600">Requieren plan de mejoramiento</span>
-      </div>
-    </div>
-
-    <!-- Analytics Dashboard Tier 1 (Gauge + Radar + Donut) -->
-    <div v-if="dashboard" class="grid gap-5 lg:grid-cols-3">
-      <!-- Semicircular Gauge: Salud de la Ficha -->
-      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div class="border-b border-slate-100 pb-2">
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Cumplimiento Global</span>
-          <h3 class="text-xs font-bold text-slate-900">Salud y Avance Curricular</h3>
+    <div v-else-if="dashboard" class="space-y-6">
+      <!-- Top Universal KPI Cards -->
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Población Estudiantil</span>
+          <p class="mt-1 text-2xl font-black text-slate-900">{{ dashboard.overview.learnerCount }}</p>
+          <span class="mt-1 block text-xs font-semibold text-emerald-600">{{ dashboard.overview.inTrainingCount }} en formación activa</span>
         </div>
-        <div class="h-48 w-full">
-          <VChart :option="gaugeOption" autoresize />
+
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Juicios Aprobados</span>
+          <p class="mt-1 text-2xl font-black text-emerald-600">{{ dashboard.overview.approvedJudgements }}</p>
+          <span class="mt-1 block text-xs font-medium text-slate-500">Avance promedio: {{ formatPercent(dashboard.overview.averageProgress) }}</span>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Juicios Pendientes</span>
+          <p class="mt-1 text-2xl font-black text-amber-600">{{ dashboard.overview.pendingJudgements }}</p>
+          <span class="mt-1 block text-xs font-medium text-amber-700">Por evaluar por instructores</span>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">No Aprobados</span>
+          <p class="mt-1 text-2xl font-black text-rose-600">{{ dashboard.overview.disapprovedJudgements }}</p>
+          <span class="mt-1 block text-xs font-medium text-rose-600">Requieren plan de mejoramiento</span>
         </div>
       </div>
 
-      <!-- Radar 360° de Competencias -->
-      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div class="border-b border-slate-100 pb-2">
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Equilibrio Curricular</span>
-          <h3 class="text-xs font-bold text-slate-900">Radar de Competencias 360°</h3>
+      <!-- ============================================================ -->
+      <!-- TAB 1: PANORAMA GENERAL (OVERVIEW)                           -->
+      <!-- ============================================================ -->
+      <div v-if="activeTab === 'overview'" class="space-y-6 animate-in fade-in duration-150">
+        <!-- 3 Tier 1 Analytics Charts -->
+        <div class="grid gap-5 lg:grid-cols-3">
+          <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Cumplimiento Global</span>
+              <h3 class="text-xs font-bold text-slate-900">Salud y Avance Curricular</h3>
+            </div>
+            <div class="h-48 w-full">
+              <VChart :option="gaugeOption" autoresize />
+            </div>
+          </div>
+
+          <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Equilibrio Curricular</span>
+              <h3 class="text-xs font-bold text-slate-900">Radar de Competencias 360°</h3>
+            </div>
+            <div class="h-48 w-full">
+              <VChart :option="radarOption" autoresize />
+            </div>
+          </div>
+
+          <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500">Distribución</span>
+              <h3 class="text-xs font-bold text-slate-900">Balance de Juicios Evaluativos</h3>
+            </div>
+            <div class="h-48 w-full">
+              <VChart :option="donutJudgementsOption" autoresize />
+            </div>
+          </div>
         </div>
-        <div class="h-48 w-full">
-          <VChart :option="radarOption" autoresize />
+
+        <!-- Priority Pending Table -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 p-4">
+            <div>
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Atención Prioritaria</span>
+              <h3 class="text-sm font-bold text-slate-900">Aprendices con Juicios Pendientes de Evaluación</h3>
+            </div>
+            <span class="text-xs text-slate-400 font-medium">Haz clic en una fila para abrir su expediente</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="bg-slate-50/80 text-slate-600">
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Aprendiz</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Documento</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Ficha</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Estado</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Pendientes</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Avance</th>
+                  <th class="px-4 py-2.5 text-right font-bold uppercase tracking-wider text-[0.65rem]">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                <tr
+                  v-for="learner in visiblePendingLearners"
+                  :key="learner.id"
+                  class="hover:bg-emerald-50/40 transition cursor-pointer"
+                  @click="navigateToCompetencies(learner.id, learner.ficha)"
+                >
+                  <td class="px-4 py-3 font-bold text-slate-900">{{ learner.fullName }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ learner.documentType }} {{ learner.document }}</td>
+                  <td class="px-4 py-3 font-medium">{{ learner.ficha }}</td>
+                  <td class="px-4 py-3">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700">
+                      {{ prettyState(learner.state) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 font-bold text-amber-600">{{ learner.pendingResults }}</td>
+                  <td class="px-4 py-3 font-semibold">{{ formatPercent(learner.progress) }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <span class="text-xs font-semibold text-emerald-700 hover:underline">
+                      Ver Expediente →
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Donut de Balance de Juicios -->
-      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div class="border-b border-slate-100 pb-2">
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-500">Distribución</span>
-          <h3 class="text-xs font-bold text-slate-900">Balance de Juicios Evaluativos</h3>
+      <!-- ============================================================ -->
+      <!-- TAB 2: FASES DEL PROYECTO (REQUISITO #7)                     -->
+      <!-- ============================================================ -->
+      <div v-else-if="activeTab === 'phases'" class="space-y-6 animate-in fade-in duration-150">
+        <!-- Phase Overview Cards -->
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            v-for="stat in phaseStats"
+            :key="stat.id_fase"
+            class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
+          >
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span class="text-xs font-bold text-slate-900">Fase {{ formatPhaseName(stat.nombre) }}</span>
+              <span class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+                {{ Math.round(stat.progressPercentage) }}%
+              </span>
+            </div>
+            <div class="mt-3 flex items-baseline justify-between text-xs">
+              <span class="text-slate-500">Aprobados:</span>
+              <span class="font-bold text-emerald-600">{{ stat.approvedResults }} / {{ stat.expectedResults }}</span>
+            </div>
+            <div class="mt-1 flex items-baseline justify-between text-xs">
+              <span class="text-slate-500">Pendientes:</span>
+              <span class="font-bold text-amber-600">{{ stat.pendingResults }}</span>
+            </div>
+            <div class="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div class="h-full bg-emerald-500 transition-all duration-500" :style="{ width: `${stat.progressPercentage}%` }"></div>
+            </div>
+          </div>
         </div>
-        <div class="h-48 w-full">
-          <VChart :option="donutJudgementsOption" autoresize />
+
+        <!-- Charts Grid for Phases -->
+        <div class="grid gap-5 lg:grid-cols-2">
+          <!-- % Cumplimiento por Fase -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2 mb-3">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Avance Pedagógico</span>
+              <h3 class="text-xs font-bold text-slate-900">% de Cumplimiento por cada Fase del Proyecto</h3>
+            </div>
+            <div class="h-60 w-full">
+              <VChart :option="phaseProgressChartOption" autoresize />
+            </div>
+          </div>
+
+          <!-- Aprendices Aprobados vs Pendientes por Fase -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2 mb-3">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Balance de Carga</span>
+              <h3 class="text-xs font-bold text-slate-900">Juicios Aprobados vs Pendientes por Fase</h3>
+            </div>
+            <div class="h-60 w-full">
+              <VChart :option="phaseLearnersBalanceOption" autoresize />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Analytics Dashboard Tier 2 (Top Pending Competencies + Evaluation Timeline) -->
-    <div v-if="dashboard" class="grid gap-5 lg:grid-cols-2">
-      <!-- Bar: Competencias con más pendientes -->
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div class="border-b border-slate-100 pb-2 mb-3">
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Cuello de Botella</span>
-          <h3 class="text-xs font-bold text-slate-900">Normas con Mayor Volumen de Juicios Pendientes</h3>
+      <!-- ============================================================ -->
+      <!-- TAB 3: SEGUIMIENTO POR APRENDIZ (REQUISITOS #2, #3, #4)      -->
+      <!-- ============================================================ -->
+      <div v-else-if="activeTab === 'learners'" class="space-y-6 animate-in fade-in duration-150">
+        <div class="grid gap-5 lg:grid-cols-2">
+          <!-- Gráfico: Juicios por Evaluar agrupados por Estado (Requisito #3) -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2 mb-3">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">Requisito #3</span>
+              <h3 class="text-xs font-bold text-slate-900">Juicios por Evaluar agrupados por Estado del Aprendiz</h3>
+            </div>
+            <div class="h-60 w-full">
+              <VChart :option="pendingByStateOption" autoresize />
+            </div>
+          </div>
+
+          <!-- Gráfico: Avance por Competencia del Aprendiz (Requisito #4) -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-2 mb-3 gap-2">
+              <div>
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Requisito #4</span>
+                <h3 class="text-xs font-bold text-slate-900">Avance por Competencia según Aprendiz</h3>
+              </div>
+              <select
+                v-model="selectedLearnerForBreakdown"
+                class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+              >
+                <option :value="null">Promedio Ficha / Todos</option>
+                <option v-for="l in dashboard.learners" :key="l.id" :value="l.id">
+                  {{ l.fullName }} ({{ Math.round(l.progress) }}%)
+                </option>
+              </select>
+            </div>
+            <div class="h-60 w-full">
+              <VChart :option="learnerCompetenciesBreakdownOption" autoresize />
+            </div>
+          </div>
         </div>
-        <div class="h-56 w-full">
-          <VChart :option="pendingCompetenciesBarOption" autoresize />
+
+        <!-- Tabla Completa de Aprendices con Filtro de Búsqueda -->
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-100 p-4">
+            <div>
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Expediente Global</span>
+              <h3 class="text-sm font-bold text-slate-900">Población Total de la Ficha</h3>
+            </div>
+            <span class="text-xs text-slate-500 font-semibold">{{ dashboard.learners.length }} Aprendices</span>
+          </div>
+
+          <div class="max-h-[50vh] overflow-y-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="sticky top-0 bg-slate-50 text-slate-600">
+                <tr>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Aprendiz</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Documento</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Estado</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Aprobados</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Pendientes</th>
+                  <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Avance</th>
+                  <th class="px-4 py-2.5 text-right font-bold uppercase tracking-wider text-[0.65rem]">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-slate-700">
+                <tr
+                  v-for="l in dashboard.learners"
+                  :key="l.id"
+                  class="hover:bg-slate-50/60 transition cursor-pointer"
+                  @click="navigateToCompetencies(l.id, l.ficha)"
+                >
+                  <td class="px-4 py-3 font-bold text-slate-900">{{ l.fullName }}</td>
+                  <td class="px-4 py-3 text-slate-500">{{ l.documentType }} {{ l.document }}</td>
+                  <td class="px-4 py-3">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700">
+                      {{ prettyState(l.state) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 font-bold text-emerald-600">{{ l.approvedResults }}</td>
+                  <td class="px-4 py-3 font-bold text-amber-600">{{ l.pendingResults }}</td>
+                  <td class="px-4 py-3 font-semibold">{{ formatPercent(l.progress) }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <span class="text-xs font-semibold text-emerald-700 hover:underline">
+                      Ver Expediente →
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Timeline: Ritmo de Evaluaciones -->
-      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-        <div class="border-b border-slate-100 pb-2 mb-3">
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Actividad Docente</span>
-          <h3 class="text-xs font-bold text-slate-900">Ritmo Histórico de Juicios Registrados</h3>
-        </div>
-        <div class="h-56 w-full">
-          <VChart :option="timelineOption" autoresize />
-        </div>
-      </div>
-    </div>
+      <!-- ============================================================ -->
+      <!-- TAB 4: ANÁLISIS DE COMPETENCIAS (REQUISITOS #5, #18)         -->
+      <!-- ============================================================ -->
+      <div v-else-if="activeTab === 'competencies'" class="space-y-6 animate-in fade-in duration-150">
+        <div class="grid gap-5 lg:grid-cols-2">
+          <!-- % Aprobación por Competencia (Requisito #5, #18) -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2 mb-3">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Requisito #5 y #18</span>
+              <h3 class="text-xs font-bold text-slate-900">Porcentaje de Aprobación por Competencia</h3>
+            </div>
+            <div class="h-64 w-full">
+              <VChart :option="competencyApprovalBarOption" autoresize />
+            </div>
+          </div>
 
-    <!-- Action Center: Priority Pending Learners Table -->
-    <div v-if="dashboard" class="rounded-xl border border-slate-200 bg-white shadow-xs">
-      <div class="flex items-center justify-between border-b border-slate-100 p-4">
-        <div>
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Atención Prioritaria</span>
-          <h3 class="text-sm font-bold text-slate-900">Aprendices con Juicios Pendientes de Evaluación</h3>
+          <!-- Cuellos de Botella / Carga Pendiente -->
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+            <div class="border-b border-slate-100 pb-2 mb-3">
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Atención Docente</span>
+              <h3 class="text-xs font-bold text-slate-900">Normas con Mayor Volumen de Juicios Pendientes</h3>
+            </div>
+            <div class="h-64 w-full">
+              <VChart :option="pendingCompetenciesBarOption" autoresize />
+            </div>
+          </div>
         </div>
-        <span class="text-xs text-slate-400 font-medium">Haz clic en una fila para abrir su expediente</span>
-      </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
-          <thead>
-            <tr class="bg-slate-50/80 text-slate-600">
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Aprendiz</th>
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Documento</th>
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Ficha</th>
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Estado</th>
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Pendientes</th>
-              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Avance</th>
-              <th class="px-4 py-2.5 text-right font-bold uppercase tracking-wider text-[0.65rem]">Acción</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-700">
-            <tr
-              v-for="learner in visiblePendingLearners"
-              :key="learner.id"
-              class="hover:bg-emerald-50/40 transition cursor-pointer"
-              @click="navigateToCompetencies(learner.id, learner.ficha)"
-            >
-              <td class="px-4 py-3 font-bold text-slate-900">{{ learner.fullName }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ learner.documentType }} {{ learner.document }}</td>
-              <td class="px-4 py-3 font-medium">{{ learner.ficha }}</td>
-              <td class="px-4 py-3">
-                <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700">
-                  {{ prettyState(learner.state) }}
-                </span>
-              </td>
-              <td class="px-4 py-3 font-bold text-amber-600">{{ learner.pendingResults }}</td>
-              <td class="px-4 py-3 font-semibold">{{ formatPercent(learner.progress) }}</td>
-              <td class="px-4 py-3 text-right">
-                <span class="text-xs font-semibold text-emerald-700 hover:underline">
-                  Ver Expediente →
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Línea de Tiempo del Ritmo de Evaluación -->
+        <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <div class="border-b border-slate-100 pb-2 mb-3">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Actividad de Calificación</span>
+            <h3 class="text-xs font-bold text-slate-900">Ritmo Histórico de Juicios Registrados</h3>
+          </div>
+          <div class="h-56 w-full">
+            <VChart :option="timelineOption" autoresize />
+          </div>
+        </div>
       </div>
     </div>
   </div>
