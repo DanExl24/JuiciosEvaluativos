@@ -6,11 +6,36 @@ export interface CsvImportResult {
   learners: number
   results: number
   judgements: number
+  programa?: string
+  competencies?: number
+}
+
+interface CsvImportBackendResponse {
+  ok: boolean
+  result?: CsvImportResult
+  ficha?: string
+  learners?: number
+  results?: number
+  judgements?: number
+  programa?: string
+  competencies?: number
+  logFileName?: string
 }
 
 export const importService = {
   async importCsv(payload: LogPayload): Promise<CsvImportResult> {
-    return apiClient.post<CsvImportResult>('/api/import/csv', payload)
+    const data = await apiClient.post<CsvImportBackendResponse>('/api/import/csv', payload)
+    if (data.result) {
+      return data.result
+    }
+    return {
+      ficha: data.ficha || '',
+      learners: data.learners || 0,
+      results: data.results || 0,
+      judgements: data.judgements || 0,
+      programa: data.programa,
+      competencies: data.competencies,
+    }
   },
 
   async deleteFicha(ficha: string): Promise<{ ok: boolean; message?: string }> {

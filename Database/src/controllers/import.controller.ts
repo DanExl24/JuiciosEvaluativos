@@ -32,6 +32,7 @@ export async function importCsv(req: Request, res: Response): Promise<void> {
 
     res.json({
       ok: true,
+      ...result,
       result,
       logFileName,
     });
