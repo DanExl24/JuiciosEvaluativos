@@ -643,6 +643,11 @@ async function loadPhaseStats() {
 }
 
 function applyLearnerSelection(learnerId: string) {
+  if (!learnerId) {
+    filters.value.aprendiz = ''
+    return
+  }
+
   const learner = allLearnerOptions.value.find((item) => String(item.id) === learnerId)
   if (!learner) return
 
@@ -676,10 +681,21 @@ function navigateToCompetencies(learnerId: number, ficha: string) {
 watch(
   () => ({ ...filters.value }),
   () => {
-    academicStore.setFilters(filters.value)
+    if (!isSyncingLearnerContext.value) {
+      academicStore.setFilters(filters.value)
+    }
     void fetchDashboard(filters.value)
   },
   { deep: true },
+)
+
+watch(
+  () => academicStore.selectedFicha,
+  (newFicha) => {
+    if (newFicha !== filters.value.ficha) {
+      filters.value.ficha = newFicha
+    }
+  },
 )
 
 watch(
@@ -697,6 +713,18 @@ watch(
     }
 
     if (filters.value.resultado && !filteredResultOptions.value.some((result) => result.codigo === filters.value.resultado)) {
+      filters.value.resultado = ''
+    }
+  },
+)
+
+watch(
+  () => filters.value.competencia,
+  () => {
+    if (
+      filters.value.resultado &&
+      !filteredResultOptions.value.some((result) => result.codigo === filters.value.resultado)
+    ) {
       filters.value.resultado = ''
     }
   },

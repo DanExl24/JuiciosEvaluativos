@@ -353,32 +353,53 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
     .sort((a, b) => b.registeredAt.localeCompare(a.registeredAt))
     .slice(0, 20);
 
-  const competenciasOptions = distinct(
-    rows.map((row) => JSON.stringify({
-      codigo: row.competencia_codigo,
-      codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
-      codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
-      nombre: row.competencia_nombre,
-      ficha: row.ficha_caracterizacion,
-    })),
-  )
-    .map((item) => JSON.parse(item) as { codigo: string; codigo_juicio: string; codigo_proyecto: string; nombre: string; ficha: string })
-    .sort((a, b) => a.ficha.localeCompare(b.ficha, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
+  const competenciasOptionsResult = await pool.query<{
+    codigo: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
+    nombre: string;
+    ficha: string;
+  }>(
+    `
+      SELECT DISTINCT
+        c.codigo AS codigo,
+        COALESCE(c.codigo_juicio, c.codigo) AS codigo_juicio,
+        COALESCE(c.codigo_proyecto, c.codigo) AS codigo_proyecto,
+        c.nombre AS nombre,
+        f.ficha_caracterizacion AS ficha
+      FROM competencia c
+      INNER JOIN programa p ON p.id_programa = c.id_programa
+      INNER JOIN formacion f ON f.id_programa = p.id_programa
+      ORDER BY ficha, nombre
+    `,
+  );
 
-  const resultadosOptions = distinct(
-    rows.map((row) => JSON.stringify({
-      codigo: row.resultado_codigo,
-      codigo_juicio: row.resultado_codigo_juicio || row.resultado_codigo,
-      codigo_proyecto: row.resultado_codigo_proyecto || row.resultado_codigo,
-      detalle: row.resultado_detalle,
-      competencia_codigo: row.competencia_codigo,
-      ficha: row.ficha_caracterizacion,
-    })),
-  )
-    .map((item) =>
-      JSON.parse(item) as { codigo: string; codigo_juicio: string; codigo_proyecto: string; detalle: string; competencia_codigo: string; ficha: string },
-    )
-    .sort((a, b) => a.ficha.localeCompare(b.ficha, 'es') || a.codigo.localeCompare(b.codigo, 'es'));
+  const resultadosOptionsResult = await pool.query<{
+    codigo: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
+    detalle: string;
+    competencia_codigo: string;
+    ficha: string;
+  }>(
+    `
+      SELECT DISTINCT
+        r.codigo AS codigo,
+        COALESCE(r.codigo_juicio, r.codigo) AS codigo_juicio,
+        COALESCE(r.codigo_proyecto, r.codigo) AS codigo_proyecto,
+        r.detalle AS detalle,
+        c.codigo AS competencia_codigo,
+        f.ficha_caracterizacion AS ficha
+      FROM resultados_aprendizaje r
+      INNER JOIN competencia c ON c.id_competencia = r.id_competencia
+      INNER JOIN programa p ON p.id_programa = c.id_programa
+      INNER JOIN formacion f ON f.id_programa = p.id_programa
+      ORDER BY ficha, codigo
+    `,
+  );
+
+  const competenciasOptions = competenciasOptionsResult.rows;
+  const resultadosOptions = resultadosOptionsResult.rows;
 
   const aprendicesOptions = distinct(
     (

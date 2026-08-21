@@ -27,7 +27,12 @@ export function useDashboard() {
     const resultOptions = dashboard.value?.options.resultados ?? []
     const fichaScoped = selectedFicha ? resultOptions.filter((r) => r.ficha === selectedFicha) : resultOptions
     if (!selectedCompetencia) return fichaScoped
-    return fichaScoped.filter((r) => r.competencia_codigo === selectedCompetencia)
+    return fichaScoped.filter(
+      (r) =>
+        r.competencia_codigo === selectedCompetencia ||
+        r.codigo_juicio === selectedCompetencia ||
+        r.codigo_proyecto === selectedCompetencia,
+    )
   }
 
   const visiblePendingLearners = computed(() => (dashboard.value?.pendingLearners ?? []).slice(0, 8))
