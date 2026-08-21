@@ -344,7 +344,10 @@ async function handleDeleteProject() {
 
 function formatDate(value: string | null) {
   if (!value) return 'Sin fecha'
-  return new Date(value).toLocaleDateString('es-CO', { dateStyle: 'medium' })
+  const date = new Date(value)
+  const dateStr = date.toLocaleDateString('es-CO', { dateStyle: 'medium' })
+  const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true })
+  return `${dateStr} ${timeStr}`
 }
 
 function formatPhaseName(name: string) {

@@ -146,7 +146,10 @@ function parseJudgementDate(rawValue: string) {
     return null;
   }
 
-  const match = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2})\.(\d{2})\s*([ap]))?$/i);
+  // Matches DD/MM/YYYY or DD-MM-YYYY with optional HH[:.]MM[:.]SS [a|p|am|pm|a.m.|p.m.]
+  const match = normalized.match(
+    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?\s*([ap](?:\.m\.)?|am|pm)?)?$/i
+  );
   if (!match) {
     return null;
   }
@@ -154,24 +157,31 @@ function parseJudgementDate(rawValue: string) {
   const day = match[1]!.padStart(2, '0');
   const month = match[2]!.padStart(2, '0');
   const year = match[3]!;
-  const period = match[6]?.toLowerCase();
+  const rawHours = match[4];
+  const rawMinutes = match[5];
+  const rawSeconds = match[6] || '00';
+  const periodStr = (match[7] || '').toLowerCase().replace(/\./g, '');
 
-  if (!match[4] || !match[5]) {
+  if (!rawHours || !rawMinutes) {
     return `${year}-${month}-${day}T00:00:00-05:00`;
   }
 
-  let hours = Number(match[4]!);
-  const minutes = match[5]!;
+  let hours = Number(rawHours);
+  const minutes = rawMinutes.padStart(2, '0');
+  const seconds = rawSeconds.padStart(2, '0');
 
-  if (period === 'p' && hours < 12) {
-    hours += 12;
+  const isPM = periodStr.startsWith('p');
+  const isAM = periodStr.startsWith('a');
+
+  if (hours <= 12) {
+    if (isPM && hours < 12) {
+      hours += 12;
+    } else if (isAM && hours === 12) {
+      hours = 0;
+    }
   }
 
-  if (period === 'a' && hours === 12) {
-    hours = 0;
-  }
-
-  return `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${minutes}:00-05:00`;
+  return `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${minutes}:${seconds}-05:00`;
 }
 
 async function ensureProgram(client: PoolClient, metadata: CsvMetadata) {
