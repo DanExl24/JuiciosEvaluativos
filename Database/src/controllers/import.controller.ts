@@ -10,7 +10,7 @@ import type { CsvImportPayload } from '../types.ts';
 import { listImportLogs, readImportLog, writeImportLog } from '../utils/log-writer.ts';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentDir = path.dirname(__filename);
 const execAsync = promisify(exec);
 
 export async function importCsv(req: Request, res: Response): Promise<void> {
@@ -60,8 +60,9 @@ export async function extractProjectPdf(req: Request, res: Response): Promise<vo
     const candidatePaths = [
       path.resolve(process.cwd(), 'parse_pdf.py'),
       path.resolve(process.cwd(), '..', 'parse_pdf.py'),
-      path.resolve(__dirname, '..', '..', '..', 'parse_pdf.py'),
-      path.resolve(__dirname, '..', '..', 'parse_pdf.py'),
+      path.resolve(currentDir, '..', '..', '..', 'parse_pdf.py'),
+      path.resolve(currentDir, '..', '..', 'parse_pdf.py'),
+      'c:/Users/alejo/Downloads/juicioss/JuiciosEvaluativos/parse_pdf.py',
     ];
 
     let scriptToRun = '';
