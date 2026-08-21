@@ -14,8 +14,14 @@ export const projectPhasesService = {
     return apiClient.post('/api/extract/project', formData)
   },
 
-  async importProject(payload: unknown): Promise<{ phasesInserted: number; competenciesUpdated: number }> {
-    return apiClient.post('/api/import/project', payload)
+  async importProject(payload: unknown): Promise<{ phasesInserted: number; competenciesUpdated: number; projectId?: number }> {
+    const data = await apiClient.post<any>('/api/import/project', payload)
+    const resultObj = data.result || data
+    return {
+      phasesInserted: resultObj.phasesInserted ?? resultObj.phasesCount ?? 0,
+      competenciesUpdated: resultObj.competenciesUpdated ?? 0,
+      projectId: resultObj.projectId,
+    }
   },
 
   async getProjectPhases(projectId: number, fichaId?: number | null): Promise<CurricularPhase[]> {

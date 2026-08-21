@@ -60,7 +60,11 @@ async function processFile(file: File) {
     await fetchProjects()
     setTimeout(() => {
       isModalOpen.value = false
-    }, 2000)
+      if (projects.value.length > 0) {
+        const found = result.projectId ? projects.value.find((p) => p.id_proyecto === result.projectId) : undefined
+        activeProject.value = found || projects.value[projects.value.length - 1] || null
+      }
+    }, 1200)
   } catch (error) {
     importError.value = error instanceof Error ? error.message : 'Error inesperado al procesar el proyecto formativo.'
   } finally {

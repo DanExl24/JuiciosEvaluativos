@@ -353,6 +353,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
   return {
     projectId: idProyecto,
     phasesCount: persistedPhases.length,
+    phasesInserted: persistedPhases.length,
     competenciesUpdated,
   };
 }

@@ -185,7 +185,11 @@ export async function importProject(req: Request, res: Response): Promise<void> 
     await client.query('BEGIN');
     const result = await importProjectService(client, payload as ProjectImportPayload);
     await client.query('COMMIT');
-    res.json({ ok: true, result });
+    res.json({
+      ok: true,
+      ...result,
+      result,
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     const message = error instanceof Error ? error.message : 'No se pudo importar el proyecto formativo.';
