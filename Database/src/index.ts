@@ -425,7 +425,7 @@ app.post('/api/extract/project', upload.single('pdf'), async (req, res) => {
 
 async function startServer() {
   try {
-    await ensureSchemaCompatibility();
+    await ensureSchemaCompatibility(pool);
     await fs.mkdir(uploadsDirectory, { recursive: true });
     await pool.query('SELECT NOW()');
     app.listen(apiPort, () => {

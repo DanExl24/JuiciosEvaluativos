@@ -483,11 +483,52 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
       comp.isApproved = comp.totalResults > 0 && comp.approvedResults === comp.totalResults;
     }
 
+    // Ensure phase has structured activities
+    if (phase.actividades.length === 0) {
+      if (phase.actividad) {
+        const rawLines = phase.actividad.split(/\r?\n|\s*\/\s*/).map((s: string) => s.trim()).filter(Boolean);
+        phase.actividades = rawLines.map((desc: string, idx: number) => {
+          const numMatch = desc.match(/^(\d+)/);
+          return {
+            id_actividad: idx + 1,
+            numero: numMatch ? parseInt(numMatch[1], 10) : idx + 1,
+            descripcion: desc,
+            competencies: []
+          };
+        });
+      } else {
+        phase.actividades = [{
+          id_actividad: 1,
+          numero: 1,
+          descripcion: `Actividad de la fase ${phase.nombre}`,
+          competencies: []
+        }];
+      }
+    }
+
+    const assignedCompIds = new Set<number>();
+
     for (const act of phase.actividades) {
       const actCompetenciesMap = new Map<number, any>();
       for (const comp of phase.competencies) {
-        const matchingOutcomes = comp.learningOutcomes.filter((out: any) => out.id_actividad === act.id_actividad);
+        // Find outcomes that explicitly match this activity id, OR fallback based on competency context if null
+        const matchingOutcomes = comp.learningOutcomes.filter((out: any) => {
+          if (out.id_actividad) {
+            return out.id_actividad === act.id_actividad;
+          }
+          // If no id_actividad is set on outcome yet:
+          if (phase.actividades.length === 1) return true;
+
+          const isInduccion = comp.nombre.toUpperCase().includes('INDUCCI') ||
+                              comp.codigo_juicio === '36182' ||
+                              comp.codigo_proyecto === '240201530';
+          const isAct1 = (act.numero === 1) || act.descripcion.toUpperCase().includes('INDUCCI');
+
+          return isInduccion ? isAct1 : !isAct1;
+        });
+
         if (matchingOutcomes.length > 0) {
+          assignedCompIds.add(comp.id_competencia);
           const totalRes = matchingOutcomes.reduce((acc: number, r: any) => acc + r.totalCount, 0);
           const approvedRes = matchingOutcomes.reduce((acc: number, r: any) => acc + r.approvedCount, 0);
           actCompetenciesMap.set(comp.id_competencia, {
@@ -503,11 +544,15 @@ export async function getProjectPhases(pool: Pool, projectId: number, fichaId?: 
           });
         }
       }
-      if (actCompetenciesMap.size === 0 && phase.actividades.length === 1) {
-        act.competencies = phase.competencies;
-      } else {
-        act.competencies = Array.from(actCompetenciesMap.values());
-      }
+
+      act.competencies = Array.from(actCompetenciesMap.values());
+    }
+
+    // Safety fallback: If any competencies in phase were not assigned to ANY activity, assign them to the last activity
+    const unassignedToAnyAct = phase.competencies.filter((c: any) => !assignedCompIds.has(c.id_competencia));
+    if (unassignedToAnyAct.length > 0 && phase.actividades.length > 0) {
+      const targetAct = phase.actividades[phase.actividades.length - 1];
+      targetAct.competencies = [...targetAct.competencies, ...unassignedToAnyAct];
     }
   }
 

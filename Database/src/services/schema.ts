@@ -1,6 +1,9 @@
 import type { Pool } from 'pg';
+import { pool as defaultPool } from '../config/db.ts';
 
-export async function ensureSchemaCompatibility(pool: Pool) {
+export async function ensureSchemaCompatibility(poolParam?: Pool) {
+  const pool = poolParam || defaultPool;
+
   await pool.query(`
     DROP TABLE IF EXISTS importacion_archivo
   `);
@@ -206,5 +209,48 @@ export async function ensureSchemaCompatibility(pool: Pool) {
       END IF;
     END
     $$;
+  `);
+
+  // Backfill fase_actividad from fases.actividad if any phases have actividad text but no rows in fase_actividad
+  const existingFases = await pool.query(`
+    SELECT f.id_fase, f.actividad, f.nombre
+    FROM fases f
+    WHERE f.actividad IS NOT NULL AND f.actividad <> ''
+      AND NOT EXISTS (
+        SELECT 1 FROM fase_actividad fa WHERE fa.id_fase = f.id_fase
+      )
+  `);
+
+  for (const f of existingFases.rows) {
+    const rawAct = f.actividad as string;
+    // Split by newline or ' / ' or number pattern
+    const lines = rawAct.split(/\r?\n|\s*\/\s*/).map((s: string) => s.trim()).filter(Boolean);
+    const actTexts: string[] = [];
+
+    for (const line of lines) {
+      if (line) actTexts.push(line);
+    }
+
+    for (const actText of actTexts) {
+      const numMatch = actText.match(/^(\d+)/);
+      const numero = numMatch ? parseInt(numMatch[1], 10) : null;
+      await pool.query(`
+        INSERT INTO fase_actividad (id_fase, numero, descripcion)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (id_fase, descripcion) DO UPDATE SET numero = EXCLUDED.numero
+      `, [f.id_fase, numero, actText]);
+    }
+  }
+
+  // Backfill fase_resultado.id_actividad if any are null
+  await pool.query(`
+    UPDATE fase_resultado fr
+    SET id_actividad = sub.first_act_id
+    FROM (
+      SELECT fa.id_fase, MIN(fa.id_actividad) as first_act_id
+      FROM fase_actividad fa
+      GROUP BY fa.id_fase
+    ) sub
+    WHERE fr.id_fase = sub.id_fase AND fr.id_actividad IS NULL;
   `);
 }
