@@ -163,9 +163,9 @@ const radarOption = computed(() => {
       borderColor: '#0f172a',
       textStyle: { color: '#fff', fontSize: 11 },
       formatter: () => {
-        let html = '<div style="font-weight:bold;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:2px;">% Aprobación por Norma:</div>'
+        let html = '<div style="font-weight:bold;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:2px;">% Aprobación por Competencia:</div>'
         comps.forEach((c) => {
-          const name = c.codigo_juicio ? `Norma ${c.codigo_juicio}` : c.name.slice(0, 22) + '...'
+          const name = c.codigo_juicio ? `Cód. ${c.codigo_juicio}` : c.name.slice(0, 22) + '...'
           html += `<div style="display:flex;justify-content:space-between;gap:12px;margin-top:2px;"><span>${name}:</span><b>${Math.round(c.approvalRate)}%</b></div>`
         })
         return html
@@ -183,7 +183,7 @@ const radarOption = computed(() => {
     },
     series: [
       {
-        name: 'Cumplimiento por Norma',
+        name: 'Cumplimiento por Competencia',
         type: 'radar',
         data: [
           {
@@ -433,7 +433,7 @@ const learnerCompetenciesBreakdownOption = computed(() => {
       formatter: (params: any) => {
         const item = params[0]
         const comp = comps[item.dataIndex]
-        return `<b>Norma: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Cumplimiento: <b>${item.value}%</b>`
+        return `<b>Cód: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Cumplimiento: <b>${item.value}%</b>`
       },
     },
     grid: { top: '8%', left: '3%', right: '6%', bottom: '5%', containLabel: true },
@@ -481,7 +481,7 @@ const competencyApprovalBarOption = computed(() => {
       formatter: (params: any) => {
         const item = params[0]
         const comp = comps[item.dataIndex]
-        return `<b>Norma: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Aprobación: <b>${item.value}%</b> (${comp?.approved}/${comp?.total})`
+        return `<b>Cód: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Aprobación: <b>${item.value}%</b> (${comp?.approved}/${comp?.total})`
       },
     },
     grid: { top: '6%', left: '3%', right: '8%', bottom: '5%', containLabel: true },
@@ -513,7 +513,7 @@ const competencyApprovalBarOption = computed(() => {
   }
 })
 
-// Gráfico: Cuellos de Botella (Juicios Pendientes por Norma)
+// Gráfico: Cuellos de Botella (Juicios Pendientes por Competencia)
 const pendingCompetenciesBarOption = computed(() => {
   const topPending = visibleCompetenciesByPending.value
   const labels = topPending.map((c) => c.codigo_juicio || c.code)
@@ -528,7 +528,7 @@ const pendingCompetenciesBarOption = computed(() => {
       formatter: (params: any) => {
         const item = params[0]
         const comp = topPending[item.dataIndex]
-        return `<b>${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Pendientes: <b>${item.value}</b> juicios`
+        return `<b>Cód: ${comp?.codigo_juicio || comp?.code}</b><br/>${comp?.name}<br/>Pendientes: <b>${item.value}</b> juicios`
       },
     },
     grid: { top: '6%', left: '3%', right: '8%', bottom: '5%', containLabel: true },

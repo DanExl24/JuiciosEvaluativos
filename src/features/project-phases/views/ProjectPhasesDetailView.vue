@@ -540,7 +540,7 @@ const desertionChartOptions: ChartOptions<'line'> = {
                     <div>
                       <div class="flex items-center gap-2 flex-wrap mb-1">
                         <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
-                          Norma: {{ comp.codigo_juicio || comp.codigo }}
+                          Cód: {{ comp.codigo_juicio || comp.codigo }}
                         </span>
                         <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
                           Proyecto: {{ comp.codigo_proyecto }}
@@ -616,7 +616,7 @@ const desertionChartOptions: ChartOptions<'line'> = {
           <div class="flex items-center justify-between">
             <div>
               <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
-                Norma: {{ comp.codigo_juicio || comp.codigo }}
+                Cód: {{ comp.codigo_juicio || comp.codigo }}
               </span>
               <p class="mt-1 text-xs font-bold text-slate-900">{{ comp.nombre }}</p>
             </div>

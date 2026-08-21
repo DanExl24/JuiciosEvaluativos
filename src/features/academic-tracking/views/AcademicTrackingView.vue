@@ -465,7 +465,7 @@ onMounted(() => {
               >
                 <div class="pr-2">
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.codigo_juicio || comp.code }}</span>
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Cód: {{ comp.codigo_juicio || comp.code }}</span>
                     <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
                       Proyecto: {{ comp.codigo_proyecto }}
                     </span>
@@ -533,7 +533,7 @@ onMounted(() => {
           <!-- Pagination Bar -->
           <div v-if="totalPages > 1" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs">
             <span class="text-xs text-slate-500 font-medium">
-              Mostrando página <b class="text-slate-900">{{ currentPage }}</b> de <b class="text-slate-900">{{ totalPages }}</b> ({{ allFilteredLearnerCompetencies.length }} normas)
+              Mostrando página <b class="text-slate-900">{{ currentPage }}</b> de <b class="text-slate-900">{{ totalPages }}</b> ({{ allFilteredLearnerCompetencies.length }} competencias)
             </span>
 
             <div class="flex items-center gap-1.5">
@@ -583,7 +583,7 @@ onMounted(() => {
             >
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.codigo_juicio || comp.code }}</span>
+                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Cód: {{ comp.codigo_juicio || comp.code }}</span>
                   <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
                     Proyecto: {{ comp.codigo_proyecto }}
                   </span>
