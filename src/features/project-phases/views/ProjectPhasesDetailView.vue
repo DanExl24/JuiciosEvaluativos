@@ -181,6 +181,47 @@ const currentPhase = computed(() => {
   return phases.value.find((p) => p.id_fase === activePhaseId.value) || null
 })
 
+const currentPhaseMetrics = computed(() => {
+  if (!currentPhase.value) return null
+  const phase = currentPhase.value
+  const stat = learnerStats.value.find((s) => s.id_fase === phase.id_fase)
+
+  const totalActs = phase.actividades?.length || 0
+  const totalComps = phase.competencies?.length || 0
+  const approvedComps = phase.competencies.filter((c) => c.isApproved).length
+  const pendingComps = totalComps - approvedComps
+
+  const totalResults = phase.competencies.reduce(
+    (acc, c) => acc + (c.totalResults || c.learningOutcomes?.length || 0),
+    0,
+  )
+  const approvedResults = phase.competencies.reduce((acc, c) => acc + (c.approvedResults || 0), 0)
+  const pendingResults = Math.max(0, totalResults - approvedResults)
+
+  const progressPercent = stat
+    ? Math.round(stat.progressPercentage)
+    : totalResults > 0
+      ? Math.round((approvedResults / totalResults) * 100)
+      : 0
+
+  const noveltiesCount = stat ? (stat.desertedCount + stat.trasladoCount + stat.voluntarioCount) : 0
+  const expectedJudgements = stat?.expectedResults ?? totalResults
+
+  return {
+    totalActs,
+    totalComps,
+    approvedComps,
+    pendingComps,
+    totalResults,
+    approvedResults,
+    pendingResults,
+    progressPercent,
+    expectedJudgements,
+    noveltiesCount,
+    stat,
+  }
+})
+
 function getActivityNumber(act: string, idx: number): string | number {
   const match = act.match(/^(\d+)/)
   return match ? match[1] ?? (idx + 1) : idx + 1
@@ -408,6 +449,88 @@ const desertionChartOptions: ChartOptions<'line'> = {
       >
         <span>Métricas de Aprendices</span>
       </button>
+    </div>
+
+    <!-- Phase KPI Highlights Cards -->
+    <div
+      v-if="!isLoading && !error && typeof activePhaseId === 'number' && currentPhaseMetrics"
+      class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 animate-in fade-in duration-150"
+    >
+      <!-- KPI 1: Actividades -->
+      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Actividades de Proyecto</span>
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-2xl font-black text-slate-900">{{ currentPhaseMetrics.totalActs }}</p>
+          <p class="text-[0.7rem] text-slate-500 mt-0.5">Estructuradas en esta fase</p>
+        </div>
+      </div>
+
+      <!-- KPI 2: Competencias -->
+      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Competencias Mapeadas</span>
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-2xl font-black text-slate-900">{{ currentPhaseMetrics.totalComps }}</p>
+          <p class="text-[0.7rem] text-slate-500 mt-0.5">
+            <span class="text-emerald-700 font-semibold">{{ currentPhaseMetrics.approvedComps }} aprobadas</span> · {{ currentPhaseMetrics.pendingComps }} pendientes
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI 3: RAPs -->
+      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Resultados de Aprendizaje</span>
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2">
+          <p class="text-2xl font-black text-slate-900">{{ currentPhaseMetrics.totalResults }}</p>
+          <p class="text-[0.7rem] text-slate-500 mt-0.5">
+            <span class="text-emerald-700 font-semibold">{{ currentPhaseMetrics.approvedResults }} evaluados</span> · {{ currentPhaseMetrics.pendingResults }} por evaluar
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI 4: Cumplimiento de Fase -->
+      <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-600">Cumplimiento de Fase</span>
+          <span class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+            {{ currentPhaseMetrics.progressPercent }}%
+          </span>
+        </div>
+        <div class="mt-2">
+          <div class="flex items-baseline justify-between">
+            <p class="text-2xl font-black text-emerald-600">{{ currentPhaseMetrics.progressPercent }}%</p>
+            <span class="text-[0.65rem] text-slate-400 font-medium">
+              {{ currentPhaseMetrics.approvedResults }}/{{ currentPhaseMetrics.totalResults }} RAPs
+            </span>
+          </div>
+          <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              class="h-full bg-emerald-500 transition-all duration-500"
+              :style="{ width: `${currentPhaseMetrics.progressPercent}%` }"
+            ></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Filter & Search Toolbar (When in a specific phase) -->
