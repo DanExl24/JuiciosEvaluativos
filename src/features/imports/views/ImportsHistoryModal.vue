@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-
-import type { ImportHistoryEntry } from '../types/csv'
-import { readImportHistory, clearAllImportHistory } from '../utils/importHistory'
+import type { ImportHistoryEntry } from '../../../types/csv'
+import { useImportHistoryStore } from '../stores/importHistory.store'
+import { formatDate } from '../../../utils/formatters/date'
 
 const props = defineProps<{
   open: boolean
@@ -12,9 +12,10 @@ const emit = defineEmits<{
   (event: 'close'): void
 }>()
 
+const historyStore = useImportHistoryStore()
+
 const isLoading = ref(false)
 const error = ref('')
-const importHistory = ref<ImportHistoryEntry[]>([])
 const selectedImport = ref<ImportHistoryEntry | null>(null)
 const isDetailsModalOpen = ref(false)
 
@@ -23,34 +24,15 @@ function openImportDetails(entry: ImportHistoryEntry) {
   isDetailsModalOpen.value = true
 }
 
-function formatDate(value: string | null) {
-  if (!value) {
-    return 'Sin fecha'
-  }
-
-  const normalizedValue = value.includes('T') ? value : `${value}-05:00`
-  const parsedDate = new Date(normalizedValue)
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return 'Sin fecha valida'
-  }
-
-  return parsedDate.toLocaleString('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
-async function fetchImportHistory() {
+function fetchImportHistory() {
   isLoading.value = true
   error.value = ''
-
   try {
-    importHistory.value = readImportHistory() as ImportHistoryEntry[]
+    historyStore.loadHistory()
     selectedImport.value = null
   } catch (fetchError) {
     error.value =
-      fetchError instanceof Error ? fetchError.message : 'Ocurrio un error inesperado al consultar importaciones.'
+      fetchError instanceof Error ? fetchError.message : 'Ocurrió un error inesperado al consultar importaciones.'
   } finally {
     isLoading.value = false
   }
@@ -58,8 +40,8 @@ async function fetchImportHistory() {
 
 function handleClearHistory() {
   if (confirm('¿Estás seguro de que deseas limpiar todo el historial de importaciones locales? Esta acción no se puede deshacer.')) {
-    clearAllImportHistory()
-    void fetchImportHistory()
+    historyStore.clearAll()
+    fetchImportHistory()
   }
 }
 
@@ -67,7 +49,7 @@ watch(
   () => props.open,
   (open) => {
     if (open) {
-      void fetchImportHistory()
+      fetchImportHistory()
     }
   },
   { immediate: true },
@@ -84,7 +66,7 @@ watch(
         </div>
         <div class="flex items-center gap-3">
           <button
-            v-if="importHistory.length"
+            v-if="historyStore.entries.length"
             class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
             type="button"
             @click="handleClearHistory"
@@ -108,7 +90,7 @@ watch(
           </p>
 
           <article
-            v-for="entry in importHistory"
+            v-for="entry in historyStore.entries"
             :key="entry.id"
             class="rounded-[1.3rem] border border-slate-200 bg-white px-4 py-4"
           >
@@ -129,8 +111,8 @@ watch(
             </div>
           </article>
 
-          <p v-if="!importHistory.length && !isLoading" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600">
-            Aun no hay archivos importados registrados.
+          <p v-if="!historyStore.entries.length && !isLoading" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600">
+            Aún no hay archivos importados registrados.
           </p>
         </div>
       </div>
@@ -141,7 +123,7 @@ watch(
     <div class="max-h-[94vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)]">
       <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
         <div>
-          <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-emerald-700">Detalle de importacion</p>
+          <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-emerald-700">Detalle de importación</p>
           <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">{{ selectedImport.fileName }}</h3>
         </div>
         <button
