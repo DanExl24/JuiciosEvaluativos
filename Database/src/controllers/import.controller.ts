@@ -2,12 +2,15 @@ import type { Request, Response } from 'express';
 import { exec } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { pool } from '../config/db.ts';
 import { importCsvPayload } from '../services/csvImport.ts';
 import type { CsvImportPayload } from '../types.ts';
 import { listImportLogs, readImportLog, writeImportLog } from '../utils/log-writer.ts';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const execAsync = promisify(exec);
 
 export async function importCsv(req: Request, res: Response): Promise<void> {
