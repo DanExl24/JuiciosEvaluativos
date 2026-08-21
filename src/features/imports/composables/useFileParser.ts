@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import Papa, { type ParseError, type ParseMeta } from 'papaparse'
 import * as XLSX from 'xlsx'
-import type { CsvMetadata, CsvRow, CsvSummary, LogPayload } from '../../../types/csv'
+import type { CsvMetadata, CsvRow, CsvSummary, LogPayload } from '../types/import.types'
 
 export function useFileParser() {
   const selectedFile = ref<File | null>(null)

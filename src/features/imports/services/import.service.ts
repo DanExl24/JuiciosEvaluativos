@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/api/client'
-import type { LogPayload } from '../../../types/csv'
+import type { LogPayload } from '../types/import.types'
 
 export interface CsvImportResult {
   ficha: string

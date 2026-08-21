@@ -1,5 +1,6 @@
 import { apiClient } from '../../../services/api/client'
-import type { DashboardPayload, FormationCatalogCompetency, LearnerDetail } from '../../../types/dashboard'
+import type { DashboardPayload } from '../../dashboard/types/dashboard.types'
+import type { FormationCatalogCompetency, LearnerDetail } from '../types/tracking.types'
 
 export interface TrackingFilterParams {
   ficha?: string

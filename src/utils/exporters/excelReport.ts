@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx'
 import { prettyState } from '../formatters/number'
-import type { FormationCatalogResultLearner } from '../../types/dashboard'
+import type { FormationCatalogResultLearner } from '../../features/academic-tracking/types/tracking.types'
 
 export interface ResultExportOptions {
   ficha: string

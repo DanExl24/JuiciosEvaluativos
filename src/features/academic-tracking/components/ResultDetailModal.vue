@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { FormationCatalogResult, FormationCatalogResultLearner } from '../../../types/dashboard'
+import type { FormationCatalogResult, FormationCatalogResultLearner } from '../types/tracking.types'
 import { formatPercent, prettyState } from '../../../utils/formatters/number'
 import { exportResultToExcel } from '../../../utils/exporters/excelReport'
 import { exportResultToPdf } from '../../../utils/exporters/pdfReport'

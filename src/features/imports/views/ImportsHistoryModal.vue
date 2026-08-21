@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { ImportHistoryEntry } from '../../../types/csv'
+import type { ImportHistoryEntry } from '../types/import.types'
 import { useImportHistoryStore } from '../stores/importHistory.store'
 import { formatDate } from '../../../utils/formatters/date'
 

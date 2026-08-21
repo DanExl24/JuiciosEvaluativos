@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { ImportHistoryEntry, LogPayload } from '../../../types/csv'
+import type { ImportHistoryEntry, LogPayload } from '../types/import.types'
 
 const IMPORT_HISTORY_KEY = 'juicios-evaluativos-import-history'
 

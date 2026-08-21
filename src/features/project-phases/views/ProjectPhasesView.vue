@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { projectPhasesService, type ProjectData } from '../services/projectPhases.service'
+import { projectPhasesService } from '../services/projectPhases.service'
+import type { ProjectData } from '../types/projectPhases.types'
 import ProjectPhasesDetailView from './ProjectPhasesDetailView.vue'
 
 const isParsing = ref(false)

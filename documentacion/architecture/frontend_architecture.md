@@ -80,11 +80,10 @@ src/
 ├── stores/                              # Estado Global Transversal Pinia
 │   └── academicContext.store.ts         # Ficha seleccionada, aprendiz activo y filtros globales
 │
-├── types/                               # Contratos Canónicos del Dominio
+├── types/                               # Contratos Canónicos Globales Transversales
 │   ├── api.types.ts                     # ApiResponse, ApiErrorResponse
 │   ├── curriculum.types.ts              # CurricularOutcome, CurricularCompetency, CurricularPhase
-│   ├── dashboard.types.ts               # DashboardPayload, LearnerSummary, FilterOptions
-│   └── csv.types.ts                     # CsvRow, LogPayload, ImportHistoryEntry
+│   └── index.ts                         # Barril de exportación de contratos canónicos
 │
 ├── utils/                               # Funciones puras independientes del framework
 │   ├── exporters/                       # Exportación a documentos binarios

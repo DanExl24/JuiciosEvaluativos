@@ -14,8 +14,9 @@ import {
   PointElement,
   Filler,
 } from 'chart.js'
-import { projectPhasesService, type PhaseLearnerStat, type ProjectFicha } from '../services/projectPhases.service'
-import type { CurricularPhase, CurricularCompetency } from '../../../types/curriculum'
+import { projectPhasesService } from '../services/projectPhases.service'
+import type { PhaseLearnerStat, ProjectFicha } from '../types/projectPhases.types'
+import type { CurricularPhase, CurricularCompetency } from '../../../types/curriculum.types'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, Filler)
 

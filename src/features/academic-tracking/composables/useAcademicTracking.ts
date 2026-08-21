@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { trackingService, type TrackingFilterParams } from '../services/tracking.service'
-import type { DashboardPayload, FormationCatalogCompetency, LearnerDetail } from '../../../types/dashboard'
+import type { DashboardPayload } from '../../dashboard/types/dashboard.types'
+import type { FormationCatalogCompetency, LearnerDetail } from '../types/tracking.types'
 import { normalizeSearchValue } from '../../../utils/search/textNormalizer'
 
 export function useAcademicTracking() {

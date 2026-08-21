@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { dashboardService, type DashboardFilterParams } from '../services/dashboard.service'
-import type { DashboardPayload } from '../../../types/dashboard'
+import type { DashboardPayload } from '../types/dashboard.types'
 
 export function useDashboard() {
   const dashboard = ref<DashboardPayload | null>(null)

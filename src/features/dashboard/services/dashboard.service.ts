@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/api/client'
-import type { DashboardPayload } from '../../../types/dashboard'
+import type { DashboardPayload } from '../types/dashboard.types'
 
 export interface DashboardFilterParams {
   estado?: string

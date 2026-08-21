@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { formatPercent, prettyState } from '../formatters/number'
-import type { FormationCatalogResultLearner } from '../../types/dashboard'
+import type { FormationCatalogResultLearner } from '../../features/academic-tracking/types/tracking.types'
 
 export interface ResultPdfExportOptions {
   ficha: string
