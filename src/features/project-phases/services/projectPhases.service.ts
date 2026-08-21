@@ -9,6 +9,7 @@ export const projectPhasesService = {
 
   async extractPdf(file: File): Promise<unknown> {
     const formData = new FormData()
+    formData.append('file', file)
     formData.append('pdf', file)
     return apiClient.post('/api/extract/project', formData)
   },

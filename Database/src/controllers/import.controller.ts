@@ -45,25 +45,38 @@ export async function importCsv(req: Request, res: Response): Promise<void> {
 }
 
 export async function extractProjectPdf(req: Request, res: Response): Promise<void> {
-  if (!req.file) {
+  const uploadedFile = req.file || (Array.isArray(req.files) ? req.files[0] : undefined);
+  if (!uploadedFile) {
     res.status(400).json({ error: 'Debes adjuntar un archivo PDF.' });
     return;
   }
 
-  const tempPath = req.file.path;
+  const tempPath = uploadedFile.path;
   try {
-    const pythonScript = path.resolve(process.cwd(), '..', 'parse_pdf.py');
-    const fallbackScript = path.resolve(process.cwd(), 'parse_pdf.py');
+    const candidatePaths = [
+      path.resolve(process.cwd(), 'parse_pdf.py'),
+      path.resolve(process.cwd(), '..', 'parse_pdf.py'),
+      path.resolve(__dirname, '..', '..', '..', 'parse_pdf.py'),
+      path.resolve(__dirname, '..', '..', 'parse_pdf.py'),
+    ];
 
-    let scriptToRun = pythonScript;
-    try {
-      await fs.access(pythonScript);
-    } catch {
-      scriptToRun = fallbackScript;
+    let scriptToRun = '';
+    for (const p of candidatePaths) {
+      try {
+        await fs.access(p);
+        scriptToRun = p;
+        break;
+      } catch {
+        // Continue searching
+      }
+    }
+
+    if (!scriptToRun) {
+      throw new Error('No se encontro el script extractor parse_pdf.py en el sistema.');
     }
 
     const { stdout, stderr } = await execAsync(`python "${scriptToRun}" "${tempPath}"`, {
-      maxBuffer: 10 * 1024 * 1024,
+      maxBuffer: 15 * 1024 * 1024,
     });
 
     if (stderr && !stdout) {
@@ -73,6 +86,7 @@ export async function extractProjectPdf(req: Request, res: Response): Promise<vo
     const parsedJson = JSON.parse(stdout);
     res.json(parsedJson);
   } catch (error) {
+    console.error('Error extractProjectPdf:', error);
     const message = error instanceof Error ? error.message : 'No se pudo procesar el archivo PDF.';
     res.status(500).json({ error: message });
   } finally {

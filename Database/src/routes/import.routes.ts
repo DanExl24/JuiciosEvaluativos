@@ -5,6 +5,6 @@ import { upload } from '../middlewares/upload.ts';
 export const importRouter = Router();
 
 importRouter.post('/import/csv', importCsv);
-importRouter.post('/extract/project', upload.single('file'), extractProjectPdf);
+importRouter.post('/extract/project', upload.any(), extractProjectPdf);
 importRouter.get('/logs', getLogs);
 importRouter.get('/logs/:fileName', getLogByFileName);
