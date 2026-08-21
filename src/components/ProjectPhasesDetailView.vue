@@ -117,6 +117,21 @@ const phaseFilters = ref<Record<number, 'all' | 'approved' | 'pending'>>({})
 const globalFilter = ref<'all' | 'approved' | 'pending'>('all')
 const activePhaseId = ref<number | 'unassigned' | 'learner-progress' | null>(null)
 const expandedCompetencies = ref<Set<number>>(new Set())
+const expandedActivities = ref<Set<number | string>>(new Set())
+
+function isActivityExpanded(id: number | string) {
+  // If not explicitly toggled off, keep expanded by default
+  return !expandedActivities.value.has(`closed_${id}`)
+}
+
+function toggleActivityExpanded(id: number | string) {
+  const key = `closed_${id}`
+  if (expandedActivities.value.has(key)) {
+    expandedActivities.value.delete(key)
+  } else {
+    expandedActivities.value.add(key)
+  }
+}
 
 const searchQuery = ref('')
 
@@ -247,22 +262,6 @@ function toggleCompetency(id: number) {
 const currentPhase = computed(() => {
   if (typeof activePhaseId.value !== 'number') return null
   return phases.value.find(p => p.id_fase === activePhaseId.value) || null
-})
-
-const currentPhaseActivities = computed(() => {
-  if (!currentPhase.value) return []
-  if (currentPhase.value.actividades && currentPhase.value.actividades.length > 0) {
-    return currentPhase.value.actividades.map(a => a.descripcion)
-  }
-  if (!currentPhase.value.actividad) return []
-  // Fallback: split by newline or " / " if legacy data
-  if (currentPhase.value.actividad.includes('\n')) {
-    return currentPhase.value.actividad.split('\n').map(s => s.trim()).filter(Boolean)
-  }
-  if (currentPhase.value.actividad.includes(' / ')) {
-    return currentPhase.value.actividad.split(' / ').map(s => s.trim()).filter(Boolean)
-  }
-  return [currentPhase.value.actividad]
 })
 
 function getActivityNumber(act: string, idx: number): string | number {
@@ -573,84 +572,88 @@ const desertionChartOptions: ChartOptions<'line'> = {
 
     <!-- Content -->
     <div v-else class="grid gap-6">
-      <!-- Active Phase View (Competencies) -->
-      <div v-if="currentPhase" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div class="border-b border-slate-100 bg-slate-50 px-6 py-5">
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div class="space-y-2.5 min-w-0 max-w-3xl">
-                <div class="flex items-center gap-2">
-                  <span class="inline-block rounded-md bg-slate-950 px-3 py-1 text-[0.65rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(currentPhase.nombre) }}</span>
-                  <span v-if="currentPhaseActivities.length > 1" class="text-[0.65rem] font-semibold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-full">
-                    {{ currentPhaseActivities.length }} Actividades del proyecto
-                  </span>
-                </div>
-                
-                <div v-if="currentPhaseActivities.length > 0" class="space-y-2">
-                  <div 
-                    v-for="(act, idx) in currentPhaseActivities" 
-                    :key="idx"
-                    class="flex items-start gap-3 rounded-xl border border-slate-200/90 bg-white p-3 text-xs shadow-xs transition hover:border-slate-300 hover:shadow-sm"
-                  >
-                    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-[0.7rem] font-bold text-emerald-700 border border-emerald-200">
-                      {{ getActivityNumber(act, idx) }}
-                    </span>
-                    <p class="leading-relaxed font-medium text-slate-800 text-xs">
-                      {{ cleanActivityText(act) }}
-                    </p>
-                  </div>
-                </div>
-                <p v-else class="text-sm leading-relaxed text-slate-600">{{ currentPhase.actividad }}</p>
+      <!-- Active Phase View (Hierarchical Activities -> Competencies -> RAPs) -->
+      <div v-if="currentPhase" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <!-- Phase Overview Banner -->
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div class="space-y-2 max-w-2xl">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-block rounded-md bg-slate-950 px-3.5 py-1.5 text-xs font-black uppercase tracking-widest text-white">
+                  {{ formatPhaseName(currentPhase.nombre) }}
+                </span>
+                <span v-if="currentPhase.actividades && currentPhase.actividades.length > 0" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                  {{ currentPhase.actividades.length }} {{ currentPhase.actividades.length === 1 ? 'Actividad de proyecto' : 'Actividades de proyecto' }}
+                </span>
               </div>
-              <div class="flex shrink-0 gap-2">
-                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-center">
-                  <span class="text-lg font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
-                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-slate-400">Carga Esperada</span>
+              <p class="text-xs leading-relaxed text-slate-500">
+                Estructura curricular de la fase dividida por Actividades de Proyecto, Competencias y Resultados de Aprendizaje evaluados.
+              </p>
+            </div>
+            
+            <!-- Phase Global Metrics -->
+            <div class="flex shrink-0 gap-3">
+              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-center">
+                <span class="text-xl font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
+                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">Carga Esperada</span>
+              </div>
+              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
+                <span class="text-xl font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
+                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-emerald-600">Aprobados</span>
+              </div>
+              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center">
+                <span class="text-xl font-black text-amber-700">{{ currentPhase.competencies.reduce((acc, c) => acc + (c.totalResults - c.approvedResults), 0) }}</span>
+                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-amber-500">Pendientes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Cards Hierarchy -->
+        <div v-if="currentPhase.actividades && currentPhase.actividades.length > 0" class="space-y-6">
+          <div 
+            v-for="(act, aIdx) in currentPhase.actividades" 
+            :key="act.id_actividad || aIdx"
+            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+          >
+            <!-- Activity Header / Collapsible Trigger -->
+            <div 
+              @click="toggleActivityExpanded(act.id_actividad || aIdx)"
+              class="cursor-pointer border-b border-slate-100 bg-slate-50/90 px-6 py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none hover:bg-slate-100/80 transition"
+            >
+              <div class="flex items-start gap-3.5 min-w-0 flex-1">
+                <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white shadow-xs">
+                  {{ getActivityNumber(act.descripcion, aIdx) }}
                 </div>
-                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-center">
-                  <span class="text-lg font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
-                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-emerald-600">Aprobados</span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[0.65rem] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Actividad de Proyecto {{ getActivityNumber(act.descripcion, aIdx) }}
+                    </span>
+                  </div>
+                  <h4 class="mt-1 text-sm font-bold text-slate-900 leading-snug">
+                    {{ cleanActivityText(act.descripcion) }}
+                  </h4>
                 </div>
-                <div class="flex min-w-[3.5rem] flex-col items-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-center">
-                  <span class="text-lg font-black text-amber-700">{{ currentPhase.competencies.reduce((acc, c) => acc + (c.totalResults - c.approvedResults), 0) }}</span>
-                  <span class="text-[0.55rem] font-bold uppercase tracking-wider text-amber-500">Pendientes</span>
+              </div>
+
+              <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+                <span class="text-xs font-bold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+                  {{ filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length }} Competencias
+                </span>
+                <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 transition shadow-2xs">
+                  <svg class="h-4 w-4 transition-transform duration-200" :class="isActivityExpanded(act.id_actividad || aIdx) ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </div>
               </div>
             </div>
-            <p class="mt-3 max-w-3xl text-[0.7rem] text-slate-500">
-              Esta vista resume la carga estructural de la fase usando solo los resultados ligados a esta fase en <span class="font-semibold text-slate-700">fase_resultado</span>, no todos los resultados de la competencia.
-            </p>
-          </div>
 
-          <!-- Hierarchical View: Activities -> Competencies -> Learning Outcomes -->
-          <div v-if="currentPhase.actividades && currentPhase.actividades.length > 0 && currentPhase.actividades.some(a => (a.competencies || []).length > 0)" class="p-6 space-y-6">
-            <div 
-              v-for="(act, aIdx) in currentPhase.actividades" 
-              :key="act.id_actividad || aIdx"
-              class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs"
-            >
-              <!-- Activity Header -->
-              <div class="border-b border-slate-100 bg-slate-50/80 px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-start gap-3 min-w-0 flex-1">
-                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xs font-black text-emerald-700 border border-emerald-200">
-                    {{ getActivityNumber(act.descripcion, aIdx) }}
-                  </span>
-                  <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wide text-slate-900 leading-snug">
-                      {{ cleanActivityText(act.descripcion) }}
-                    </h4>
-                    <span class="text-[0.65rem] text-slate-500 font-medium">
-                      {{ (filterCompetenciesList(act.competencies, currentPhase.id_fase)).length }} Competencias
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Competencies inside this activity -->
-              <div class="divide-y divide-slate-100">
+            <!-- Activity Content (Competencies List) -->
+            <div v-show="isActivityExpanded(act.id_actividad || aIdx)" class="divide-y divide-slate-100 bg-white animate-in fade-in duration-200">
+              <template v-if="filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length > 0">
                 <div 
-                  v-for="comp in filterCompetenciesList(act.competencies, currentPhase.id_fase)" 
+                  v-for="comp in filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase)" 
                   :key="comp.id_competencia" 
-                  class="transition hover:bg-slate-50/60 relative"
+                  class="transition hover:bg-slate-50/70 relative"
                 >
                   <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
                     <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800">
@@ -659,16 +662,16 @@ const desertionChartOptions: ChartOptions<'line'> = {
                     </button>
                   </div>
 
-                  <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
-                    <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
-                      <svg class="h-4 w-4 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3.5 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
+                    <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
+                      <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
+                      <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                        <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200 shadow-2xs">
                           JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
                         </span>
-                        <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+                        <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200 shadow-2xs">
                           PROYECTO_FORMATIVO: {{ comp.codigo_proyecto }}
                         </span>
                         <span v-if="comp.isApproved" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
@@ -679,13 +682,14 @@ const desertionChartOptions: ChartOptions<'line'> = {
                           {{ comp.approvedResults }}/{{ comp.totalResults }} Resultados
                         </span>
                       </div>
-                      <p class="mt-0.5 text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
+                      <p class="text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
                     </div>
                   </button>
 
+                  <!-- Expanded Learning Outcomes (RAPs) -->
                   <div v-show="expandedCompetencies.has(comp.id_competencia)" class="pb-6 pl-16 pr-6 animate-in fade-in slide-in-from-top-1 duration-200">
                     <ul class="grid gap-2">
-                      <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
+                      <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3.5 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
                         <div class="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
                           <svg v-if="res.isApproved" class="h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
                           <div v-else class="text-[0.6rem] font-black text-amber-500">{{ Math.round((res.approvedCount / (res.totalCount || 1)) * 100) }}%</div>
@@ -708,20 +712,29 @@ const desertionChartOptions: ChartOptions<'line'> = {
                     </ul>
                   </div>
                 </div>
+              </template>
+              <div v-else class="p-6 text-center text-xs text-slate-400 italic">
+                No hay competencias asociadas a esta actividad que coincidan con el filtro actual.
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Fallback Flat Competencies View -->
-          <div v-else class="divide-y divide-slate-100">
-            <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
+        <!-- Fallback Flat List (if no activities exist) -->
+        <div v-else class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-100">
+          <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
             <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
-              <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>Gestionar</button>
+              <button @click.stop="openAssignModal(comp)" class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>
+                Gestionar
+              </button>
             </div>
-            <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
-              <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition"><svg class="h-4 w-4 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+            <button @click="toggleCompetency(comp.id_competencia)" class="flex w-full items-start gap-3.5 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''">
+              <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
+                <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
+                <div class="flex items-center gap-2 flex-wrap mb-1.5">
                   <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
                     JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
                   </span>
@@ -736,12 +749,12 @@ const desertionChartOptions: ChartOptions<'line'> = {
                     {{ comp.approvedResults }}/{{ comp.totalResults }} Resultados
                   </span>
                 </div>
-                <p class="mt-0.5 text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
+                <p class="text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
               </div>
             </button>
             <div v-show="expandedCompetencies.has(comp.id_competencia)" class="pb-6 pl-16 pr-6 animate-in fade-in slide-in-from-top-1 duration-200">
               <ul class="grid gap-2">
-                <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
+                <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3.5 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
                   <div class="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
                     <svg v-if="res.isApproved" class="h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
                     <div v-else class="text-[0.6rem] font-black text-amber-500">{{ Math.round((res.approvedCount / (res.totalCount || 1)) * 100) }}%</div>
