@@ -124,10 +124,6 @@ def extract_project_data(pdf_path):
                     if not in_section_3 or section_3_ended:
                         continue
 
-                    # Skip header rows
-                    if "FASES DEL PROYECTO" in norm_row or "ACTIVIDADES DEL PROYECTO" in norm_row or "RESULTADOS DE APRENDIZAJE" in norm_row:
-                        continue
-
                     # Detect phase change
                     norm_c0 = normalize_text(col0)
                     if "ANALISIS" in norm_c0:
@@ -144,9 +140,14 @@ def extract_project_data(pdf_path):
                         if act_cleaned and (not current_activity or len(act_cleaned) > 5):
                             current_activity = act_cleaned
 
-                    # Check if this row is a text continuation from previous row
+                    # Check if this row has codes
                     has_res_code = bool(re.search(r'\b\d{6}\b', col2))
                     has_comp_code = bool(re.search(r'\b\d{6,9}\b', col3))
+
+                    # Skip header rows ONLY if it does not contain actual outcome/competency codes
+                    if not has_res_code and not has_comp_code:
+                        if "FASES DEL PROYECTO" in norm_row or "ACTIVIDADES DEL PROYECTO" in norm_row or "RESULTADOS DE APRENDIZAJE" in norm_row:
+                            continue
 
                     if (not has_res_code and not has_comp_code and current_record) or (not col0 and not col1 and not has_res_code and current_record):
                         # Merge text into previous record

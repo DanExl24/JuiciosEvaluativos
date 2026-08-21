@@ -146,14 +146,17 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
 
     const idFase = phaseRes.rows[0].id_fase;
     phasesInserted++;
-    persistedPhases.push({
+
+    const persistedPhase = {
       id_fase: idFase,
       competencyCodes: phase.competencyCodes,
       resultCodes: phase.resultCodes,
       rawText: phase.rawText,
       activity: phase.activity,
-      mappings: (phase as any).mappings
-    });
+      mappings: (phase as any).mappings,
+      activityIdMap: new Map<string, number>(),
+    };
+    persistedPhases.push(persistedPhase);
 
     // Save structured activities to fase_actividad
     await client.query('DELETE FROM fase_actividad WHERE id_fase = $1', [idFase]);
@@ -176,7 +179,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
         activityIdMap.set(actText, insRes.rows[0].id_actividad);
       }
     }
-    (phase as any).activityIdMap = activityIdMap;
+    persistedPhase.activityIdMap = activityIdMap;
   }
 
   await client.query(`
@@ -228,7 +231,23 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
 
     if (phaseMappings.length > 0) {
       for (const m of phaseMappings) {
-        const actId = actIdMap.get(m.activity) || (actIdMap.values().next().value ?? null);
+        let actId = actIdMap.get(m.activity) || null;
+        if (!actId && m.activity) {
+          const mNumMatch = m.activity.match(/^(\d+)/);
+          const mNum = mNumMatch ? parseInt(mNumMatch[1], 10) : null;
+          for (const [actText, id] of actIdMap.entries()) {
+            const numMatch = actText.match(/^(\d+)/);
+            const num = numMatch ? parseInt(numMatch[1], 10) : null;
+            if (mNum !== null && mNum === num) {
+              actId = id;
+              break;
+            }
+          }
+        }
+        if (!actId) {
+          actId = actIdMap.values().next().value ?? null;
+        }
+
         const resCode = m.resultCode ? String(m.resultCode) : '';
         const compCode = m.competencyCode ? String(m.competencyCode) : '';
 
