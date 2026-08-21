@@ -182,20 +182,24 @@ const visibleFormationCompetencies = computed(() => {
       const competencyMatch =
         !query ||
         competency.name.toLowerCase().includes(query) ||
-        competency.code.toLowerCase().includes(query);
+        competency.code.toLowerCase().includes(query) ||
+        (competency.codigo_juicio && competency.codigo_juicio.toLowerCase().includes(query)) ||
+        (competency.codigo_proyecto && competency.codigo_proyecto.toLowerCase().includes(query));
 
       const filteredResults = competency.results.filter((result) => {
         const judgementMatch =
           !judgement ||
           result.learners.some((learner) => learner.judgement === judgement);
 
-        return (
-          judgementMatch &&
-          (!query ||
-            competencyMatch ||
-            result.code.toLowerCase().includes(query) ||
-            result.detail.toLowerCase().includes(query))
-        );
+        const resultMatch =
+          !query ||
+          competencyMatch ||
+          result.code.toLowerCase().includes(query) ||
+          (result.codigo_juicio && result.codigo_juicio.toLowerCase().includes(query)) ||
+          (result.codigo_proyecto && result.codigo_proyecto.toLowerCase().includes(query)) ||
+          result.detail.toLowerCase().includes(query);
+
+        return judgementMatch && resultMatch;
       });
 
       if (!competencyMatch && !filteredResults.length) {
@@ -243,13 +247,17 @@ const visibleLearnerCompetencies = computed(() => {
       const competencyMatch =
         !query ||
         competency.name.toLowerCase().includes(query) ||
-        competency.code.toLowerCase().includes(query);
+        competency.code.toLowerCase().includes(query) ||
+        (competency.codigo_juicio && competency.codigo_juicio.toLowerCase().includes(query)) ||
+        (competency.codigo_proyecto && competency.codigo_proyecto.toLowerCase().includes(query));
 
       const filteredResults = competency.results.filter((result) => {
         const resultMatch =
           !query ||
           competencyMatch ||
           result.code.toLowerCase().includes(query) ||
+          (result.codigo_juicio && result.codigo_juicio.toLowerCase().includes(query)) ||
+          (result.codigo_proyecto && result.codigo_proyecto.toLowerCase().includes(query)) ||
           result.detail.toLowerCase().includes(query) ||
           result.funcionario.toLowerCase().includes(query);
 

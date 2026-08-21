@@ -531,7 +531,7 @@ onMounted(() => {
           >
             <option value="">Todas</option>
             <option v-for="competencia in filteredCompetencyOptions" :key="`${competencia.ficha}-${competencia.codigo}`" :value="competencia.codigo">
-              {{ competencia.codigo }} · {{ competencia.nombre }}
+              [JUICIO: {{ competencia.codigo_juicio || competencia.codigo }} | PROYECTO: {{ competencia.codigo_proyecto || competencia.codigo }}] · {{ competencia.nombre }}
             </option>
           </select>
         </label>
@@ -546,7 +546,7 @@ onMounted(() => {
           >
             <option value="">Todos</option>
             <option v-for="resultado in filteredResultOptions" :key="`${resultado.ficha}-${resultado.competencia_codigo}-${resultado.codigo}`" :value="resultado.codigo">
-              {{ resultado.codigo }} · {{ resultado.detalle }}
+              [JUICIO: {{ resultado.codigo_juicio || resultado.codigo }} | PROYECTO: {{ resultado.codigo_proyecto || resultado.codigo }}] · {{ resultado.detalle }}
             </option>
           </select>
         </label>
