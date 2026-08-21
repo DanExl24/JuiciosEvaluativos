@@ -17,6 +17,8 @@ import {
 import { projectPhasesService } from '../services/projectPhases.service'
 import type { PhaseLearnerStat, ProjectFicha } from '../types/projectPhases.types'
 import type { CurricularPhase, CurricularCompetency } from '../../../types/curriculum.types'
+import { formatDate } from '../../../utils/formatters/date'
+import { prettyState } from '../../../utils/formatters/number'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement, Filler)
 
@@ -685,6 +687,94 @@ const desertionChartOptions: ChartOptions<'line'> = {
           </div>
           <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
             <div class="h-full bg-emerald-500 transition-all duration-500" :style="{ width: `${stat.progressPercentage}%` }"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desertion / Dropout Detailed Breakdown by Phase -->
+      <div class="space-y-6">
+        <div class="border-b border-slate-200/80 pb-2">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">Histórico de Novedades Académicas</span>
+          <h3 class="text-sm font-bold text-slate-900">Aprendices Retirados o Trasladados por Fase</h3>
+          <p class="text-xs text-slate-500">Última actividad evaluativa registrada antes de la deserción o traslado.</p>
+        </div>
+
+        <div
+          v-for="stat in learnerStats"
+          :key="`desertion-${stat.id_fase}`"
+          class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-4"
+        >
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3 gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+              <h4 class="text-sm font-bold text-slate-900">Fase de {{ formatPhaseName(stat.nombre) }}</h4>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 border border-rose-200">
+                {{ stat.voluntarioCount }} Retiro(s) Voluntario(s)
+              </span>
+              <span class="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-bold text-sky-700 border border-sky-200">
+                {{ stat.trasladoCount }} Traslado(s)
+              </span>
+              <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700">
+                Total Novedades: {{ stat.desertedCount }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Learners Cards Grid -->
+          <div v-if="stat.desertedLearners && stat.desertedLearners.length > 0" class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="learner in stat.desertedLearners"
+              :key="learner.documento"
+              class="flex flex-col justify-between rounded-xl border border-rose-100 bg-rose-50/20 p-4 shadow-2xs transition hover:bg-rose-50/40"
+            >
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h5 class="text-xs font-bold text-slate-900 leading-snug">{{ learner.nombre }}</h5>
+                    <p class="text-[0.7rem] text-slate-500 font-medium">Doc: {{ learner.documento }}</p>
+                  </div>
+                  <span
+                    class="shrink-0 rounded px-2 py-0.5 text-[0.65rem] font-bold uppercase"
+                    :class="learner.estado?.toLowerCase().includes('traslado') ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-800'"
+                  >
+                    {{ prettyState(learner.estado) }}
+                  </span>
+                </div>
+
+                <div class="mt-3 space-y-1.5 border-t border-rose-100/80 pt-2.5 text-xs">
+                  <div class="flex items-center justify-between text-[0.7rem] text-slate-500">
+                    <span class="font-semibold text-slate-600">Último Juicio Registrado:</span>
+                    <span class="font-bold text-slate-700">{{ formatDate(learner.ultima_fecha) }}</span>
+                  </div>
+
+                  <div class="rounded-lg bg-white p-2.5 border border-slate-200/60 shadow-2xs space-y-1">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="rounded bg-slate-100 px-1.5 py-0.2 text-[0.65rem] font-bold text-slate-700">
+                        Cód: {{ learner.competencia_codigo }}
+                      </span>
+                      <span
+                        class="rounded px-1.5 py-0.2 text-[0.65rem] font-bold"
+                        :class="learner.juicio_estado?.toLowerCase() === 'aprobado' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'"
+                      >
+                        {{ prettyState(learner.juicio_estado) }}
+                      </span>
+                    </div>
+                    <p class="text-[0.7rem] font-semibold text-slate-800 line-clamp-1" :title="learner.competencia_nombre">
+                      {{ learner.competencia_nombre }}
+                    </p>
+                    <p class="text-[0.65rem] text-slate-500 line-clamp-2" :title="learner.resultado_detalle">
+                      <b class="text-slate-600">RAP {{ learner.resultado_codigo }}:</b> {{ learner.resultado_detalle }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="p-6 text-center text-xs text-slate-400">
+            No se registraron deserciones ni traslados durante la fase de {{ formatPhaseName(stat.nombre) }}.
           </div>
         </div>
       </div>
