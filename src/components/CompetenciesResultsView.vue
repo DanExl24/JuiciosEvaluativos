@@ -1079,7 +1079,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="grid gap-4 p-6 xl:p-7">
+<div class="grid gap-4 p-6 xl:p-7">
           <article
             v-for="competency in visibleLearnerCompetencies"
             :key="competency.code"
@@ -1091,11 +1091,16 @@ onMounted(() => {
               @click="toggleCompetency(competency.code)"
             >
               <div>
-                <p
-                  class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-emerald-700"
-                >
-                  {{ competency.code }}
-                </p>
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[0.68rem] font-bold text-indigo-700">
+                    <span class="text-[0.58rem] font-black uppercase tracking-wider text-indigo-500">JUICIO:</span>
+                    {{ competency.codigo_juicio || competency.code }}
+                  </span>
+                  <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[0.68rem] font-bold text-emerald-700">
+                    <span class="text-[0.58rem] font-black uppercase tracking-wider text-emerald-500">PROYECTO:</span>
+                    {{ competency.codigo_proyecto || competency.code }}
+                  </span>
+                </div>
                 <h4 class="mt-1 text-base font-semibold text-slate-950">
                   {{ competency.name }}
                 </h4>
@@ -1203,9 +1208,16 @@ onMounted(() => {
                       <td
                         class="border-b border-slate-100 px-4 py-4 align-top text-sm text-slate-700"
                       >
-                        <p class="font-semibold text-slate-950">
-                          {{ result.code }}
-                        </p>
+                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                          <span class="inline-flex items-center gap-1 rounded bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 text-[0.65rem] font-bold text-indigo-700">
+                            <span class="text-[0.55rem] font-black uppercase text-indigo-500">JUICIO:</span>
+                            {{ result.codigo_juicio || result.code }}
+                          </span>
+                          <span class="inline-flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[0.65rem] font-bold text-emerald-700">
+                            <span class="text-[0.55rem] font-black uppercase text-emerald-500">PROYECTO:</span>
+                            {{ result.codigo_proyecto || result.code }}
+                          </span>
+                        </div>
                         <p class="mt-1 text-xs leading-6 text-slate-500">
                           {{ result.detail }}
                         </p>
@@ -1244,7 +1256,7 @@ onMounted(() => {
                             class="h-2 overflow-hidden rounded-full bg-slate-200"
                           >
                             <div
-                              class="h-full rounded-full bg-slate-950"
+                              class="h-full rounded-full bg-emerald-500"
                               :style="{ width: `${result.statusProgress}%` }"
                             ></div>
                           </div>
@@ -1270,44 +1282,54 @@ onMounted(() => {
         </div>
       </section>
 
+      <!-- Catalog Accordions Section -->
       <section
-        v-else
+        v-if="!learnerDetail"
         class="min-w-0 overflow-hidden rounded-[2rem] border border-emerald-950/10 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur"
       >
-        <div class="border-b border-slate-200/80 px-6 py-5 xl:px-7">
-          <span
-            class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700"
-            >Catalogo de la ficha</span
-          >
-          <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">
-            {{
-              currentFichaLabel
-                ? `Competencias y resultados de la ficha ${currentFichaLabel}`
-                : "Competencias y resultados de todas las formaciones"
-            }}
-          </h3>
+        <div
+          class="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-5 sm:flex-row sm:items-end sm:justify-between xl:px-7"
+        >
+          <div>
+            <span
+              class="text-[0.7rem] font-semibold uppercase tracking-[0.26em] text-emerald-700"
+              >Catalogo</span
+            >
+            <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+              Competencias y resultados de la formacion
+            </h3>
+          </div>
+          <p class="text-sm text-slate-500">
+            Muestra todas las competencias asociadas a la ficha seleccionada.
+          </p>
         </div>
 
-        <div class="grid gap-4 p-6 xl:p-7">
+        <div v-if="formationCatalog.length" class="grid gap-4 p-6 xl:p-7">
           <article
             v-for="competency in visibleFormationCompetencies"
             :key="`${competency.ficha}-${competency.code}`"
             class="overflow-hidden rounded-[1.6rem] border border-emerald-950/10 bg-white"
           >
             <button
-              class="flex w-full flex-col gap-4 bg-[linear-gradient(135deg,rgba(236,253,245,0.92),rgba(255,255,255,0.98))] px-5 py-5 text-left sm:flex-row sm:items-center sm:justify-between"
+              class="flex w-full flex-col gap-4 bg-[linear-gradient(135deg,rgba(236,253,245,0.92),rgba(255,255,255,0.98))] px-5 py-4 text-left sm:flex-row sm:items-center sm:justify-between"
               type="button"
               @click="
                 toggleCompetency(`${competency.ficha}-${competency.code}`)
               "
             >
               <div>
-                <p
-                  class="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-emerald-700"
-                >
-                  {{ competency.code }} · Ficha {{ competency.ficha }}
-                </p>
-                <h4 class="mt-2 text-lg font-semibold text-slate-950">
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[0.68rem] font-bold text-indigo-700">
+                    <span class="text-[0.58rem] font-black uppercase tracking-wider text-indigo-500">JUICIO:</span>
+                    {{ competency.codigo_juicio || competency.code }}
+                  </span>
+                  <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[0.68rem] font-bold text-emerald-700">
+                    <span class="text-[0.58rem] font-black uppercase tracking-wider text-emerald-500">PROYECTO:</span>
+                    {{ competency.codigo_proyecto || competency.code }}
+                  </span>
+                  <span class="text-xs text-slate-400">· Ficha {{ competency.ficha }}</span>
+                </div>
+                <h4 class="mt-1 text-lg font-semibold text-slate-950">
                   {{ competency.name }}
                 </h4>
               </div>
@@ -1414,7 +1436,16 @@ onMounted(() => {
                       <td
                         class="border-b border-slate-100 px-4 py-4 align-top text-sm font-semibold text-slate-950"
                       >
-                        {{ result.code }}
+                        <div class="flex flex-col gap-1">
+                          <span class="inline-flex items-center gap-1 rounded bg-indigo-50 border border-indigo-200/80 px-1.5 py-0.5 text-[0.65rem] font-bold text-indigo-700 w-fit">
+                            <span class="text-[0.55rem] font-black uppercase text-indigo-500">JUICIO:</span>
+                            {{ result.codigo_juicio || result.code }}
+                          </span>
+                          <span class="inline-flex items-center gap-1 rounded bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 text-[0.65rem] font-bold text-emerald-700 w-fit">
+                            <span class="text-[0.55rem] font-black uppercase text-emerald-500">PROYECTO:</span>
+                            {{ result.codigo_proyecto || result.code }}
+                          </span>
+                        </div>
                       </td>
                       <td
                         class="border-b border-slate-100 px-4 py-4 align-top text-sm leading-6 text-slate-700"
@@ -1448,15 +1479,15 @@ onMounted(() => {
                           aprobados
                         </p>
                         <p class="mt-1 text-xs text-slate-500">
-                          Pendientes {{ result.pendingLearners }} · Desaprobados
-                          {{ result.disapprovedLearners }}
+                          {{ result.pendingLearners }} pendientes ·
+                          {{ result.disapprovedLearners }} desaprobados
                         </p>
                       </td>
                       <td
                         class="border-b border-slate-100 px-4 py-4 align-top text-sm text-slate-700"
                       >
                         <button
-                          class="rounded-xl bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                          class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-800 transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-900"
                           type="button"
                           @click="openCatalogResultModal(competency, result)"
                         >

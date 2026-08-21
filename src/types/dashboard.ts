@@ -39,6 +39,8 @@ export interface LearnerSummary {
 
 export interface CompetencySummary {
   code: string
+  codigo_juicio: string
+  codigo_proyecto: string
   name: string
   program: string
   ficha: string
@@ -57,7 +59,13 @@ export interface RecentJudgement {
   ficha: string
   program: string
   competencia: string
+  competencia_codigo: string
+  competencia_codigo_juicio: string
+  competencia_codigo_proyecto: string
   resultado: string
+  resultado_codigo: string
+  resultado_codigo_juicio: string
+  resultado_codigo_proyecto: string
   judgement: string
   registeredAt: string
   funcionario: string
@@ -65,12 +73,16 @@ export interface RecentJudgement {
 
 export interface FilterOption {
   codigo: string
+  codigo_juicio: string
+  codigo_proyecto: string
   nombre: string
   ficha: string
 }
 
 export interface ResultOption {
   codigo: string
+  codigo_juicio: string
+  codigo_proyecto: string
   detalle: string
   competencia_codigo: string
   ficha: string
@@ -120,6 +132,8 @@ export interface DashboardFilters {
 
 export interface LearnerResultDetail {
   code: string
+  codigo_juicio: string
+  codigo_proyecto: string
   detail: string
   judgement: string
   registeredAt: string | null
@@ -129,6 +143,8 @@ export interface LearnerResultDetail {
 
 export interface LearnerCompetencyDetail {
   code: string
+  codigo_juicio: string
+  codigo_proyecto: string
   name: string
   totalResults: number
   approvedResults: number
@@ -145,6 +161,8 @@ export interface LearnerDetail {
 
 export interface FormationCatalogResult {
   code: string
+  codigo_juicio: string
+  codigo_proyecto: string
   detail: string
   totalLearners: number
   approvedLearners: number
@@ -167,6 +185,8 @@ export interface FormationCatalogCompetency {
   ficha: string
   program: string
   code: string
+  codigo_juicio: string
+  codigo_proyecto: string
   name: string
   totalResults: number
   totalLearners: number

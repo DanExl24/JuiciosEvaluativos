@@ -13,8 +13,12 @@ interface JoinedRow {
   aprendiz_apellidos: string;
   aprendiz_estado: string;
   competencia_codigo: string;
+  competencia_codigo_juicio: string | null;
+  competencia_codigo_proyecto: string | null;
   competencia_nombre: string;
   resultado_codigo: string;
+  resultado_codigo_juicio: string | null;
+  resultado_codigo_proyecto: string | null;
   resultado_detalle: string;
   juicio_estado: string;
   juicio_fecha: string | null;
@@ -54,13 +58,13 @@ function buildWhere(filters: DashboardFilters) {
   const competencia = normalizeFilterValue(filters.competencia);
   if (competencia) {
     values.push(competencia);
-    clauses.push(`c.codigo = $${values.length}`);
+    clauses.push(`(c.codigo = $${values.length} OR c.codigo_juicio = $${values.length} OR c.codigo_proyecto = $${values.length})`);
   }
 
   const resultado = normalizeFilterValue(filters.resultado);
   if (resultado) {
     values.push(resultado);
-    clauses.push(`r.codigo = $${values.length}`);
+    clauses.push(`(r.codigo = $${values.length} OR r.codigo_juicio = $${values.length} OR r.codigo_proyecto = $${values.length})`);
   }
 
   const aprendiz = normalizeFilterValue(filters.aprendiz);
@@ -109,8 +113,12 @@ async function queryJoinedRows(pool: Pool, filters: DashboardFilters) {
         a.apellidos AS aprendiz_apellidos,
         a.estado AS aprendiz_estado,
         c.codigo AS competencia_codigo,
+        c.codigo_juicio AS competencia_codigo_juicio,
+        c.codigo_proyecto AS competencia_codigo_proyecto,
         c.nombre AS competencia_nombre,
         r.codigo AS resultado_codigo,
+        r.codigo_juicio AS resultado_codigo_juicio,
+        r.codigo_proyecto AS resultado_codigo_proyecto,
         r.detalle AS resultado_detalle,
         j.estado AS juicio_estado,
         to_char(j.fecha AT TIME ZONE 'America/Bogota', 'YYYY-MM-DD"T"HH24:MI:SS') AS juicio_fecha,
@@ -252,6 +260,8 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
     if (!competenciaMap.has(competenciaKey)) {
       competenciaMap.set(competenciaKey, {
         code: row.competencia_codigo,
+        codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
+        codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
         name: row.competencia_nombre,
         program: row.programa_nombre,
         ficha: row.ficha_caracterizacion,
@@ -329,7 +339,13 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
       ficha: row.ficha_caracterizacion,
       program: row.programa_nombre,
       competencia: row.competencia_nombre,
+      competencia_codigo: row.competencia_codigo,
+      competencia_codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
+      competencia_codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
       resultado: row.resultado_detalle,
+      resultado_codigo: row.resultado_codigo,
+      resultado_codigo_juicio: row.resultado_codigo_juicio || row.resultado_codigo,
+      resultado_codigo_proyecto: row.resultado_codigo_proyecto || row.resultado_codigo,
       judgement: row.juicio_estado,
       registeredAt: row.juicio_fecha!,
       funcionario: buildFuncionarioLabel(row),
@@ -340,23 +356,27 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
   const competenciasOptions = distinct(
     rows.map((row) => JSON.stringify({
       codigo: row.competencia_codigo,
+      codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
+      codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
       nombre: row.competencia_nombre,
       ficha: row.ficha_caracterizacion,
     })),
   )
-    .map((item) => JSON.parse(item) as { codigo: string; nombre: string; ficha: string })
+    .map((item) => JSON.parse(item) as { codigo: string; codigo_juicio: string; codigo_proyecto: string; nombre: string; ficha: string })
     .sort((a, b) => a.ficha.localeCompare(b.ficha, 'es') || a.nombre.localeCompare(b.nombre, 'es'));
 
   const resultadosOptions = distinct(
     rows.map((row) => JSON.stringify({
       codigo: row.resultado_codigo,
+      codigo_juicio: row.resultado_codigo_juicio || row.resultado_codigo,
+      codigo_proyecto: row.resultado_codigo_proyecto || row.resultado_codigo,
       detalle: row.resultado_detalle,
       competencia_codigo: row.competencia_codigo,
       ficha: row.ficha_caracterizacion,
     })),
   )
     .map((item) =>
-      JSON.parse(item) as { codigo: string; detalle: string; competencia_codigo: string; ficha: string },
+      JSON.parse(item) as { codigo: string; codigo_juicio: string; codigo_proyecto: string; detalle: string; competencia_codigo: string; ficha: string },
     )
     .sort((a, b) => a.ficha.localeCompare(b.ficha, 'es') || a.codigo.localeCompare(b.codigo, 'es'));
 
@@ -398,15 +418,15 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
     programs,
     learners,
     competencies,
-      pendingLearners,
-      recentJudgements,
-      options: {
-        ...options,
-        fichasDetalle: options.fichas_detalle,
-        competencias: competenciasOptions,
-        resultados: resultadosOptions,
-        aprendices: aprendicesOptions,
-      },
+    pendingLearners,
+    recentJudgements,
+    options: {
+      ...options,
+      fichasDetalle: options.fichas_detalle,
+      competencias: competenciasOptions,
+      resultados: resultadosOptions,
+      aprendices: aprendicesOptions,
+    },
   };
 }
 
@@ -420,6 +440,8 @@ export async function getLearnerDetail(pool: Pool, learnerId: number) {
   const firstRow = rows[0]!;
   const competencyMap = new Map<string, {
     code: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
     name: string;
     totalResults: number;
     approvedResults: number;
@@ -428,6 +450,8 @@ export async function getLearnerDetail(pool: Pool, learnerId: number) {
     progress: number;
     results: Array<{
       code: string;
+      codigo_juicio: string;
+      codigo_proyecto: string;
       detail: string;
       judgement: string;
       registeredAt: string | null;
@@ -454,6 +478,8 @@ export async function getLearnerDetail(pool: Pool, learnerId: number) {
     if (!competencyMap.has(row.competencia_codigo)) {
       competencyMap.set(row.competencia_codigo, {
         code: row.competencia_codigo,
+        codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
+        codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
         name: row.competencia_nombre,
         totalResults: 0,
         approvedResults: 0,
@@ -476,6 +502,8 @@ export async function getLearnerDetail(pool: Pool, learnerId: number) {
 
     competency.results.push({
       code: row.resultado_codigo,
+      codigo_juicio: row.resultado_codigo_juicio || row.resultado_codigo,
+      codigo_proyecto: row.resultado_codigo_proyecto || row.resultado_codigo,
       detail: row.resultado_detalle,
       judgement: row.juicio_estado,
       registeredAt: row.juicio_fecha,
@@ -528,6 +556,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
     ficha: string;
     program: string;
     code: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
     name: string;
     totalResults: number;
     totalLearners: number;
@@ -537,6 +567,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
     progress: number;
     results: Array<{
       code: string;
+      codigo_juicio: string;
+      codigo_proyecto: string;
       detail: string;
       totalLearners: number;
       approvedLearners: number;
@@ -558,6 +590,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
     ficha: string;
     competencyCode: string;
     code: string;
+    codigo_juicio: string;
+    codigo_proyecto: string;
     detail: string;
     totalLearners: number;
     approvedLearners: number;
@@ -581,6 +615,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
         ficha: row.ficha_caracterizacion,
         program: row.programa_nombre,
         code: row.competencia_codigo,
+        codigo_juicio: row.competencia_codigo_juicio || row.competencia_codigo,
+        codigo_proyecto: row.competencia_codigo_proyecto || row.competencia_codigo,
         name: row.competencia_nombre,
         totalResults: 0,
         totalLearners: 0,
@@ -598,6 +634,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
         ficha: row.ficha_caracterizacion,
         competencyCode: row.competencia_codigo,
         code: row.resultado_codigo,
+        codigo_juicio: row.resultado_codigo_juicio || row.resultado_codigo,
+        codigo_proyecto: row.resultado_codigo_proyecto || row.resultado_codigo,
         detail: row.resultado_detalle,
         totalLearners: 0,
         approvedLearners: 0,
@@ -650,6 +688,8 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
 
     competency.results.push({
       code: result.code,
+      codigo_juicio: result.codigo_juicio,
+      codigo_proyecto: result.codigo_proyecto,
       detail: result.detail,
       totalLearners: result.totalLearners,
       approvedLearners: result.approvedLearners,
@@ -668,3 +708,4 @@ export async function getFormationCompetencyCatalog(pool: Pool, filters: Dashboa
   return [...competencyMap.values()]
     .sort((a, b) => a.ficha.localeCompare(b.ficha, 'es') || a.name.localeCompare(b.name, 'es'));
 }
+
