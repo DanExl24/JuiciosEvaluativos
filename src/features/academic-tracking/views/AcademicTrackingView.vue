@@ -34,6 +34,13 @@ const selectedModalResult = ref<{
   result: FormationCatalogResult
 } | null>(null)
 
+// Competency filter status on the right: 'all' | 'pending' | 'completed'
+const competencyStatusFilter = ref<'all' | 'pending' | 'completed'>('all')
+
+// Pagination for competencies on the right
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+
 const filters = ref({
   estado: academicStore.filters.estado || '',
   ficha: academicStore.selectedFicha || academicStore.filters.ficha || '',
@@ -61,7 +68,8 @@ const visibleFormationCompetencies = computed(() =>
   filterCatalog(catalogSearch.value, filters.value.juicio),
 )
 
-const visibleLearnerCompetencies = computed(() => {
+// Filtered list of learner competencies with search and status filter
+const allFilteredLearnerCompetencies = computed(() => {
   if (!learnerDetail.value) return []
   const query = normalizeSearchValue(catalogSearch.value)
   const judgement = filters.value.juicio.toLowerCase()
@@ -97,12 +105,46 @@ const visibleLearnerCompetencies = computed(() => {
         results: filteredResults,
       }
     })
-    .filter((comp): comp is NonNullable<typeof comp> => comp !== null)
+    .filter((comp): comp is NonNullable<typeof comp> => {
+      if (!comp) return false
+      if (competencyStatusFilter.value === 'pending') {
+        return comp.approvedResults < comp.totalResults
+      }
+      if (competencyStatusFilter.value === 'completed') {
+        return comp.approvedResults === comp.totalResults && comp.totalResults > 0
+      }
+      return true
+    })
 })
+
+// Paginated Competencies for current page
+const paginatedLearnerCompetencies = computed(() => {
+  if (itemsPerPage.value === 0) return allFilteredLearnerCompetencies.value
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return allFilteredLearnerCompetencies.value.slice(start, start + itemsPerPage.value)
+})
+
+const totalPages = computed(() => {
+  if (itemsPerPage.value === 0 || !allFilteredLearnerCompetencies.value.length) return 1
+  return Math.ceil(allFilteredLearnerCompetencies.value.length / itemsPerPage.value)
+})
+
+function expandAllCompetencies() {
+  allFilteredLearnerCompetencies.value.forEach((comp) => {
+    if (!expandedCompetencies.value.includes(comp.code)) {
+      expandedCompetencies.value.push(comp.code)
+    }
+  })
+}
+
+function collapseAllCompetencies() {
+  expandedCompetencies.value = []
+}
 
 function selectLearner(id: number | null) {
   selectedLearnerId.value = id
   academicStore.setLearner(id)
+  currentPage.value = 1
   if (id) {
     void loadLearnerDetail(id)
   } else {
@@ -124,6 +166,8 @@ function resetAllFilters() {
   selectedLearnerId.value = null
   fichaLearnerSearch.value = ''
   catalogSearch.value = ''
+  competencyStatusFilter.value = 'all'
+  currentPage.value = 1
   academicStore.resetFilters()
   void refreshData()
 }
@@ -155,10 +199,20 @@ watch(
 )
 
 watch(
+  () => academicStore.selectedFicha,
+  (newFicha) => {
+    if (newFicha !== filters.value.ficha) {
+      filters.value.ficha = newFicha
+    }
+  },
+)
+
+watch(
   () => academicStore.selectedLearnerId,
   (newId) => {
     if (newId !== selectedLearnerId.value) {
       selectedLearnerId.value = newId
+      currentPage.value = 1
       if (newId) {
         void loadLearnerDetail(newId)
       } else {
@@ -221,8 +275,8 @@ onMounted(() => {
 
     <!-- Master-Detail Split Grid -->
     <div class="grid w-full gap-6 lg:grid-cols-[300px_1fr] items-start">
-      <!-- Master Panel (Left): Learners Selector List -->
-      <div class="space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+      <!-- Master Panel (Left): Sticky Learners Selector List -->
+      <div class="lg:sticky lg:top-20 flex flex-col max-h-[calc(100vh-6.5rem)] space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <span class="text-xs font-bold text-slate-900">Población Estudiantil</span>
           <span class="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -268,8 +322,8 @@ onMounted(() => {
           </button>
         </div>
 
-        <!-- Learners List Container -->
-        <div class="max-h-[65vh] space-y-1.5 overflow-y-auto pr-1">
+        <!-- Learners List Container with Independent Internal Scroll -->
+        <div class="flex-1 space-y-1.5 overflow-y-auto pr-1">
           <button
             v-for="l in fichaLearners"
             :key="l.id"
@@ -347,10 +401,60 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Competencies List with Outcomes -->
+          <!-- Controls Bar: Status Filter + Expand/Collapse All + Page Indexing -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+            <!-- Filter by Status -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-[0.65rem] font-bold uppercase text-slate-400 mr-1">Filtrar:</span>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'all' ? 'bg-slate-900 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                type="button"
+                @click="competencyStatusFilter = 'all'; currentPage = 1"
+              >
+                Todas ({{ learnerDetail.competencies.length }})
+              </button>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'pending' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'"
+                type="button"
+                @click="competencyStatusFilter = 'pending'; currentPage = 1"
+              >
+                Con Pendientes
+              </button>
+              <button
+                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
+                :class="competencyStatusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'"
+                type="button"
+                @click="competencyStatusFilter = 'completed'; currentPage = 1"
+              >
+                100% Completas
+              </button>
+            </div>
+
+            <!-- Quick Expand/Collapse and Items per page -->
+            <div class="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[0.7rem] font-semibold text-slate-600 hover:bg-white"
+                type="button"
+                @click="expandAllCompetencies"
+              >
+                Expandir Todas
+              </button>
+              <button
+                class="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[0.7rem] font-semibold text-slate-600 hover:bg-white"
+                type="button"
+                @click="collapseAllCompetencies"
+              >
+                Colapsar Todas
+              </button>
+            </div>
+          </div>
+
+          <!-- Paginated Competencies List with Outcomes -->
           <div class="space-y-3">
             <div
-              v-for="comp in visibleLearnerCompetencies"
+              v-for="comp in paginatedLearnerCompetencies"
               :key="comp.code"
               class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
             >
@@ -359,48 +463,108 @@ onMounted(() => {
                 type="button"
                 @click="toggleCompetencyAccordion(comp.code)"
               >
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.code }}</span>
+                <div class="pr-2">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.codigo_juicio || comp.code }}</span>
                     <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
                       Proyecto: {{ comp.codigo_proyecto }}
                     </span>
+                    <span
+                      v-if="comp.approvedResults === comp.totalResults && comp.totalResults > 0"
+                      class="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200"
+                    >
+                      Aprobada
+                    </span>
                   </div>
-                  <h4 class="mt-1 text-xs font-bold text-slate-900">{{ comp.name }}</h4>
+                  <h4 class="mt-1 text-xs font-bold text-slate-900 leading-snug">{{ comp.name }}</h4>
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
-                  <span class="text-xs text-slate-500 font-medium">{{ comp.approvedResults }}/{{ comp.totalResults }}</span>
+                  <span class="text-xs text-slate-500 font-medium">{{ comp.approvedResults }}/{{ comp.totalResults }} RAPs</span>
                   <span class="text-xs font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
+                  <svg
+                    class="h-4 w-4 text-slate-400 transition-transform"
+                    :class="expandedCompetencies.includes(comp.code) ? 'rotate-180' : ''"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               </button>
 
               <!-- Outcomes Table inside Accordion -->
               <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-3 bg-slate-50/40">
-                <table class="w-full text-left text-xs">
-                  <thead>
-                    <tr class="text-slate-500 border-b border-slate-200/80 text-[0.65rem]">
-                      <th class="pb-2 font-bold uppercase">Resultado</th>
-                      <th class="pb-2 font-bold uppercase">Detalle del RAP</th>
-                      <th class="pb-2 font-bold uppercase">Instructor</th>
-                      <th class="pb-2 font-bold uppercase">Fecha</th>
-                      <th class="pb-2 font-bold uppercase text-right">Juicio</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-slate-100 text-slate-700">
-                    <tr v-for="res in comp.results" :key="res.code" class="hover:bg-white/80">
-                      <td class="py-2.5 font-bold text-slate-900">{{ res.code }}</td>
-                      <td class="py-2.5 max-w-xs truncate text-slate-600">{{ res.detail }}</td>
-                      <td class="py-2.5 text-slate-500">{{ res.funcionario || '-' }}</td>
-                      <td class="py-2.5 text-slate-400">{{ formatDate(res.registeredAt) }}</td>
-                      <td class="py-2.5 text-right">
-                        <span class="inline-block rounded px-2 py-0.5 text-[0.65rem] font-bold" :class="judgementBadgeClass(res.judgement)">
-                          {{ prettyState(res.judgement) }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead>
+                      <tr class="text-slate-500 border-b border-slate-200/80 text-[0.65rem]">
+                        <th class="pb-2 font-bold uppercase">Resultado</th>
+                        <th class="pb-2 font-bold uppercase">Detalle del RAP</th>
+                        <th class="pb-2 font-bold uppercase">Instructor</th>
+                        <th class="pb-2 font-bold uppercase">Fecha</th>
+                        <th class="pb-2 font-bold uppercase text-right">Juicio</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700">
+                      <tr v-for="res in comp.results" :key="res.code" class="hover:bg-white/80 transition">
+                        <td class="py-2.5 font-bold text-slate-900">{{ res.codigo_juicio || res.code }}</td>
+                        <td class="py-2.5 max-w-xs truncate text-slate-600">{{ res.detail }}</td>
+                        <td class="py-2.5 text-slate-500">{{ res.funcionario || '-' }}</td>
+                        <td class="py-2.5 text-slate-400">{{ formatDate(res.registeredAt) }}</td>
+                        <td class="py-2.5 text-right">
+                          <span class="inline-block rounded px-2 py-0.5 text-[0.65rem] font-bold" :class="judgementBadgeClass(res.judgement)">
+                            {{ prettyState(res.judgement) }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
+            </div>
+
+            <div v-if="!allFilteredLearnerCompetencies.length" class="rounded-xl border border-dashed border-slate-200 bg-white p-8 text-center text-xs text-slate-400">
+              No se encontraron competencias con el filtro seleccionado.
+            </div>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div v-if="totalPages > 1" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-xs">
+            <span class="text-xs text-slate-500 font-medium">
+              Mostrando página <b class="text-slate-900">{{ currentPage }}</b> de <b class="text-slate-900">{{ totalPages }}</b> ({{ allFilteredLearnerCompetencies.length }} normas)
+            </span>
+
+            <div class="flex items-center gap-1.5">
+              <button
+                :disabled="currentPage <= 1"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                type="button"
+                @click="currentPage--"
+              >
+                ← Anterior
+              </button>
+
+              <button
+                v-for="page in totalPages"
+                :key="page"
+                class="hidden sm:inline-block rounded-lg px-3 py-1.5 text-xs font-semibold transition"
+                :class="currentPage === page ? 'bg-emerald-600 text-white shadow-2xs' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'"
+                type="button"
+                @click="currentPage = page"
+              >
+                {{ page }}
+              </button>
+
+              <button
+                :disabled="currentPage >= totalPages"
+                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+                type="button"
+                @click="currentPage++"
+              >
+                Siguiente →
+              </button>
             </div>
           </div>
         </div>
@@ -419,7 +583,7 @@ onMounted(() => {
             >
               <div>
                 <div class="flex items-center gap-1.5">
-                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.code }}</span>
+                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.codigo_juicio || comp.code }}</span>
                   <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
                     Proyecto: {{ comp.codigo_proyecto }}
                   </span>
@@ -443,7 +607,7 @@ onMounted(() => {
                 >
                   <div>
                     <div class="flex items-center justify-between">
-                      <span class="text-xs font-bold text-slate-800">{{ res.code }}</span>
+                      <span class="text-xs font-bold text-slate-800">{{ res.codigo_juicio || res.code }}</span>
                       <span class="text-xs font-bold text-emerald-600">{{ formatPercent(res.progress) }}</span>
                     </div>
                     <p class="mt-1 text-xs text-slate-600 line-clamp-2">{{ res.detail }}</p>
