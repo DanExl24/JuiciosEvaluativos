@@ -25,13 +25,26 @@ export async function listProjects(_req: Request, res: Response): Promise<void> 
 
 export async function getPhases(req: Request, res: Response): Promise<void> {
   const projectId = Number(req.params.projectId);
+  const rawFicha = req.query.fichaId ?? req.query.ficha;
+  let fichaId: number | undefined;
+
+  if (rawFicha) {
+    const formRes = await pool.query(
+      'SELECT id_formacion FROM formacion WHERE id_formacion::text = $1 OR ficha_caracterizacion = $1 LIMIT 1',
+      [String(rawFicha)]
+    );
+    if (formRes.rowCount && formRes.rowCount > 0) {
+      fichaId = formRes.rows[0].id_formacion;
+    }
+  }
+
   if (!Number.isInteger(projectId) || projectId <= 0) {
     res.status(400).json({ error: 'Identificador de proyecto invalido.' });
     return;
   }
 
   try {
-    const phases = await getProjectPhases(pool, projectId);
+    const phases = await getProjectPhases(pool, projectId, fichaId);
     res.json(phases);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudieron cargar las fases del proyecto.';
@@ -41,7 +54,18 @@ export async function getPhases(req: Request, res: Response): Promise<void> {
 
 export async function getProjectLearnerStats(req: Request, res: Response): Promise<void> {
   const projectId = Number(req.params.projectId);
-  const fichaId = req.query.fichaId ? Number(req.query.fichaId) : undefined;
+  const rawFicha = req.query.fichaId ?? req.query.ficha;
+  let fichaId: number | undefined;
+
+  if (rawFicha) {
+    const formRes = await pool.query(
+      'SELECT id_formacion FROM formacion WHERE id_formacion::text = $1 OR ficha_caracterizacion = $1 LIMIT 1',
+      [String(rawFicha)]
+    );
+    if (formRes.rowCount && formRes.rowCount > 0) {
+      fichaId = formRes.rows[0].id_formacion;
+    }
+  }
 
   if (!Number.isInteger(projectId) || projectId <= 0) {
     res.status(400).json({ error: 'Identificador de proyecto invalido.' });

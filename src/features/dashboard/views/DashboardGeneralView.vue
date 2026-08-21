@@ -626,17 +626,25 @@ async function loadPhaseStats() {
   try {
     const projs = await projectPhasesService.getProjects()
     projects.value = projs
-    if (projs.length > 0 && !selectedProjectId.value) {
-      selectedProjectId.value = projs[0]?.id_proyecto ?? null
+    if (projs.length > 0) {
+      if (!selectedProjectId.value || !projs.some((p) => p.id_proyecto === selectedProjectId.value)) {
+        selectedProjectId.value = projs[0]?.id_proyecto ?? null
+      }
+    } else {
+      selectedProjectId.value = null
     }
 
     if (selectedProjectId.value) {
-      const stats = await projectPhasesService.getPhaseLearnerStats(selectedProjectId.value)
+      const fichaParam = filters.value.ficha || undefined
+      const stats = await projectPhasesService.getPhaseLearnerStats(selectedProjectId.value, fichaParam as any)
       const phaseOrder: Record<string, number> = { ANALISIS: 1, PLANEACION: 2, EJECUCION: 3, EVALUACION: 4 }
-      phaseStats.value = stats.sort((a, b) => (phaseOrder[a.nombre] || 99) - (phaseOrder[b.nombre] || 99))
+      phaseStats.value = (stats || []).sort((a, b) => (phaseOrder[a.nombre] || 99) - (phaseOrder[b.nombre] || 99))
+    } else {
+      phaseStats.value = []
     }
   } catch (err) {
     console.error('Error loading phase stats:', err)
+    phaseStats.value = []
   } finally {
     isPhaseStatsLoading.value = false
   }
@@ -733,6 +741,19 @@ watch(
 watch(selectedProjectId, () => {
   void loadPhaseStats()
 })
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'phases') {
+    void loadPhaseStats()
+  }
+})
+
+watch(
+  () => filters.value.ficha,
+  () => {
+    void loadPhaseStats()
+  },
+)
 
 watch(
   () => academicStore.lastRefreshTimestamp,
@@ -1044,54 +1065,110 @@ onMounted(() => {
       <!-- TAB 2: FASES DEL PROYECTO (REQUISITO #7)                     -->
       <!-- ============================================================ -->
       <div v-else-if="activeTab === 'phases'" class="space-y-6 animate-in fade-in duration-150">
-        <!-- Phase Overview Cards -->
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div
-            v-for="stat in phaseStats"
-            :key="stat.id_fase"
-            class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
-          >
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span class="text-xs font-bold text-slate-900">Fase {{ formatPhaseName(stat.nombre) }}</span>
-              <span class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
-                {{ Math.round(stat.progressPercentage) }}%
-              </span>
-            </div>
-            <div class="mt-3 flex items-baseline justify-between text-xs">
-              <span class="text-slate-500">Aprobados:</span>
-              <span class="font-bold text-emerald-600">{{ stat.approvedResults }} / {{ stat.expectedResults }}</span>
-            </div>
-            <div class="mt-1 flex items-baseline justify-between text-xs">
-              <span class="text-slate-500">Pendientes:</span>
-              <span class="font-bold text-amber-600">{{ stat.pendingResults }}</span>
-            </div>
-            <div class="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-              <div class="h-full bg-emerald-500 transition-all duration-500" :style="{ width: `${stat.progressPercentage}%` }"></div>
-            </div>
+        <!-- Project Selector Header Strip -->
+        <div v-if="projects.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+          <div>
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Estructura del Proyecto</span>
+            <h3 class="text-sm font-bold text-slate-900">
+              {{ projects.find((p) => p.id_proyecto === selectedProjectId)?.proyecto_nombre || 'Fases del Proyecto Formativo' }}
+            </h3>
+            <p class="text-xs text-slate-500">
+              Cód. Proyecto: {{ projects.find((p) => p.id_proyecto === selectedProjectId)?.codigo_proyecto || '-' }}
+            </p>
+          </div>
+
+          <div v-if="projects.length > 1" class="w-full sm:w-72">
+            <select
+              v-model="selectedProjectId"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+            >
+              <option v-for="p in projects" :key="p.id_proyecto" :value="p.id_proyecto">
+                {{ p.codigo_proyecto }} - {{ p.proyecto_nombre }}
+              </option>
+            </select>
           </div>
         </div>
 
-        <!-- Charts Grid for Phases -->
-        <div class="grid gap-5 lg:grid-cols-2">
-          <!-- % Cumplimiento por Fase -->
-          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <div class="border-b border-slate-100 pb-2 mb-3">
-              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Avance Pedagógico</span>
-              <h3 class="text-xs font-bold text-slate-900">% de Cumplimiento por cada Fase del Proyecto</h3>
-            </div>
-            <div class="h-60 w-full">
-              <VChart :option="phaseProgressChartOption" autoresize />
+        <!-- Loading State for Phases -->
+        <div v-if="isPhaseStatsLoading" class="flex min-h-[30vh] items-center justify-center">
+          <div class="flex flex-col items-center gap-2 text-slate-400">
+            <svg class="h-6 w-6 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-xs font-medium">Calculando avance por fases pedagógicas...</p>
+          </div>
+        </div>
+
+        <!-- Empty State if no phases data -->
+        <div v-else-if="!phaseStats.length" class="flex min-h-[35vh] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
+          <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">No se encontraron fases vinculadas</h3>
+          <p class="mt-1 max-w-md text-xs text-slate-500">
+            No hay fases pedagógicas mapeadas para la ficha o proyecto seleccionado. Ve a la sección <b>Fases y Proyecto</b> para cargar el PDF del proyecto formativo o estructurar las competencias.
+          </p>
+          <router-link
+            to="/phases"
+            class="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700"
+          >
+            Ir a Fases y Proyecto →
+          </router-link>
+        </div>
+
+        <div v-else class="space-y-6">
+          <!-- Phase Overview Cards -->
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              v-for="stat in phaseStats"
+              :key="stat.id_fase"
+              class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
+            >
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span class="text-xs font-bold text-slate-900">Fase {{ formatPhaseName(stat.nombre) }}</span>
+                <span class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
+                  {{ Math.round(stat.progressPercentage) }}%
+                </span>
+              </div>
+              <div class="mt-3 flex items-baseline justify-between text-xs">
+                <span class="text-slate-500">Aprobados:</span>
+                <span class="font-bold text-emerald-600">{{ stat.approvedResults }} / {{ stat.expectedResults }}</span>
+              </div>
+              <div class="mt-1 flex items-baseline justify-between text-xs">
+                <span class="text-slate-500">Pendientes:</span>
+                <span class="font-bold text-amber-600">{{ stat.pendingResults }}</span>
+              </div>
+              <div class="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full bg-emerald-500 transition-all duration-500" :style="{ width: `${stat.progressPercentage}%` }"></div>
+              </div>
             </div>
           </div>
 
-          <!-- Aprendices Aprobados vs Pendientes por Fase -->
-          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <div class="border-b border-slate-100 pb-2 mb-3">
-              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Balance de Carga</span>
-              <h3 class="text-xs font-bold text-slate-900">Juicios Aprobados vs Pendientes por Fase</h3>
+          <!-- Charts Grid for Phases -->
+          <div class="grid gap-5 lg:grid-cols-2">
+            <!-- % Cumplimiento por Fase -->
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+              <div class="border-b border-slate-100 pb-2 mb-3">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Avance Pedagógico</span>
+                <h3 class="text-xs font-bold text-slate-900">% de Cumplimiento por cada Fase del Proyecto</h3>
+              </div>
+              <div class="h-60 w-full">
+                <VChart :option="phaseProgressChartOption" autoresize />
+              </div>
             </div>
-            <div class="h-60 w-full">
-              <VChart :option="phaseLearnersBalanceOption" autoresize />
+
+            <!-- Aprendices Aprobados vs Pendientes por Fase -->
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+              <div class="border-b border-slate-100 pb-2 mb-3">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Balance de Carga</span>
+                <h3 class="text-xs font-bold text-slate-900">Juicios Aprobados vs Pendientes por Fase</h3>
+              </div>
+              <div class="h-60 w-full">
+                <VChart :option="phaseLearnersBalanceOption" autoresize />
+              </div>
             </div>
           </div>
         </div>
