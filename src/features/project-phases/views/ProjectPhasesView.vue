@@ -42,7 +42,7 @@ function handleFileSelection(event: Event) {
 
 async function processFile(file: File) {
   if (file.type !== 'application/pdf') {
-    importError.value = 'Solo se permiten archivos PDF.'
+    importError.value = 'Solo se permiten archivos en formato PDF.'
     return
   }
 
@@ -56,13 +56,13 @@ async function processFile(file: File) {
     isImporting.value = true
 
     const result = await projectPhasesService.importProject(payload)
-    importMessage.value = `¡Proyecto importado exitosamente! Fases creadas/actualizadas: ${result.phasesInserted}, Competencias mapeadas: ${result.competenciesUpdated}.`
+    importMessage.value = `¡Proyecto importado exitosamente! ${result.phasesInserted} fases estructuradas y ${result.competenciesUpdated} competencias mapeadas.`
     await fetchProjects()
     setTimeout(() => {
       isModalOpen.value = false
-    }, 2500)
+    }, 2000)
   } catch (error) {
-    importError.value = error instanceof Error ? error.message : 'Error inesperado al procesar el proyecto.'
+    importError.value = error instanceof Error ? error.message : 'Error inesperado al procesar el proyecto formativo.'
   } finally {
     isParsing.value = false
     isImporting.value = false
@@ -85,80 +85,88 @@ onMounted(() => {
   </div>
 
   <div v-else class="grid gap-6">
-    <!-- Header Controls -->
-    <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-      <div class="space-y-1">
-        <span class="inline-flex w-fit rounded-full border border-blue-700/15 bg-blue-50 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-blue-700">
-          Proyectos Formativos
+    <!-- Header Section -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          Estructura Curricular
         </span>
-        <h2 class="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-          Fases y Competencias
-        </h2>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          Fases del Proyecto Formativo
+        </h1>
+        <p class="mt-1 text-xs text-slate-500">
+          Mapeo de actividades de proyecto, competencias y resultados de aprendizaje extraídos de la planeación pedagógica.
+        </p>
       </div>
 
       <button
-        class="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-slate-800"
+        class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 self-start sm:self-auto"
         type="button"
         @click="isModalOpen = true"
       >
-        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
+        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        Cargar Nuevo PDF
+        Cargar Nuevo PDF de Proyecto
       </button>
     </div>
 
     <!-- Empty State -->
-    <div v-if="projects.length === 0" class="flex min-h-[50vh] flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-slate-50/50 p-8 text-center">
-      <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-        <svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+    <div v-if="projects.length === 0" class="flex min-h-[45vh] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-xs">
+      <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       </div>
-      <h3 class="text-lg font-bold text-slate-900">No hay proyectos importados</h3>
-      <p class="mt-2 max-w-md text-sm text-slate-500">Comienza cargando el PDF del proyecto formativo para mapear sus fases y competencias automáticamente.</p>
+      <h3 class="text-sm font-bold text-slate-900">No hay proyectos formativos importados</h3>
+      <p class="mt-1 max-w-sm text-xs text-slate-500">Sube el PDF del proyecto formativo para extraer automáticamente sus fases, competencias y actividades asociadas.</p>
     </div>
 
-    <!-- Cards Grid -->
+    <!-- Projects Grid -->
     <div v-else class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      <div v-for="project in projects" :key="project.id_proyecto" class="flex flex-col overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/50">
-        <div class="border-b border-slate-100 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6">
-          <div class="flex items-center justify-between">
-            <span class="inline-flex items-center rounded-full bg-blue-100/50 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-blue-700">
-              Proyecto
+      <div
+        v-for="project in projects"
+        :key="project.id_proyecto"
+        class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-slate-300 hover:shadow-sm"
+      >
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
+              Cód. {{ project.codigo_proyecto }}
             </span>
-            <span class="text-[0.7rem] font-bold text-slate-400"># {{ project.codigo_proyecto }}</span>
+            <span class="text-[0.7rem] font-semibold text-emerald-700">{{ project.regional || 'SENA' }}</span>
           </div>
-          <h3 class="mt-4 text-lg font-black leading-tight tracking-tight text-slate-900">
+
+          <h3 class="mt-3 text-sm font-bold leading-snug text-slate-900 line-clamp-2">
             {{ project.proyecto_nombre }}
           </h3>
-          <p class="mt-4 text-[0.7rem] font-bold uppercase tracking-wider text-slate-500 leading-relaxed">
-            Programa: <span class="text-slate-800">{{ project.programa_codigo }}</span>
+
+          <p class="mt-2 text-xs text-slate-500">
+            Programa: <span class="font-semibold text-slate-700">{{ project.programa_codigo }}</span>
           </p>
+
+          <div class="mt-4 flex items-center gap-4 text-xs text-slate-500">
+            <div>
+              <span class="block text-[0.65rem] font-bold uppercase text-slate-400">Duración</span>
+              <span class="font-semibold text-slate-800">{{ project.tiempo_ejecucion }} meses</span>
+            </div>
+            <div>
+              <span class="block text-[0.65rem] font-bold uppercase text-slate-400">Regional</span>
+              <span class="font-semibold text-slate-800">{{ project.regional || 'Nacional' }}</span>
+            </div>
+          </div>
         </div>
 
-        <div class="flex flex-wrap gap-x-6 gap-y-4 p-6 text-sm text-slate-600">
-          <div class="flex flex-col">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Duración</span>
-            <span class="mt-0.5 font-semibold text-slate-800">{{ project.tiempo_ejecucion }} meses</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Regional</span>
-            <span class="mt-0.5 font-semibold text-slate-800">{{ project.regional }}</span>
-          </div>
-        </div>
-
-        <div class="mt-auto border-t border-slate-100 p-4">
+        <div class="mt-5 border-t border-slate-100 pt-3">
           <button
-            class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+            class="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-600 hover:bg-emerald-50/50 hover:text-emerald-700 shadow-2xs"
             type="button"
             @click="openProject(project)"
           >
-            Abrir fases y competencias
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
+            Explorar Fases y RAPs
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -166,59 +174,61 @@ onMounted(() => {
     </div>
   </div>
 
-  <!-- Upload Modal -->
+  <!-- PDF Upload Modal -->
   <Teleport to="body">
-    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm" @click.self="isModalOpen = false">
-      <div class="w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/20 bg-white/95 shadow-2xl backdrop-blur-xl">
-        <div class="flex items-center justify-between border-b border-slate-100 p-6">
-          <h3 class="text-xl font-bold tracking-tight text-slate-900">Importar Proyecto Formativo</h3>
-          <button class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" type="button" @click="isModalOpen = false">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4" @click.self="isModalOpen = false">
+      <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between border-b border-slate-200/80 px-6 py-4">
+          <div>
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Extractor Inteligente</span>
+            <h3 class="text-base font-bold text-slate-900">Importar Proyecto Formativo (PDF)</h3>
+          </div>
+          <button class="rounded-lg p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" type="button" @click="isModalOpen = false">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         <div class="p-6">
-          <p class="mb-6 text-sm text-slate-600">
-            Sube el archivo PDF del proyecto formativo para extraer su información básica, generar sus fases y asignar las competencias automáticamente con Python.
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Sube el archivo PDF del proyecto formativo para extraer automáticamente su estructura pedagógica, fases y actividades.
           </p>
 
           <div
-            class="relative overflow-hidden rounded-[1.75rem] border-2 border-dashed p-1 transition duration-200"
-            :class="isDragActive ? 'border-slate-500 bg-slate-100' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'"
+            class="mt-4 relative flex min-h-[12rem] flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition"
+            :class="isDragActive ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-300 bg-slate-50/50 hover:border-emerald-500/60'"
             @dragenter.prevent="isDragActive = true"
             @dragover.prevent="isDragActive = true"
             @dragleave.prevent="isDragActive = false"
             @drop.prevent="handleFileDrop"
           >
-            <div class="flex min-h-[16rem] flex-col items-center justify-center px-6 py-8 text-center">
-              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-700 to-slate-950 font-black text-white shadow-lg">
-                PDF
-              </div>
-              <h4 class="mt-4 text-lg font-bold text-slate-900">Arrastra tu archivo PDF aquí</h4>
-              <p class="mt-1 text-sm text-slate-500">o selecciónalo manualmente</p>
-              <label class="mt-4 inline-flex cursor-pointer items-center justify-center rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:bg-slate-800">
-                Seleccionar PDF
-                <input accept=".pdf,application/pdf" type="file" class="sr-only" @change="handleFileSelection" />
-              </label>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/60 shadow-2xs mb-2">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
             </div>
+            <h4 class="text-xs font-bold text-slate-900">Arrastra tu archivo PDF del proyecto formativo</h4>
+            <p class="mt-0.5 text-[0.7rem] text-slate-400">o selecciónalo desde tu computadora</p>
+            <label class="mt-3 inline-flex cursor-pointer items-center justify-center rounded-lg bg-slate-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-slate-800">
+              Seleccionar PDF
+              <input accept=".pdf,application/pdf" type="file" class="sr-only" @change="handleFileSelection" />
+            </label>
           </div>
 
-          <div class="mt-6 space-y-3">
-            <div v-if="isParsing || isImporting" class="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-blue-800">
-              <svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <div class="mt-4 space-y-2">
+            <div v-if="isParsing || isImporting" class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sky-800">
+              <svg class="h-4 w-4 animate-spin text-sky-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <p class="text-sm font-semibold">{{ isParsing ? 'Extrayendo información con Python...' : 'Guardando en la base de datos...' }}</p>
+              <p class="text-xs font-semibold">{{ isParsing ? 'Extrayendo datos curriculares con motor Python...' : 'Indexando fases y competencias en la base de datos...' }}</p>
             </div>
 
-            <p v-if="importMessage" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+            <p v-if="importMessage" class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800">
               {{ importMessage }}
             </p>
-            <p v-if="importError" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            <p v-if="importError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
               {{ importError }}
             </p>
           </div>

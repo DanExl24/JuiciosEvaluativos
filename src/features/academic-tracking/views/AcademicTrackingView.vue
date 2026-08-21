@@ -140,9 +140,9 @@ async function refreshData() {
 
 function judgementBadgeClass(judgement: string) {
   const norm = judgement.toLowerCase()
-  if (norm === 'aprobado') return 'bg-emerald-100 text-emerald-800'
-  if (norm === 'por evaluar') return 'bg-amber-100 text-amber-800'
-  return 'bg-rose-100 text-rose-800'
+  if (norm === 'aprobado') return 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+  if (norm === 'por evaluar') return 'bg-amber-50 text-amber-800 border border-amber-200'
+  return 'bg-rose-50 text-rose-800 border border-rose-200'
 }
 
 watch(
@@ -159,7 +159,11 @@ watch(
   (newId) => {
     if (newId !== selectedLearnerId.value) {
       selectedLearnerId.value = newId
-      void loadLearnerDetail(newId)
+      if (newId) {
+        void loadLearnerDetail(newId)
+      } else {
+        learnerDetail.value = null
+      }
     }
   },
 )
@@ -180,188 +184,280 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="grid w-full gap-6 xl:grid-cols-[1fr_300px] items-start">
-    <!-- Main Content (Col 1) -->
-    <div class="space-y-6">
-      <!-- Top Title & Search -->
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <span class="inline-flex w-fit rounded-full border border-emerald-700/15 bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-emerald-700">
-            Seguimiento Curricular
+  <div class="grid gap-6">
+    <!-- Header Section -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          Seguimiento Curricular
+        </span>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+          {{ selectedLearnerSummary ? selectedLearnerSummary.fullName : 'Expediente y Catálogo de Juicios' }}
+        </h1>
+        <p v-if="selectedLearnerSummary" class="text-xs text-slate-500 mt-0.5">
+          {{ selectedLearnerSummary.documentType }} {{ selectedLearnerSummary.document }} · Ficha {{ selectedLearnerSummary.ficha }} · {{ selectedLearnerSummary.program }}
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          v-if="selectedLearnerSummary"
+          class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+          type="button"
+          @click="selectLearner(null)"
+        >
+          ← Ver Catálogo General
+        </button>
+        <button
+          class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+          type="button"
+          @click="resetAllFilters"
+        >
+          Limpiar Filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- Master-Detail Split Grid -->
+    <div class="grid w-full gap-6 lg:grid-cols-[300px_1fr] items-start">
+      <!-- Master Panel (Left): Learners Selector List -->
+      <div class="space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <span class="text-xs font-bold text-slate-900">Población Estudiantil</span>
+          <span class="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            {{ fichaLearners.length }} Aprendices
           </span>
-          <h2 class="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-            {{ selectedLearnerSummary ? selectedLearnerSummary.fullName : 'Catálogo de Competencias y Resultados' }}
-          </h2>
-          <p v-if="selectedLearnerSummary" class="text-xs text-slate-500 mt-1">
-            {{ selectedLearnerSummary.documentType }} {{ selectedLearnerSummary.document }} · Ficha {{ selectedLearnerSummary.ficha }} · {{ selectedLearnerSummary.program }}
-          </p>
         </div>
 
-        <div v-if="selectedLearnerSummary">
+        <!-- Quick Search -->
+        <div class="relative">
+          <input
+            v-model="fichaLearnerSearch"
+            type="text"
+            placeholder="Buscar por nombre o doc..."
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 py-1.5 pl-3 pr-3 text-xs text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
+          />
+        </div>
+
+        <!-- Juicio Filter -->
+        <div class="grid grid-cols-3 gap-1 rounded-lg bg-slate-100 p-1 text-[0.65rem] font-semibold text-center">
           <button
-            class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            class="rounded py-1 transition"
+            :class="!filters.juicio ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
             type="button"
-            @click="selectLearner(null)"
+            @click="filters.juicio = ''"
           >
-            ← Volver al Catálogo General
+            Todos
           </button>
+          <button
+            class="rounded py-1 transition"
+            :class="filters.juicio === 'aprobado' ? 'bg-white text-emerald-800 shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+            type="button"
+            @click="filters.juicio = 'aprobado'"
+          >
+            Aprobados
+          </button>
+          <button
+            class="rounded py-1 transition"
+            :class="filters.juicio === 'por evaluar' ? 'bg-white text-amber-800 shadow-2xs' : 'text-slate-500 hover:text-slate-800'"
+            type="button"
+            @click="filters.juicio = 'por evaluar'"
+          >
+            Pendientes
+          </button>
+        </div>
+
+        <!-- Learners List Container -->
+        <div class="max-h-[65vh] space-y-1.5 overflow-y-auto pr-1">
+          <button
+            v-for="l in fichaLearners"
+            :key="l.id"
+            class="flex w-full flex-col rounded-lg p-2.5 text-left text-xs transition"
+            :class="
+              selectedLearnerId === l.id
+                ? 'bg-emerald-50/80 border border-emerald-200/80 text-emerald-950 font-bold'
+                : 'hover:bg-slate-50/80 text-slate-700 border border-transparent'
+            "
+            type="button"
+            @click="selectLearner(l.id)"
+          >
+            <div class="flex items-center justify-between w-full">
+              <span class="truncate font-semibold">{{ l.fullName }}</span>
+              <span class="text-[0.65rem] font-bold text-slate-400 shrink-0 ml-2">{{ l.ficha }}</span>
+            </div>
+            <div class="mt-1 flex items-center justify-between text-[0.65rem] text-slate-500">
+              <span>{{ l.document }}</span>
+              <span class="font-medium text-emerald-700">{{ prettyState(l.state) }}</span>
+            </div>
+          </button>
+
+          <div v-if="!fichaLearners.length" class="p-4 text-center text-xs text-slate-400">
+            No se encontraron aprendices con el filtro actual.
+          </div>
         </div>
       </div>
 
-      <!-- Quick Search in Catalog -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div class="relative">
+      <!-- Detail Panel (Right): Content Area -->
+      <div class="space-y-4">
+        <!-- Search within outcomes/catalog -->
+        <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
           <input
             v-model="catalogSearch"
             type="text"
-            placeholder="Buscar por código de competencia, nombre, resultado o funcionario..."
-            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            placeholder="Filtrar competencias por nombre, norma, funcionario o descripción de RAP..."
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/60 px-3.5 py-2 text-xs text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
           />
         </div>
-      </div>
 
-      <!-- Loading / Errors -->
-      <p v-if="trackingError || learnerError" class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-        {{ trackingError || learnerError }}
-      </p>
+        <!-- Loading / Errors -->
+        <p v-if="trackingError || learnerError" class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
+          {{ trackingError || learnerError }}
+        </p>
 
-      <div v-if="isCatalogLoading || isLearnerLoading" class="flex items-center justify-center p-12">
-        <svg class="h-8 w-8 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-
-      <!-- MODE A: Individual Learner Details View -->
-      <div v-else-if="selectedLearnerSummary && learnerDetail" class="space-y-4">
-        <!-- Learner Stats Overview -->
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <span class="text-xs text-slate-400 font-bold uppercase">Total Resultados</span>
-            <p class="text-2xl font-black text-slate-900">{{ learnerDetail.learner.totalResults }}</p>
-          </div>
-          <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <span class="text-xs text-emerald-600 font-bold uppercase">Aprobados</span>
-            <p class="text-2xl font-black text-emerald-600">{{ learnerDetail.learner.approvedResults }}</p>
-          </div>
-          <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <span class="text-xs text-amber-600 font-bold uppercase">Pendientes</span>
-            <p class="text-2xl font-black text-amber-500">{{ learnerDetail.learner.pendingResults }}</p>
-          </div>
-          <div class="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-            <span class="text-xs text-slate-600 font-bold uppercase">Avance</span>
-            <p class="text-2xl font-black text-slate-900">{{ formatPercent(learnerDetail.learner.progress) }}</p>
+        <div v-if="isCatalogLoading || isLearnerLoading" class="flex min-h-[30vh] items-center justify-center">
+          <div class="flex flex-col items-center gap-2 text-slate-400">
+            <svg class="h-6 w-6 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-xs font-medium">Cargando expediente formativo...</p>
           </div>
         </div>
 
-        <!-- Competency Accordions for Learner -->
-        <div class="space-y-3">
+        <!-- MODE A: Individual Learner Details View -->
+        <div v-else-if="selectedLearnerSummary && learnerDetail" class="space-y-4 animate-in fade-in duration-150">
+          <!-- Learner Metrics Strip -->
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-xs">
+              <span class="text-[0.65rem] text-slate-400 font-bold uppercase">Total Resultados</span>
+              <p class="text-xl font-black text-slate-900">{{ learnerDetail.learner.totalResults }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-xs">
+              <span class="text-[0.65rem] text-emerald-700 font-bold uppercase">Aprobados</span>
+              <p class="text-xl font-black text-emerald-600">{{ learnerDetail.learner.approvedResults }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-xs">
+              <span class="text-[0.65rem] text-amber-700 font-bold uppercase">Pendientes</span>
+              <p class="text-xl font-black text-amber-600">{{ learnerDetail.learner.pendingResults }}</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-3 text-center shadow-xs">
+              <span class="text-[0.65rem] text-slate-500 font-bold uppercase">Avance General</span>
+              <p class="text-xl font-black text-slate-900">{{ formatPercent(learnerDetail.learner.progress) }}</p>
+            </div>
+          </div>
+
+          <!-- Competencies List with Outcomes -->
+          <div class="space-y-3">
+            <div
+              v-for="comp in visibleLearnerCompetencies"
+              :key="comp.code"
+              class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
+            >
+              <button
+                class="flex w-full items-center justify-between p-3.5 text-left transition hover:bg-slate-50/60"
+                type="button"
+                @click="toggleCompetencyAccordion(comp.code)"
+              >
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.code }}</span>
+                    <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
+                      Proyecto: {{ comp.codigo_proyecto }}
+                    </span>
+                  </div>
+                  <h4 class="mt-1 text-xs font-bold text-slate-900">{{ comp.name }}</h4>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="text-xs text-slate-500 font-medium">{{ comp.approvedResults }}/{{ comp.totalResults }}</span>
+                  <span class="text-xs font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
+                </div>
+              </button>
+
+              <!-- Outcomes Table inside Accordion -->
+              <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-3 bg-slate-50/40">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="text-slate-500 border-b border-slate-200/80 text-[0.65rem]">
+                      <th class="pb-2 font-bold uppercase">Resultado</th>
+                      <th class="pb-2 font-bold uppercase">Detalle del RAP</th>
+                      <th class="pb-2 font-bold uppercase">Instructor</th>
+                      <th class="pb-2 font-bold uppercase">Fecha</th>
+                      <th class="pb-2 font-bold uppercase text-right">Juicio</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-slate-700">
+                    <tr v-for="res in comp.results" :key="res.code" class="hover:bg-white/80">
+                      <td class="py-2.5 font-bold text-slate-900">{{ res.code }}</td>
+                      <td class="py-2.5 max-w-xs truncate text-slate-600">{{ res.detail }}</td>
+                      <td class="py-2.5 text-slate-500">{{ res.funcionario || '-' }}</td>
+                      <td class="py-2.5 text-slate-400">{{ formatDate(res.registeredAt) }}</td>
+                      <td class="py-2.5 text-right">
+                        <span class="inline-block rounded px-2 py-0.5 text-[0.65rem] font-bold" :class="judgementBadgeClass(res.judgement)">
+                          {{ prettyState(res.judgement) }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODE B: General Formation Catalog View -->
+        <div v-else class="space-y-3 animate-in fade-in duration-150">
           <div
-            v-for="comp in visibleLearnerCompetencies"
+            v-for="comp in visibleFormationCompetencies"
             :key="comp.code"
-            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+            class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
           >
             <button
-              class="flex w-full items-center justify-between p-4 text-left transition hover:bg-slate-50/50"
+              class="flex w-full items-center justify-between p-3.5 text-left transition hover:bg-slate-50/60"
               type="button"
               @click="toggleCompetencyAccordion(comp.code)"
             >
               <div>
-                <div class="flex items-center gap-2">
-                  <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">{{ comp.code }}</span>
-                  <span v-if="comp.codigo_juicio" class="rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700">J: {{ comp.codigo_juicio }}</span>
-                  <span v-if="comp.codigo_proyecto" class="rounded-md bg-blue-50 px-2 py-0.5 text-[0.65rem] font-bold text-blue-700">P: {{ comp.codigo_proyecto }}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">Norma: {{ comp.code }}</span>
+                  <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
+                    Proyecto: {{ comp.codigo_proyecto }}
+                  </span>
                 </div>
-                <h4 class="mt-1 text-sm font-bold text-slate-900">{{ comp.name }}</h4>
+                <h4 class="mt-1 text-xs font-bold text-slate-900">{{ comp.name }}</h4>
+                <p class="text-[0.7rem] text-slate-400 mt-0.5">Ficha {{ comp.ficha }} · {{ comp.program }}</p>
               </div>
-              <div class="flex items-center gap-4">
-                <span class="text-xs text-slate-500">{{ comp.approvedResults }}/{{ comp.totalResults }} aprobados</span>
-                <span class="text-sm font-bold text-slate-700">{{ formatPercent(comp.progress) }}</span>
+              <div class="flex items-center gap-3 shrink-0">
+                <span class="text-xs text-slate-500">{{ comp.results.length }} RAPs</span>
+                <span class="text-xs font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
               </div>
             </button>
 
-            <!-- Results Table inside Accordion -->
-            <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-4">
-              <table class="w-full text-left text-xs">
-                <thead>
-                  <tr class="text-slate-500 border-b border-slate-100">
-                    <th class="pb-2 font-bold uppercase">Resultado</th>
-                    <th class="pb-2 font-bold uppercase">Detalle</th>
-                    <th class="pb-2 font-bold uppercase">Funcionario</th>
-                    <th class="pb-2 font-bold uppercase">Fecha</th>
-                    <th class="pb-2 font-bold uppercase text-right">Juicio</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50 text-slate-700">
-                  <tr v-for="res in comp.results" :key="res.code" class="hover:bg-slate-50/40">
-                    <td class="py-2.5 font-bold">{{ res.code }}</td>
-                    <td class="py-2.5 max-w-xs truncate">{{ res.detail }}</td>
-                    <td class="py-2.5 text-slate-500">{{ res.funcionario || '-' }}</td>
-                    <td class="py-2.5 text-slate-400">{{ formatDate(res.registeredAt) }}</td>
-                    <td class="py-2.5 text-right">
-                      <span class="rounded-full px-2 py-0.5 text-[0.65rem] font-bold" :class="judgementBadgeClass(res.judgement)">
-                        {{ prettyState(res.judgement) }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MODE B: General Formation Catalog View -->
-      <div v-else class="space-y-3">
-        <div
-          v-for="comp in visibleFormationCompetencies"
-          :key="comp.code"
-          class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
-        >
-          <button
-            class="flex w-full items-center justify-between p-4 text-left transition hover:bg-slate-50/50"
-            type="button"
-            @click="toggleCompetencyAccordion(comp.code)"
-          >
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">{{ comp.code }}</span>
-                <span v-if="comp.codigo_juicio" class="rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700">J: {{ comp.codigo_juicio }}</span>
-                <span v-if="comp.codigo_proyecto" class="rounded-md bg-blue-50 px-2 py-0.5 text-[0.65rem] font-bold text-blue-700">P: {{ comp.codigo_proyecto }}</span>
-              </div>
-              <h4 class="mt-1 text-sm font-bold text-slate-900">{{ comp.name }}</h4>
-              <p class="text-xs text-slate-400">Ficha {{ comp.ficha }} · {{ comp.program }}</p>
-            </div>
-            <div class="flex items-center gap-4">
-              <span class="text-xs text-slate-500">{{ comp.results.length }} resultados</span>
-              <span class="text-sm font-bold text-emerald-600">{{ formatPercent(comp.progress) }}</span>
-            </div>
-          </button>
-
-          <!-- Results List inside Accordion -->
-          <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-4">
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div
-                v-for="res in comp.results"
-                :key="res.code"
-                class="flex flex-col justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 transition hover:border-slate-300 hover:bg-white"
-              >
-                <div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-800">{{ res.code }}</span>
-                    <span class="text-xs font-bold text-emerald-600">{{ formatPercent(res.progress) }}</span>
+            <!-- Results Grid inside Accordion -->
+            <div v-if="expandedCompetencies.includes(comp.code)" class="border-t border-slate-100 p-3 bg-slate-50/40">
+              <div class="grid gap-2.5 sm:grid-cols-2">
+                <div
+                  v-for="res in comp.results"
+                  :key="res.code"
+                  class="flex flex-col justify-between rounded-lg border border-slate-200 bg-white p-3 shadow-2xs"
+                >
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-slate-800">{{ res.code }}</span>
+                      <span class="text-xs font-bold text-emerald-600">{{ formatPercent(res.progress) }}</span>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-600 line-clamp-2">{{ res.detail }}</p>
                   </div>
-                  <p class="mt-1 text-xs text-slate-600 line-clamp-2">{{ res.detail }}</p>
-                </div>
-                <div class="mt-3 flex items-center justify-between border-t border-slate-200/60 pt-2 text-[0.7rem] text-slate-500">
-                  <span>{{ res.approvedLearners }}/{{ res.totalLearners }} aprobados</span>
-                  <button
-                    class="font-semibold text-emerald-700 hover:underline"
-                    type="button"
-                    @click="openResultModal(comp, res)"
-                  >
-                    Ver aprendices →
-                  </button>
+                  <div class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-[0.7rem] text-slate-500">
+                    <span>{{ res.approvedLearners }}/{{ res.totalLearners }} aprobados</span>
+                    <button
+                      class="font-semibold text-emerald-700 hover:underline"
+                      type="button"
+                      @click="openResultModal(comp, res)"
+                    >
+                      Ver aprendices →
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -370,79 +466,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Sidebar Filters & Learners Navigation (Col 2) -->
-    <aside class="sticky top-[5rem] space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700">Filtros Académicos</span>
-        <button class="text-xs font-semibold text-slate-500 hover:text-slate-800" type="button" @click="resetAllFilters">
-          Limpiar
-        </button>
-      </div>
-
-      <div class="space-y-3">
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Ficha</span>
-          <select
-            v-model="filters.ficha"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
-          >
-            <option value="">Todas las fichas</option>
-            <option v-for="f in dashboard?.options.fichas ?? []" :key="f" :value="f">Ficha {{ f }}</option>
-          </select>
-        </label>
-
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Estado de Formación</span>
-          <select
-            v-model="filters.estado"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
-          >
-            <option value="">Todos los estados</option>
-            <option v-for="e in dashboard?.options.estados ?? []" :key="e" :value="e">{{ prettyState(e) }}</option>
-          </select>
-        </label>
-
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Filtro de Juicio</span>
-          <select
-            v-model="filters.juicio"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
-          >
-            <option value="">Todos los juicios</option>
-            <option value="aprobado">Aprobados</option>
-            <option value="por evaluar">Por evaluar</option>
-            <option value="no aprobado">No aprobados</option>
-          </select>
-        </label>
-      </div>
-
-      <!-- Quick Learner Search List in Sidebar -->
-      <div class="border-t border-slate-100 pt-3">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Buscar Aprendiz</span>
-        <input
-          v-model="fichaLearnerSearch"
-          type="text"
-          placeholder="Nombre o documento..."
-          class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
-        />
-
-        <div class="mt-2 max-h-64 space-y-1 overflow-y-auto pr-1">
-          <button
-            v-for="l in fichaLearners.slice(0, 20)"
-            :key="l.id"
-            class="flex w-full flex-col rounded-lg p-2 text-left text-xs transition"
-            :class="selectedLearnerId === l.id ? 'bg-emerald-50 text-emerald-900 font-bold' : 'hover:bg-slate-50 text-slate-700'"
-            type="button"
-            @click="selectLearner(l.id)"
-          >
-            <span class="truncate">{{ l.fullName }}</span>
-            <span class="text-[0.65rem] text-slate-400">{{ l.document }} · {{ l.ficha }}</span>
-          </button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Modal de Resultado -->
+    <!-- Result Detail Modal -->
     <ResultDetailModal
       :open="selectedModalResult !== null"
       :ficha="selectedModalResult?.ficha || ''"

@@ -30,7 +30,7 @@ const isSyncingLearnerContext = ref(false)
 
 const filters = ref({
   estado: academicStore.filters.estado || '',
-  ficha: academicStore.filters.ficha || '',
+  ficha: academicStore.selectedFicha || academicStore.filters.ficha || '',
   competencia: academicStore.filters.competencia || '',
   resultado: academicStore.filters.resultado || '',
   aprendiz: academicStore.filters.aprendiz || '',
@@ -49,23 +49,23 @@ const statusChartData = computed(() => ({
         dashboard.value?.overview.retiredCount ?? 0,
         dashboard.value?.overview.transferredCount ?? 0,
       ],
-      backgroundColor: ['#047857', '#f97316', '#0f766e'],
+      backgroundColor: ['#059669', '#e11d48', '#0284c7'],
       borderWidth: 0,
     },
   ],
 }))
 
 const judgementChartData = computed(() => ({
-  labels: ['Aprobados', 'Desaprobados', 'Por evaluar'],
+  labels: ['Aprobados', 'Por evaluar', 'Desaprobados'],
   datasets: [
     {
       data: [
         dashboard.value?.overview.approvedJudgements ?? 0,
-        dashboard.value?.overview.disapprovedJudgements ?? 0,
         dashboard.value?.overview.pendingJudgements ?? 0,
+        dashboard.value?.overview.disapprovedJudgements ?? 0,
       ],
-      backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
-      borderRadius: 12,
+      backgroundColor: ['#059669', '#d97706', '#e11d48'],
+      borderRadius: 6,
     },
   ],
 }))
@@ -73,71 +73,30 @@ const judgementChartData = computed(() => ({
 const competencyChartData = computed(() => {
   const topCompetencies = visibleCompetenciesByApproval.value
   return {
-    labels: topCompetencies.map((item) => `${item.code} · ${item.ficha}`),
+    labels: topCompetencies.map((item) => `${item.code}`),
     datasets: [
       {
-        label: 'Aprobación %',
+        label: '% Aprobación',
         data: topCompetencies.map((item) => item.approvalRate),
-        backgroundColor: ['#022c22', '#14532d', '#166534', '#15803d', '#16a34a', '#4ade80', '#65a30d', '#84cc16'],
-        borderRadius: 12,
+        backgroundColor: '#059669',
+        borderRadius: 6,
       },
     ],
   }
 })
-
-const pendingLearnersChartData = computed(() => ({
-  labels: visiblePendingLearners.value.map((learner) => learner.fullName),
-  datasets: [
-    {
-      label: 'Pendientes',
-      data: visiblePendingLearners.value.map((learner) => learner.pendingResults),
-      backgroundColor: '#f59e0b',
-      borderRadius: 10,
-    },
-  ],
-}))
-
-function wrapTooltipText(text: string, maxLineLength = 32) {
-  const words = text.split(/\s+/)
-  const lines: string[] = []
-  let currentLine = ''
-  for (const word of words) {
-    const nextLine = currentLine ? `${currentLine} ${word}` : word
-    if (nextLine.length <= maxLineLength) {
-      currentLine = nextLine
-      continue
-    }
-    if (currentLine) lines.push(currentLine)
-    currentLine = word
-  }
-  if (currentLine) lines.push(currentLine)
-  return lines
-}
 
 function buildCompetencyTooltipTitle(competencies: typeof visibleCompetenciesByApproval.value, tooltipItems: TooltipItem<'bar'>[]) {
   const hoveredItem = tooltipItems[0]
   if (!hoveredItem) return ''
   const competency = competencies[hoveredItem.dataIndex]
   if (!competency) return hoveredItem.label
-  return wrapTooltipText(`${competency.code}: ${competency.name}`)
-}
-
-const percentHorizontalBarOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y' as const,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: {
-      beginAtZero: true,
-      max: 100,
-      ticks: { callback: (value: string | number) => `${value}%` },
-    },
-  },
+  return `${competency.code}: ${competency.name}`
 }
 
 const competencyApprovalChartOptions = computed(() => ({
-  ...percentHorizontalBarOptions,
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'y' as const,
   plugins: {
     legend: { display: false },
     tooltip: {
@@ -147,20 +106,19 @@ const competencyApprovalChartOptions = computed(() => ({
       },
     },
   },
-}))
-
-const horizontalBarOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y' as const,
-  plugins: { legend: { display: false } },
   scales: {
     x: {
       beginAtZero: true,
-      ticks: { precision: 0 },
+      max: 100,
+      grid: { color: '#f1f5f9' },
+      ticks: { callback: (value: string | number) => `${value}%`, font: { size: 10 } },
+    },
+    y: {
+      grid: { display: false },
+      ticks: { font: { size: 10, weight: 'bold' as const }, color: '#475569' },
     },
   },
-}
+}))
 
 function applyLearnerSelection(learnerId: string) {
   const learner = allLearnerOptions.value.find((item) => String(item.id) === learnerId)
@@ -230,180 +188,155 @@ watch(
 )
 
 onMounted(() => {
+  if (academicStore.selectedFicha) {
+    filters.value.ficha = academicStore.selectedFicha
+  }
   void fetchDashboard(filters.value)
 })
 </script>
 
 <template>
   <div class="grid gap-6">
-    <!-- Header -->
-    <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-      <div class="space-y-1">
-        <span class="inline-flex w-fit rounded-full border border-emerald-700/15 bg-emerald-50 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-emerald-700">
-          Panorama General
+    <!-- Header & Filter Bar -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+      <div>
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700">
+          <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          Panorama Ejecutivo
         </span>
-        <h2 class="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Dashboard de Juicios Evaluativos
-        </h2>
+        </h1>
       </div>
-      <button
-        class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50"
-        type="button"
-        @click="resetFilters"
-      >
-        Limpiar Filtros
-      </button>
+
+      <div class="flex items-center gap-2">
+        <button
+          class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
+          type="button"
+          @click="resetFilters"
+        >
+          Restablecer Filtros
+        </button>
+      </div>
     </div>
 
-    <!-- Filtros Bar -->
-    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <!-- Unified Filters Toolbar -->
+    <div class="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Ficha</span>
+        <div>
+          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Ficha</label>
           <select
             v-model="filters.ficha"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
           >
-            <option value="">Todas las fichas</option>
+            <option value="">Todas las Fichas</option>
             <option v-for="f in fichaOptions" :key="f.codigo" :value="f.codigo">{{ f.codigo }} - {{ f.nombre }}</option>
           </select>
-        </label>
+        </div>
 
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Estado</span>
+        <div>
+          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Estado Formación</label>
           <select
             v-model="filters.estado"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
           >
-            <option value="">Todos los estados</option>
+            <option value="">Todos los Estados</option>
             <option v-for="e in dashboard?.options.estados ?? []" :key="e" :value="e">{{ prettyState(e) }}</option>
           </select>
-        </label>
+        </div>
 
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Competencia</span>
+        <div>
+          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Competencia</label>
           <select
             v-model="filters.competencia"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
           >
-            <option value="">Todas las competencias</option>
+            <option value="">Todas las Competencias</option>
             <option v-for="c in filteredCompetencyOptions" :key="c.codigo" :value="c.codigo">{{ c.codigo }} - {{ c.nombre }}</option>
           </select>
-        </label>
+        </div>
 
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Resultado</span>
+        <div>
+          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Resultado (RAP)</label>
           <select
             v-model="filters.resultado"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
           >
-            <option value="">Todos los resultados</option>
+            <option value="">Todos los Resultados</option>
             <option v-for="r in filteredResultOptions" :key="r.codigo" :value="r.codigo">{{ r.codigo }} - {{ r.detalle }}</option>
           </select>
-        </label>
+        </div>
 
-        <label class="grid gap-1">
-          <span class="text-xs font-semibold text-slate-600">Aprendiz</span>
+        <div>
+          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Aprendiz</label>
           <select
             :value="filters.aprendiz"
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
             @change="applyLearnerSelection(($event.target as HTMLSelectElement).value)"
           >
-            <option value="">Todos los aprendices</option>
+            <option value="">Todos los Aprendices</option>
             <option v-for="a in filteredLearnerOptions" :key="a.id" :value="String(a.id)">{{ a.nombre }}</option>
           </select>
-        </label>
+        </div>
       </div>
     </div>
 
-    <!-- Error / Loading -->
-    <p v-if="dashboardError" class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+    <!-- Error Alert -->
+    <p v-if="dashboardError" class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
       {{ dashboardError }}
     </p>
 
-    <!-- Overview Stats Cards -->
+    <!-- Top KPI Cards -->
     <div v-if="dashboard" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Aprendices</span>
-        <p class="mt-2 text-3xl font-black text-slate-900">{{ dashboard.overview.learnerCount }}</p>
-        <span class="mt-1 block text-xs text-emerald-600 font-semibold">{{ dashboard.overview.inTrainingCount }} en formación</span>
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Población de Aprendices</span>
+        <p class="mt-1 text-2xl font-black text-slate-900">{{ dashboard.overview.learnerCount }}</p>
+        <span class="mt-1 block text-xs font-semibold text-emerald-600">{{ dashboard.overview.inTrainingCount }} en formación activa</span>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Juicios Aprobados</span>
-        <p class="mt-2 text-3xl font-black text-emerald-600">{{ dashboard.overview.approvedJudgements }}</p>
-        <span class="mt-1 block text-xs text-slate-500">Promedio avance: {{ formatPercent(dashboard.overview.averageProgress) }}</span>
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Juicios Aprobados</span>
+        <p class="mt-1 text-2xl font-black text-emerald-600">{{ dashboard.overview.approvedJudgements }}</p>
+        <span class="mt-1 block text-xs font-medium text-slate-500">Avance curricular: {{ formatPercent(dashboard.overview.averageProgress) }}</span>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Juicios Pendientes</span>
-        <p class="mt-2 text-3xl font-black text-amber-500">{{ dashboard.overview.pendingJudgements }}</p>
-        <span class="mt-1 block text-xs text-amber-700">Por evaluar</span>
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Juicios Pendientes</span>
+        <p class="mt-1 text-2xl font-black text-amber-600">{{ dashboard.overview.pendingJudgements }}</p>
+        <span class="mt-1 block text-xs font-medium text-amber-700">Por evaluar por instructores</span>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Desaprobados</span>
-        <p class="mt-2 text-3xl font-black text-rose-600">{{ dashboard.overview.disapprovedJudgements }}</p>
-        <span class="mt-1 block text-xs text-rose-700">No aprobados</span>
-      </div>
-    </div>
-
-    <!-- Charts Grid -->
-    <div v-if="dashboard" class="grid gap-6 lg:grid-cols-2">
-      <!-- Status Donut -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-bold text-slate-900">Distribución de Estados de Aprendices</h3>
-        <div class="mt-4 h-64">
-          <Doughnut :data="statusChartData" :options="{ responsive: true, maintainAspectRatio: false }" />
-        </div>
-      </div>
-
-      <!-- Judgements Bar -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-bold text-slate-900">Estado de Juicios Evaluativos</h3>
-        <div class="mt-4 h-64">
-          <Bar :data="judgementChartData" :options="{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }" />
-        </div>
-      </div>
-
-      <!-- Top Approval Competencies -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-bold text-slate-900">Competencias con Mayor % de Aprobación</h3>
-        <div class="mt-4 h-64">
-          <Bar :data="competencyChartData" :options="competencyApprovalChartOptions" />
-        </div>
-      </div>
-
-      <!-- Top Pending Learners -->
-      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 class="text-base font-bold text-slate-900">Aprendices con Más Juicios Pendientes</h3>
-        <div class="mt-4 h-64">
-          <Bar :data="pendingLearnersChartData" :options="horizontalBarOptions" />
-        </div>
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
+        <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">No Aprobados</span>
+        <p class="mt-1 text-2xl font-black text-rose-600">{{ dashboard.overview.disapprovedJudgements }}</p>
+        <span class="mt-1 block text-xs font-medium text-rose-600">Requieren plan de mejoramiento</span>
       </div>
     </div>
 
-    <!-- Pending Learners Table -->
-    <div v-if="dashboard" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-        <h3 class="text-base font-bold text-slate-900">Aprendices con Juicios Pendientes de Evaluación</h3>
-        <span class="text-xs text-slate-400">Haz clic en un aprendiz para ver su detalle</span>
+    <!-- Action Center: Priority Pending Learners Table -->
+    <div v-if="dashboard" class="rounded-xl border border-slate-200 bg-white shadow-xs">
+      <div class="flex items-center justify-between border-b border-slate-100 p-4">
+        <div>
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-700">Atención Prioritaria</span>
+          <h3 class="text-sm font-bold text-slate-900">Aprendices con Juicios Pendientes de Evaluación</h3>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">Haz clic en una fila para abrir su expediente</span>
       </div>
 
-      <div class="mt-4 overflow-x-auto">
+      <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="bg-slate-50 text-slate-700">
-              <th class="px-4 py-3 font-bold uppercase">Aprendiz</th>
-              <th class="px-4 py-3 font-bold uppercase">Documento</th>
-              <th class="px-4 py-3 font-bold uppercase">Ficha</th>
-              <th class="px-4 py-3 font-bold uppercase">Estado</th>
-              <th class="px-4 py-3 font-bold uppercase">Pendientes</th>
-              <th class="px-4 py-3 font-bold uppercase">Avance</th>
-              <th class="px-4 py-3 font-bold uppercase text-right">Acción</th>
+            <tr class="bg-slate-50/80 text-slate-600">
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Aprendiz</th>
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Documento</th>
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Ficha</th>
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Estado</th>
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Pendientes</th>
+              <th class="px-4 py-2.5 font-bold uppercase tracking-wider text-[0.65rem]">Avance</th>
+              <th class="px-4 py-2.5 text-right font-bold uppercase tracking-wider text-[0.65rem]">Acción</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-600">
+          <tbody class="divide-y divide-slate-100 text-slate-700">
             <tr
               v-for="learner in visiblePendingLearners"
               :key="learner.id"
@@ -411,26 +344,50 @@ onMounted(() => {
               @click="navigateToCompetencies(learner.id, learner.ficha)"
             >
               <td class="px-4 py-3 font-bold text-slate-900">{{ learner.fullName }}</td>
-              <td class="px-4 py-3">{{ learner.documentType }} {{ learner.document }}</td>
-              <td class="px-4 py-3">{{ learner.ficha }}</td>
+              <td class="px-4 py-3 text-slate-500">{{ learner.documentType }} {{ learner.document }}</td>
+              <td class="px-4 py-3 font-medium">{{ learner.ficha }}</td>
               <td class="px-4 py-3">
-                <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-800">
+                <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700">
                   {{ prettyState(learner.state) }}
                 </span>
               </td>
               <td class="px-4 py-3 font-bold text-amber-600">{{ learner.pendingResults }}</td>
-              <td class="px-4 py-3">{{ formatPercent(learner.progress) }}</td>
+              <td class="px-4 py-3 font-semibold">{{ formatPercent(learner.progress) }}</td>
               <td class="px-4 py-3 text-right">
-                <button
-                  class="rounded-lg bg-slate-950 px-3 py-1 text-xs font-semibold text-white transition hover:bg-emerald-700"
-                  type="button"
-                >
-                  Ver Detalle
-                </button>
+                <span class="text-xs font-semibold text-emerald-700 hover:underline">
+                  Ver Seguimiento →
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Analytical Charts Section -->
+    <div v-if="dashboard" class="grid gap-5 lg:grid-cols-3">
+      <!-- Status Donut -->
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Distribución de Aprendices</h3>
+        <div class="mt-3 h-52">
+          <Doughnut :data="statusChartData" :options="{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }" />
+        </div>
+      </div>
+
+      <!-- Judgements Bar -->
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Balance de Juicios</h3>
+        <div class="mt-3 h-52">
+          <Bar :data="judgementChartData" :options="{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } }, x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } } } }" />
+        </div>
+      </div>
+
+      <!-- Top Competencies -->
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Aprobación por Norma</h3>
+        <div class="mt-3 h-52">
+          <Bar :data="competencyChartData" :options="competencyApprovalChartOptions" />
+        </div>
       </div>
     </div>
   </div>

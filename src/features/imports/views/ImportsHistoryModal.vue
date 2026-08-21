@@ -57,24 +57,25 @@ watch(
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 py-6">
-    <div class="max-h-[92vh] w-full max-w-3xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)]">
-      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs px-4 py-6">
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-in zoom-in-95 duration-150">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-200/80 px-6 py-4">
         <div>
-          <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-emerald-700">Control de carga</p>
-          <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">Archivos importados</h3>
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Registro de Ingesta</span>
+          <h3 class="text-lg font-bold text-slate-900">Historial de Archivos Importados</h3>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
           <button
             v-if="historyStore.entries.length"
-            class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 hover:border-rose-200"
             type="button"
             @click="handleClearHistory"
           >
-            Limpiar historial
+            Limpiar
           </button>
           <button
-            class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
             type="button"
             @click="emit('close')"
           >
@@ -83,116 +84,111 @@ watch(
         </div>
       </div>
 
-      <div class="max-h-[calc(92vh-6rem)] overflow-y-auto p-5">
+      <!-- Content Area -->
+      <div class="max-h-[calc(90vh-5rem)] overflow-y-auto p-5">
         <div class="grid gap-3">
-          <p v-if="error" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          <p v-if="error" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
             {{ error }}
           </p>
 
           <article
             v-for="entry in historyStore.entries"
             :key="entry.id"
-            class="rounded-[1.3rem] border border-slate-200 bg-white px-4 py-4"
+            class="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 transition hover:bg-white hover:border-slate-300 shadow-2xs"
           >
-            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p class="truncate text-sm font-semibold text-slate-950">{{ entry.fileName }}</p>
-                <p class="mt-1 text-xs text-slate-500">Ficha {{ entry.ficha }}</p>
-                <p class="mt-2 text-xs text-slate-500">{{ formatDate(entry.importedAt) }}</p>
+                <div class="flex items-center gap-2">
+                  <span class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-800 border border-emerald-200/60">
+                    Ficha {{ entry.ficha }}
+                  </span>
+                  <p class="truncate text-xs font-bold text-slate-900">{{ entry.fileName }}</p>
+                </div>
+                <p class="mt-1 text-[0.7rem] text-slate-400">{{ formatDate(entry.importedAt) }}</p>
               </div>
 
               <button
-                class="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-emerald-600 hover:text-emerald-700 shadow-2xs self-start sm:self-center"
                 type="button"
                 @click="openImportDetails(entry)"
               >
-                Ver detalles de archivo
+                Ver Detalle
               </button>
             </div>
           </article>
 
-          <p v-if="!historyStore.entries.length && !isLoading" class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600">
-            Aún no hay archivos importados registrados.
-          </p>
+          <div v-if="!historyStore.entries.length && !isLoading" class="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+            <p class="text-xs text-slate-500">Aún no hay archivos importados registrados localmente.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div v-if="isDetailsModalOpen && selectedImport" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/65 px-4 py-6">
-    <div class="max-h-[94vh] w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_120px_rgba(15,23,42,0.35)]">
-      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+  <!-- Detailed File Preview Modal -->
+  <div v-if="isDetailsModalOpen && selectedImport" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-xs px-4 py-6">
+    <div class="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-150">
+      <div class="flex items-center justify-between border-b border-slate-200/80 px-6 py-4">
         <div>
-          <p class="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-emerald-700">Detalle de importación</p>
-          <h3 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">{{ selectedImport.fileName }}</h3>
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Detalle de Archivo</span>
+          <h3 class="text-lg font-bold text-slate-900">{{ selectedImport.fileName }}</h3>
         </div>
         <button
-          class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
           type="button"
           @click="isDetailsModalOpen = false"
         >
-          Cerrar detalle
+          Volver
         </button>
       </div>
 
-      <div class="max-h-[calc(94vh-6rem)] overflow-y-auto p-6">
-        <div class="grid gap-4 md:grid-cols-3">
-          <div class="rounded-2xl bg-slate-950 px-4 py-4 text-white">
-            <p class="text-[0.7rem] uppercase tracking-[0.2em] text-emerald-300">Archivo</p>
-            <p class="mt-2 text-sm font-semibold">{{ selectedImport.fileName }}</p>
+      <div class="max-h-[calc(92vh-5rem)] overflow-y-auto p-6 space-y-5">
+        <!-- Summary Counters -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-center">
+            <span class="text-[0.65rem] font-bold uppercase text-slate-400">Ficha</span>
+            <p class="text-base font-bold text-slate-900">{{ selectedImport.ficha }}</p>
           </div>
-          <div class="rounded-2xl border border-emerald-950/10 bg-white px-4 py-4">
-            <p class="text-[0.7rem] uppercase tracking-[0.2em] text-slate-500">Filas</p>
-            <p class="mt-2 text-2xl font-black text-slate-950">{{ selectedImport.summary?.rowCount ?? selectedImport.rowCount }}</p>
+          <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-center">
+            <span class="text-[0.65rem] font-bold uppercase text-slate-400">Filas / Aprendices</span>
+            <p class="text-base font-bold text-slate-900">{{ selectedImport.summary?.rowCount ?? selectedImport.rowCount }}</p>
           </div>
-          <div class="rounded-2xl border border-emerald-950/10 bg-white px-4 py-4">
-            <p class="text-[0.7rem] uppercase tracking-[0.2em] text-slate-500">Columnas</p>
-            <p class="mt-2 text-2xl font-black text-slate-950">{{ selectedImport.summary?.columnCount ?? 0 }}</p>
+          <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3 text-center">
+            <span class="text-[0.65rem] font-bold uppercase text-slate-400">Columnas</span>
+            <p class="text-base font-bold text-slate-900">{{ selectedImport.summary?.columnCount ?? 0 }}</p>
           </div>
         </div>
 
-        <div class="mt-6 grid gap-6 xl:grid-cols-[0.85fr_1.15fr] xl:items-stretch">
-          <div class="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
-            <article
-              v-for="[key, value] in Object.entries(selectedImport.metadata ?? {})"
-              :key="key"
-              class="rounded-2xl border border-emerald-950/10 bg-white px-4 py-3"
-            >
-              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ key }}</p>
-              <p class="mt-2 text-sm text-slate-700">{{ value || 'Sin valor' }}</p>
-            </article>
-          </div>
-
-          <div class="max-h-[32rem] overflow-auto rounded-[1.6rem] border border-emerald-950/10">
-            <table class="min-w-[760px] w-full border-separate border-spacing-0">
-              <thead class="sticky top-0 z-10">
-                <tr class="bg-emerald-50/95">
-                  <th
-                    v-for="column in selectedImport.summary?.columns ?? []"
-                    :key="column"
-                    class="border-b border-slate-200 px-4 py-4 text-left text-[0.72rem] font-bold uppercase tracking-[0.22em] text-slate-600"
-                  >
-                    {{ column }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(row, index) in selectedImport.previewRows ?? []"
-                  :key="`${selectedImport.id}-${index}`"
-                  class="odd:bg-white even:bg-slate-50/70"
+        <!-- Table Preview -->
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full text-left text-xs">
+            <thead class="sticky top-0 bg-slate-50 text-slate-600">
+              <tr>
+                <th
+                  v-for="col in selectedImport.summary?.columns ?? []"
+                  :key="col"
+                  class="border-b border-slate-200 px-3 py-2 text-[0.65rem] font-bold uppercase tracking-wider"
                 >
-                  <td
-                    v-for="column in selectedImport.summary?.columns ?? []"
-                    :key="column"
-                    class="max-w-[18rem] border-b border-slate-100 px-4 py-4 align-top text-sm leading-6 text-slate-700"
-                  >
-                    {{ row[column] || '-' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  {{ col }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr
+                v-for="(row, idx) in selectedImport.previewRows ?? []"
+                :key="idx"
+                class="hover:bg-slate-50/50"
+              >
+                <td
+                  v-for="col in selectedImport.summary?.columns ?? []"
+                  :key="col"
+                  class="max-w-xs truncate px-3 py-2 text-xs"
+                >
+                  {{ row[col] || '-' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

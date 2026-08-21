@@ -54,46 +54,46 @@ function handleExportPdf() {
 
 function getJudgementBadgeClass(judgement: string) {
   const normalized = judgement.toLowerCase()
-  if (normalized === 'aprobado') return 'bg-emerald-100 text-emerald-800'
-  if (normalized === 'por evaluar') return 'bg-amber-100 text-amber-800'
-  return 'bg-rose-100 text-rose-800'
+  if (normalized === 'aprobado') return 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+  if (normalized === 'por evaluar') return 'bg-amber-50 text-amber-800 border border-amber-200'
+  return 'bg-rose-50 text-rose-800 border border-rose-200'
 }
 </script>
 
 <template>
-  <div v-if="open && result" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
-    <div class="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl">
+  <div v-if="open && result" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4" @click.self="emit('close')">
+    <div class="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-in zoom-in-95 duration-150">
       <!-- Header -->
-      <div class="flex flex-col gap-4 border-b border-slate-100 p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex flex-col gap-4 border-b border-slate-200/80 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-600">Resultado de Aprendizaje</span>
-          <h3 class="text-xl font-black text-slate-900">{{ result.code }}</h3>
-          <p class="mt-1 text-xs text-slate-500 uppercase">{{ result.detail }}</p>
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Resultado de Aprendizaje</span>
+          <h3 class="text-base font-bold text-slate-900">{{ result.code }}</h3>
+          <p class="mt-0.5 text-xs text-slate-500 line-clamp-1">{{ result.detail }}</p>
         </div>
 
         <div class="flex items-center gap-2">
           <button
-            class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
             type="button"
             @click="handleExportExcel"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Excel
           </button>
           <button
-            class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50"
             type="button"
             @click="handleExportPdf"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-3.5 w-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             PDF
           </button>
           <button
-            class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
             type="button"
             @click="emit('close')"
           >
@@ -102,23 +102,23 @@ function getJudgementBadgeClass(judgement: string) {
         </div>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-4 gap-2 border-b border-slate-100 bg-slate-50/50 p-4 text-center text-xs">
+      <!-- Quick Stats Strip -->
+      <div class="grid grid-cols-4 gap-2 border-b border-slate-100 bg-slate-50/60 p-3 text-center text-xs">
         <div>
-          <span class="text-slate-400 font-semibold">Total</span>
-          <p class="text-base font-bold text-slate-800">{{ result.totalLearners }}</p>
+          <span class="text-[0.65rem] font-bold uppercase text-slate-400">Total Aprendices</span>
+          <p class="text-sm font-bold text-slate-800">{{ result.totalLearners }}</p>
         </div>
         <div>
-          <span class="text-emerald-600 font-semibold">Aprobados</span>
-          <p class="text-base font-bold text-emerald-600">{{ result.approvedLearners }}</p>
+          <span class="text-[0.65rem] font-bold uppercase text-emerald-700">Aprobados</span>
+          <p class="text-sm font-bold text-emerald-600">{{ result.approvedLearners }}</p>
         </div>
         <div>
-          <span class="text-amber-600 font-semibold">Pendientes</span>
-          <p class="text-base font-bold text-amber-600">{{ result.pendingLearners }}</p>
+          <span class="text-[0.65rem] font-bold uppercase text-amber-700">Pendientes</span>
+          <p class="text-sm font-bold text-amber-600">{{ result.pendingLearners }}</p>
         </div>
         <div>
-          <span class="text-slate-600 font-semibold">Avance</span>
-          <p class="text-base font-bold text-slate-900">{{ formatPercent(result.progress) }}</p>
+          <span class="text-[0.65rem] font-bold uppercase text-slate-500">Cumplimiento</span>
+          <p class="text-sm font-bold text-slate-900">{{ formatPercent(result.progress) }}</p>
         </div>
       </div>
 
@@ -126,27 +126,27 @@ function getJudgementBadgeClass(judgement: string) {
       <div class="max-h-[50vh] overflow-y-auto p-4">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-slate-200 text-slate-700">
-              <th class="px-3 py-2 font-bold uppercase">Aprendiz</th>
-              <th class="px-3 py-2 font-bold uppercase">Documento</th>
-              <th class="px-3 py-2 font-bold uppercase">Estado</th>
-              <th class="px-3 py-2 font-bold uppercase text-right">Juicio Evaluativo</th>
+            <tr class="border-b border-slate-200 text-slate-600 bg-slate-50/50">
+              <th class="px-3 py-2 font-bold uppercase text-[0.65rem]">Aprendiz</th>
+              <th class="px-3 py-2 font-bold uppercase text-[0.65rem]">Documento</th>
+              <th class="px-3 py-2 font-bold uppercase text-[0.65rem]">Estado</th>
+              <th class="px-3 py-2 font-bold uppercase text-[0.65rem] text-right">Juicio Evaluativo</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-slate-600">
-            <tr v-for="l in filteredLearners" :key="l.id" class="hover:bg-slate-50">
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr v-for="l in filteredLearners" :key="l.id" class="hover:bg-slate-50/60 transition">
               <td class="px-3 py-2 font-semibold text-slate-900">{{ l.fullName }}</td>
-              <td class="px-3 py-2">{{ l.documentType }} {{ l.document }}</td>
+              <td class="px-3 py-2 text-slate-500">{{ l.documentType }} {{ l.document }}</td>
               <td class="px-3 py-2">{{ prettyState(l.state) }}</td>
               <td class="px-3 py-2 text-right">
-                <span class="inline-block rounded-full px-2.5 py-0.5 text-[0.65rem] font-bold" :class="getJudgementBadgeClass(l.judgement)">
+                <span class="inline-block rounded px-2 py-0.5 text-[0.65rem] font-bold" :class="getJudgementBadgeClass(l.judgement)">
                   {{ prettyState(l.judgement) }}
                 </span>
               </td>
             </tr>
           </tbody>
         </table>
-        <p v-if="!filteredLearners.length" class="p-6 text-center text-sm text-slate-500">
+        <p v-if="!filteredLearners.length" class="p-6 text-center text-xs text-slate-400">
           No hay aprendices que coincidan con el filtro seleccionado.
         </p>
       </div>

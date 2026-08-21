@@ -235,10 +235,10 @@ async function handleDeleteProject() {
 
 function formatPhaseName(name: string) {
   const names: Record<string, string> = {
-    ANALISIS: 'ANÁLISIS',
-    PLANEACION: 'PLANEACIÓN',
-    EJECUCION: 'EJECUCIÓN',
-    EVALUACION: 'EVALUACIÓN',
+    ANALISIS: 'Análisis',
+    PLANEACION: 'Planeación',
+    EJECUCION: 'Ejecución',
+    EVALUACION: 'Evaluación',
   }
   return names[name] || name
 }
@@ -250,15 +250,14 @@ const desertionChartData = computed(() => ({
       label: 'Desertores',
       data: learnerStats.value.map((s) => s.desertedCount),
       borderColor: '#e11d48',
-      backgroundColor: 'rgba(225, 29, 72, 0.1)',
-      borderWidth: 4,
-      tension: 0.4,
+      backgroundColor: 'rgba(225, 29, 72, 0.08)',
+      borderWidth: 3,
+      tension: 0.3,
       fill: true,
       pointBackgroundColor: '#fff',
       pointBorderColor: '#e11d48',
       pointBorderWidth: 2,
-      pointRadius: 6,
-      pointHoverRadius: 8,
+      pointRadius: 5,
     },
   ],
 }))
@@ -266,25 +265,17 @@ const desertionChartData = computed(() => ({
 const desertionChartOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
-  interaction: {
-    intersect: false,
-    mode: 'index',
-  },
   plugins: {
     legend: { display: false },
     tooltip: {
-      enabled: true,
       backgroundColor: '#0f172a',
-      titleFont: { size: 12, weight: 'bold' },
-      bodyFont: { size: 12 },
-      padding: 12,
-      displayColors: false,
+      padding: 10,
       callbacks: {
         title: (items: TooltipItem<'line'>[]) => `Fase: ${items[0]?.label ?? ''}`,
         label: (context: TooltipItem<'line'>) => {
           const stat = learnerStats.value[context.dataIndex]
           if (!stat) return ''
-          return `Total: ${stat.desertedCount} • Traslados: ${stat.trasladoCount} • Retiros: ${stat.voluntarioCount}`
+          return `Total: ${stat.desertedCount} · Traslados: ${stat.trasladoCount} · Retiros: ${stat.voluntarioCount}`
         },
       },
     },
@@ -292,17 +283,12 @@ const desertionChartOptions: ChartOptions<'line'> = {
   scales: {
     y: {
       beginAtZero: true,
-      grid: { display: true, color: '#f1f5f9' },
-      ticks: {
-        precision: 0,
-        stepSize: 1,
-        font: { size: 10, weight: 'bold' },
-        color: '#64748b',
-      },
+      grid: { color: '#f1f5f9' },
+      ticks: { precision: 0, font: { size: 10 }, color: '#64748b' },
     },
     x: {
       grid: { display: false },
-      ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8' },
+      ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' },
     },
   },
 }
@@ -310,446 +296,439 @@ const desertionChartOptions: ChartOptions<'line'> = {
 
 <template>
   <div class="grid gap-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
+    <!-- Header Navigation -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-4">
+      <div class="flex items-center gap-3">
         <button
-          class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-950 hover:bg-slate-950 hover:text-white"
+          class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:border-slate-300 hover:bg-slate-50"
           type="button"
           @click="emit('close')"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M19 12H5"></path>
-            <polyline points="12 19 5 12 12 5"></polyline>
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </button>
         <div>
-          <h2 class="text-2xl font-bold tracking-tight text-slate-900">{{ props.projectName }}</h2>
-          <p class="text-sm font-medium text-slate-500">Proyecto Formativo · Cód. {{ props.projectCode }}</p>
+          <div class="flex items-center gap-2">
+            <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
+              Cód. {{ props.projectCode }}
+            </span>
+            <h2 class="text-lg font-bold tracking-tight text-slate-900">{{ props.projectName }}</h2>
+          </div>
+          <p class="text-xs text-slate-500">Estructura de fases, competencias y resultados de aprendizaje</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <!-- Ficha Filter -->
-        <div class="relative group">
-          <label class="absolute -top-2 left-3 bg-white px-1 text-[0.6rem] font-black uppercase tracking-widest text-slate-400 z-10 transition-colors group-focus-within:text-slate-950">Filtrar por Ficha</label>
-          <div class="relative">
-            <select
-              v-model="selectedFichaId"
-              class="h-11 w-48 appearance-none rounded-xl border border-slate-200 bg-white pl-4 pr-10 text-xs font-bold text-slate-900 shadow-sm outline-none transition-all hover:border-slate-400 focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5 cursor-pointer"
-            >
-              <option :value="null">Todas las fichas</option>
-              <option v-for="ficha in fichas" :key="ficha.id_formacion" :value="ficha.id_formacion">
-                Ficha {{ ficha.ficha_caracterizacion }}
-              </option>
-            </select>
-            <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-950 transition-colors">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-            </div>
-          </div>
-        </div>
+      <div class="flex items-center gap-2.5">
+        <!-- Ficha Selector -->
+        <select
+          v-model="selectedFichaId"
+          class="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-xs outline-none transition hover:border-slate-300 focus:border-emerald-600 cursor-pointer"
+        >
+          <option :value="null">Todas las Fichas</option>
+          <option v-for="ficha in fichas" :key="ficha.id_formacion" :value="ficha.id_formacion">
+            Ficha {{ ficha.ficha_caracterizacion }}
+          </option>
+        </select>
 
         <button
           v-if="typeof activePhaseId === 'number'"
-          class="flex h-11 items-center gap-2 rounded-xl border px-5 py-2 text-xs font-bold transition-all shadow-sm"
-          :class="isEditMode ? 'bg-rose-600 border-rose-600 text-white hover:bg-rose-700' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-950 hover:text-slate-950'"
+          class="inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold shadow-xs transition"
+          :class="isEditMode ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'"
           type="button"
           @click="isEditMode = !isEditMode"
         >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          <svg class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
-          {{ isEditMode ? 'Salir' : 'Modo Editor' }}
+          {{ isEditMode ? 'Salir del Editor' : 'Modo Asignación' }}
         </button>
 
         <button
           v-if="isEditMode"
-          class="flex h-11 w-11 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 shadow-sm transition hover:border-rose-600 hover:bg-rose-600 hover:text-white"
+          class="flex h-9 w-9 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-rose-600 shadow-xs transition hover:bg-rose-100"
           title="Eliminar Proyecto"
           type="button"
           @click="handleDeleteProject"
         >
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path d="M3 6h18"></path>
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- General Stats Row -->
-    <div v-if="!isLoading && !error" class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-3">
-      <div
+    <!-- Phase Selector Navigation Bar -->
+    <div v-if="!isLoading && !error" class="flex flex-wrap items-center gap-2 rounded-xl bg-slate-100/80 p-1.5">
+      <button
         v-for="phase in phases"
         :key="phase.id_fase"
-        class="flex flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-slate-400 cursor-pointer"
-        :class="activePhaseId === phase.id_fase ? 'ring-2 ring-slate-950 ring-offset-2' : ''"
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activePhaseId === phase.id_fase
+            ? 'bg-white text-slate-900 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
         @click="activePhaseId = phase.id_fase"
       >
-        <span class="text-[0.6rem] font-bold uppercase tracking-widest text-slate-400">{{ formatPhaseName(phase.nombre) }}</span>
-        <div class="mt-1 flex items-baseline gap-1">
-          <span class="text-lg font-black text-slate-900">{{ phase.competencies.length }}</span>
-          <span class="text-[0.65rem] font-medium text-slate-500">comps</span>
-        </div>
-      </div>
-      <div
-        class="flex flex-col rounded-2xl border border-dashed border-amber-200 bg-amber-50/50 p-3 shadow-sm transition hover:border-amber-400 cursor-pointer"
-        :class="activePhaseId === 'unassigned' ? 'ring-2 ring-amber-500 ring-offset-2' : ''"
+        <span>{{ formatPhaseName(phase.nombre) }}</span>
+        <span class="rounded-full bg-slate-100 px-1.5 py-0.2 text-[0.65rem] font-bold text-slate-600">
+          {{ phase.competencies.length }}
+        </span>
+      </button>
+
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activePhaseId === 'unassigned'
+            ? 'bg-white text-amber-700 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
         @click="activePhaseId = 'unassigned'"
       >
-        <span class="text-[0.6rem] font-bold uppercase tracking-widest text-amber-600">Sueltas</span>
-        <div class="mt-1 flex items-baseline gap-1">
-          <span class="text-lg font-black text-amber-700">{{ unassignedComps.length }}</span>
-        </div>
-      </div>
-      <div
-        class="flex flex-col rounded-2xl border border-indigo-200 bg-indigo-50/50 p-3 shadow-sm transition hover:border-indigo-400 cursor-pointer"
-        :class="activePhaseId === 'learner-progress' ? 'ring-2 ring-indigo-500 ring-offset-2' : ''"
+        <span>Sueltas</span>
+        <span class="rounded-full bg-amber-50 px-1.5 py-0.2 text-[0.65rem] font-bold text-amber-700 border border-amber-200">
+          {{ unassignedComps.length }}
+        </span>
+      </button>
+
+      <button
+        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        :class="
+          activePhaseId === 'learner-progress'
+            ? 'bg-white text-emerald-700 shadow-xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+        "
+        type="button"
         @click="activePhaseId = 'learner-progress'"
       >
-        <span class="text-[0.6rem] font-bold uppercase tracking-widest text-indigo-600">Aprendices</span>
-        <div class="mt-1 flex items-baseline gap-1">
-          <span class="text-lg font-black text-indigo-700">Stats</span>
-        </div>
+        <span>Métricas de Aprendices</span>
+      </button>
+    </div>
+
+    <!-- Filter & Search Toolbar (When in a specific phase) -->
+    <div v-if="!isLoading && !error && typeof activePhaseId === 'number'" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+      <div class="relative flex-1 sm:max-w-md">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Buscar por código de norma o nombre de competencia..."
+          class="w-full rounded-lg border border-slate-200 bg-slate-50/70 py-1.5 pl-8 pr-3 text-xs text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white"
+        />
+      </div>
+
+      <div class="flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+        <button
+          class="rounded px-2.5 py-1 text-xs font-semibold transition"
+          :class="globalFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+          type="button"
+          @click="setGlobalFilter('all')"
+        >
+          Todas
+        </button>
+        <button
+          class="rounded px-2.5 py-1 text-xs font-semibold transition"
+          :class="globalFilter === 'approved' ? 'bg-white text-emerald-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+          type="button"
+          @click="setGlobalFilter('approved')"
+        >
+          Aprobadas
+        </button>
+        <button
+          class="rounded px-2.5 py-1 text-xs font-semibold transition"
+          :class="globalFilter === 'pending' ? 'bg-white text-amber-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+          type="button"
+          @click="setGlobalFilter('pending')"
+        >
+          Pendientes
+        </button>
       </div>
     </div>
 
-    <!-- Global Filters & Navigation -->
-    <div v-if="!isLoading && !error" class="space-y-4">
-      <div v-if="typeof activePhaseId === 'number'" class="space-y-3">
-        <!-- Filter Competencies -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl bg-slate-950 px-5 py-4 shadow-lg animate-in fade-in zoom-in-95 duration-200">
-          <div class="hidden md:block">
-            <p class="text-[0.6rem] font-black uppercase tracking-widest text-slate-500">Filtro Global</p>
-            <p class="text-xs font-medium text-white">Búsqueda y estado</p>
-          </div>
-          <div class="flex-1 w-full sm:max-w-md relative">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-            <input v-model="searchQuery" type="text" placeholder="Buscar competencia por nombre o código..." class="w-full rounded-xl bg-slate-900 border border-slate-800 py-2.5 pl-10 pr-4 text-xs font-medium text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600 transition-all" />
-            <button v-if="searchQuery" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white" type="button" @click="searchQuery = ''"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
-          </div>
-          <div class="flex gap-2">
-            <button class="rounded-lg px-4 py-2 text-xs font-semibold transition" :class="globalFilter === 'all' ? 'bg-white text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'" type="button" @click="setGlobalFilter('all')">Todas</button>
-            <button class="rounded-lg px-4 py-2 text-xs font-semibold transition" :class="globalFilter === 'approved' ? 'bg-white text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'" type="button" @click="setGlobalFilter('approved')">Aprobadas</button>
-            <button class="rounded-lg px-4 py-2 text-xs font-semibold transition" :class="globalFilter === 'pending' ? 'bg-white text-slate-950' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'" type="button" @click="setGlobalFilter('pending')">Por Evaluar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-1">
-        <button v-for="phase in phases" :key="phase.id_fase" class="relative px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all" :class="activePhaseId === phase.id_fase ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'" type="button" @click="activePhaseId = phase.id_fase">
-          {{ formatPhaseName(phase.nombre) }}
-          <div v-if="activePhaseId === phase.id_fase" class="absolute bottom-0 left-0 h-0.5 w-full bg-slate-900 rounded-full"></div>
-        </button>
-        <button class="relative px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all" :class="activePhaseId === 'unassigned' ? 'text-amber-600' : 'text-slate-400 hover:text-amber-500'" type="button" @click="activePhaseId === 'unassigned'">
-          Sueltas
-          <div v-if="activePhaseId === 'unassigned'" class="absolute bottom-0 left-0 h-0.5 w-full bg-amber-500 rounded-full"></div>
-        </button>
-        <button class="relative px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all" :class="activePhaseId === 'learner-progress' ? 'text-indigo-600' : 'text-slate-400 hover:text-indigo-500'" type="button" @click="activePhaseId === 'learner-progress'">
-          Estado Aprendices
-          <div v-if="activePhaseId === 'learner-progress'" class="absolute bottom-0 left-0 h-0.5 w-full bg-indigo-500 rounded-full"></div>
-        </button>
+    <!-- Loading / Error States -->
+    <div v-if="isLoading" class="flex min-h-[30vh] items-center justify-center">
+      <div class="flex flex-col items-center gap-2 text-slate-400">
+        <svg class="h-6 w-6 animate-spin text-emerald-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-xs font-medium">Cargando desglose curricular...</p>
       </div>
     </div>
 
-    <!-- Loading / Error states -->
-    <div v-if="isLoading" class="flex min-h-[40vh] items-center justify-center">
-      <div class="flex flex-col items-center gap-3 text-slate-400">
-        <svg class="h-8 w-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <p class="text-sm font-medium">Cargando...</p>
-      </div>
+    <div v-else-if="error" class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-center text-xs font-medium text-rose-700">
+      {{ error }}
     </div>
-    <div v-else-if="error" class="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center text-sm text-rose-700">{{ error }}</div>
 
-    <!-- Content -->
-    <div v-else class="grid gap-6">
-      <!-- Active Phase View -->
-      <div v-if="currentPhase" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <!-- Phase Overview Banner -->
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div class="space-y-2 max-w-2xl">
-              <div class="flex items-center gap-2.5">
-                <span class="inline-block rounded-md bg-slate-950 px-3.5 py-1.5 text-xs font-black uppercase tracking-widest text-white">
-                  {{ formatPhaseName(currentPhase.nombre) }}
-                </span>
-                <span v-if="currentPhase.actividades && currentPhase.actividades.length > 0" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  {{ currentPhase.actividades.length }} {{ currentPhase.actividades.length === 1 ? 'Actividad de proyecto' : 'Actividades de proyecto' }}
-                </span>
-              </div>
-              <p class="text-xs leading-relaxed text-slate-500">
-                Estructura curricular de la fase dividida por Actividades de Proyecto, Competencias y Resultados de Aprendizaje evaluados.
-              </p>
-            </div>
-
-            <!-- Phase Global Metrics -->
-            <div class="flex shrink-0 gap-3">
-              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-center">
-                <span class="text-xl font-black text-slate-900">{{ currentPhase.competencies.reduce((acc, c) => acc + c.totalResults, 0) }}</span>
-                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">Carga Esperada</span>
-              </div>
-              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
-                <span class="text-xl font-black text-emerald-700">{{ currentPhase.competencies.reduce((acc, c) => acc + c.approvedResults, 0) }}</span>
-                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-emerald-600">Aprobados</span>
-              </div>
-              <div class="flex min-w-[5rem] flex-col items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center">
-                <span class="text-xl font-black text-amber-700">{{ currentPhase.competencies.reduce((acc, c) => acc + (c.totalResults - c.approvedResults), 0) }}</span>
-                <span class="text-[0.6rem] font-bold uppercase tracking-wider text-amber-500">Pendientes</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Activity Cards Hierarchy -->
-        <div v-if="currentPhase.actividades && currentPhase.actividades.length > 0" class="space-y-6">
+    <!-- Active Phase View -->
+    <div v-else-if="currentPhase" class="grid gap-5">
+      <!-- Activities List -->
+      <div v-if="currentPhase.actividades && currentPhase.actividades.length > 0" class="space-y-4">
+        <div
+          v-for="(act, aIdx) in currentPhase.actividades"
+          :key="act.id_actividad || aIdx"
+          class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs"
+        >
+          <!-- Activity Header -->
           <div
-            v-for="(act, aIdx) in currentPhase.actividades"
-            :key="act.id_actividad || aIdx"
-            class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
+            class="flex cursor-pointer items-center justify-between border-b border-slate-100 bg-slate-50/60 px-5 py-3 transition hover:bg-slate-50"
+            @click="toggleActivityExpanded(act.id_actividad || aIdx)"
           >
-            <!-- Activity Header -->
-            <div
-              class="cursor-pointer border-b border-slate-100 bg-slate-50/90 px-6 py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 select-none hover:bg-slate-100/80 transition"
-              @click="toggleActivityExpanded(act.id_actividad || aIdx)"
-            >
-              <div class="flex items-start gap-3.5 min-w-0 flex-1">
-                <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-black text-white">
-                  {{ getActivityNumber(act.descripcion, aIdx) }}
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-[0.65rem] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      Actividad de Proyecto {{ getActivityNumber(act.descripcion, aIdx) }}
-                    </span>
-                  </div>
-                  <h4 class="mt-1 text-sm font-bold text-slate-900 leading-snug">
-                    {{ cleanActivityText(act.descripcion) }}
-                  </h4>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                <span class="text-xs font-bold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200">
-                  {{ filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length }} Competencias
+            <div class="flex items-center gap-3">
+              <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-emerald-600 text-xs font-bold text-white">
+                {{ getActivityNumber(act.descripcion, aIdx) }}
+              </span>
+              <div>
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">
+                  Actividad de Proyecto {{ getActivityNumber(act.descripcion, aIdx) }}
                 </span>
-                <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-500 transition">
-                  <svg class="h-4 w-4 transition-transform duration-200" :class="isActivityExpanded(act.id_actividad || aIdx) ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+                <h4 class="text-xs font-bold text-slate-900 leading-snug">
+                  {{ cleanActivityText(act.descripcion) }}
+                </h4>
               </div>
             </div>
 
-            <!-- Activity Content -->
-            <div v-show="isActivityExpanded(act.id_actividad || aIdx)" class="divide-y divide-slate-100 bg-white animate-in fade-in duration-200">
-              <template v-if="filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length > 0">
-                <div
-                  v-for="comp in filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase)"
-                  :key="comp.id_competencia"
-                  class="transition hover:bg-slate-50/70 relative"
-                >
-                  <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
-                    <button class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800" type="button" @click.stop="openAssignModal(comp)">
-                      <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>
-                      Gestionar
-                    </button>
-                  </div>
+            <div class="flex items-center gap-3">
+              <span class="rounded bg-white px-2.5 py-1 text-[0.7rem] font-semibold text-slate-600 border border-slate-200">
+                {{ filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length }} Competencias
+              </span>
+              <svg
+                class="h-4 w-4 text-slate-400 transition-transform duration-150"
+                :class="isActivityExpanded(act.id_actividad || aIdx) ? 'rotate-180' : ''"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
 
-                  <button class="flex w-full items-start gap-3.5 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''" type="button" @click="toggleCompetency(comp.id_competencia)">
-                    <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
-                      <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                        <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
-                          JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
+          <!-- Competencies Accordion inside Activity -->
+          <div v-show="isActivityExpanded(act.id_actividad || aIdx)" class="divide-y divide-slate-100 bg-white">
+            <template v-if="filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase).length > 0">
+              <div
+                v-for="comp in filterCompetenciesList(act.competencies && act.competencies.length > 0 ? act.competencies : (currentPhase.actividades.length === 1 ? currentPhase.competencies : []), currentPhase.id_fase)"
+                :key="comp.id_competencia"
+                class="p-4 transition hover:bg-slate-50/50"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-start gap-3 flex-1">
+                    <button
+                      class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500 transition hover:bg-slate-100"
+                      type="button"
+                      @click="toggleCompetency(comp.id_competencia)"
+                    >
+                      <svg
+                        class="h-3.5 w-3.5 transition-transform"
+                        :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    <div>
+                      <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
+                          Norma: {{ comp.codigo_juicio || comp.codigo }}
                         </span>
-                        <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
-                          PROYECTO_FORMATIVO: {{ comp.codigo_proyecto }}
+                        <span v-if="comp.codigo_proyecto" class="rounded bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200/60">
+                          Proyecto: {{ comp.codigo_proyecto }}
                         </span>
-                        <span v-if="comp.isApproved" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                          <div class="h-1.5 w-1.5 rounded-full bg-emerald-500"></div>Aprobada
+                        <span
+                          v-if="comp.isApproved"
+                          class="rounded-full bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-700 border border-emerald-200"
+                        >
+                          Aprobada
                         </span>
-                        <span v-else class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[0.65rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
-                          <div class="h-1.5 w-1.5 rounded-full bg-amber-400"></div>
-                          {{ comp.approvedResults }}/{{ comp.totalResults }} Resultados
+                        <span
+                          v-else
+                          class="rounded-full bg-amber-50 px-2 py-0.5 text-[0.65rem] font-semibold text-amber-700 border border-amber-200"
+                        >
+                          {{ comp.approvedResults }}/{{ comp.totalResults }} RAPs
                         </span>
                       </div>
-                      <p class="text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
+                      <p class="text-xs font-bold text-slate-900">{{ comp.nombre }}</p>
                     </div>
-                  </button>
+                  </div>
 
-                  <!-- Expanded RAPs -->
-                  <div v-show="expandedCompetencies.has(comp.id_competencia)" class="pb-6 pl-16 pr-6 animate-in fade-in slide-in-from-top-1 duration-200">
-                    <ul class="grid gap-2">
-                      <li v-for="res in comp.learningOutcomes" :key="res.id_resultado" class="flex items-start gap-3 rounded-xl border p-3.5 transition hover:border-slate-300" :class="res.isApproved ? 'border-emerald-200/80 bg-emerald-50/40' : 'border-slate-200 bg-slate-50/50'">
-                        <div class="mt-0.5 h-4 w-4 shrink-0 flex items-center justify-center">
-                          <svg v-if="res.isApproved" class="h-4 w-4 text-emerald-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" /></svg>
-                          <div v-else class="text-[0.6rem] font-black text-amber-500">{{ Math.round(((res.approvedCount || 0) / (res.totalCount || 1)) * 100) }}%</div>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <div class="flex items-center gap-2 flex-wrap mb-1">
-                            <span class="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[0.6rem] font-bold text-slate-700">
-                              JUICIO_EVALUATIVO: {{ res.codigo_juicio || res.codigo }}
-                            </span>
-                            <span v-if="res.codigo_proyecto" class="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[0.6rem] font-bold text-emerald-700 border border-emerald-200">
-                              PROYECTO_FORMATIVO: {{ res.codigo_proyecto }}
-                            </span>
-                          </div>
-                          <p class="text-xs leading-relaxed text-slate-700 font-medium">{{ res.detalle }}</p>
-                        </div>
-                      </li>
-                    </ul>
+                  <button
+                    v-if="isEditMode"
+                    class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-emerald-600 hover:text-emerald-700 shadow-2xs shrink-0"
+                    type="button"
+                    @click="openAssignModal(comp)"
+                  >
+                    Vincular Fase
+                  </button>
+                </div>
+
+                <!-- Expanded Outcomes List -->
+                <div v-show="expandedCompetencies.has(comp.id_competencia)" class="mt-3 pl-9">
+                  <div class="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                    <div
+                      v-for="res in comp.learningOutcomes"
+                      :key="res.id_resultado"
+                      class="flex items-start gap-2 text-xs"
+                    >
+                      <div class="mt-0.5">
+                        <span
+                          v-if="res.isApproved"
+                          class="inline-block h-2 w-2 rounded-full bg-emerald-500"
+                        ></span>
+                        <span
+                          v-else
+                          class="inline-block h-2 w-2 rounded-full bg-amber-400"
+                        ></span>
+                      </div>
+                      <div class="flex-1">
+                        <span class="font-bold text-slate-700">{{ res.codigo_juicio || res.codigo }}:</span>
+                        <span class="text-slate-600 ml-1">{{ res.detalle }}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </template>
-              <div v-else class="p-6 text-center text-xs text-slate-400 italic">
-                No hay competencias asociadas a esta actividad que coincidan con el filtro actual.
               </div>
+            </template>
+            <div v-else class="p-6 text-center text-xs text-slate-400">
+              No hay competencias asociadas a esta actividad que coincidan con el filtro.
             </div>
-          </div>
-        </div>
-
-        <!-- Flat List fallback -->
-        <div v-else class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm divide-y divide-slate-100">
-          <div v-for="comp in getFilteredCompetencies(currentPhase)" :key="comp.id_competencia" class="transition hover:bg-slate-50/70 relative">
-            <div v-if="isEditMode" class="absolute right-6 top-4 z-10 flex gap-2">
-              <button class="flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[0.65rem] font-bold text-white transition shadow-md hover:bg-slate-800" type="button" @click.stop="openAssignModal(comp)">
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m16 3 4 4L7 20H3v-4L16 3z"></path></svg>
-                Gestionar
-              </button>
-            </div>
-            <button class="flex w-full items-start gap-3.5 px-6 py-4 text-left transition" :class="isEditMode ? 'pr-32' : ''" type="button" @click="toggleCompetency(comp.id_competencia)">
-              <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition">
-                <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="expandedCompetencies.has(comp.id_competencia) ? 'rotate-90' : ''" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                  <span class="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[0.65rem] font-bold text-indigo-700 border border-indigo-200">
-                    JUICIO_EVALUATIVO: {{ comp.codigo_juicio || comp.codigo }}
-                  </span>
-                  <span v-if="comp.codigo_proyecto" class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-700 border border-emerald-200">
-                    PROYECTO_FORMATIVO: {{ comp.codigo_proyecto }}
-                  </span>
-                </div>
-                <p class="text-sm font-semibold leading-snug text-slate-900">{{ comp.nombre }}</p>
-              </div>
-            </button>
           </div>
         </div>
       </div>
 
-      <!-- Unassigned View -->
-      <div v-else-if="activePhaseId === 'unassigned'" class="overflow-hidden rounded-2xl border border-dashed border-amber-200 bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <div class="border-b border-amber-100 bg-amber-50/30 px-6 py-5">
-          <h3 class="text-sm font-bold text-amber-800 uppercase tracking-widest">Competencias Sueltas</h3>
-          <p class="mt-1 text-xs text-amber-600">Sin fase asignada.</p>
-        </div>
-        <div class="divide-y divide-slate-100">
-          <div
-            v-for="comp in unassignedComps.filter(c => !searchQuery || c.codigo.toLowerCase().includes(searchQuery.toLowerCase().trim()) || c.nombre.toLowerCase().includes(searchQuery.toLowerCase().trim()))"
-            :key="comp.id_competencia"
-            class="flex items-center justify-between p-5 transition hover:bg-amber-50/20"
-          >
-            <div class="min-w-0 flex-1">
-              <span class="text-[0.6rem] font-bold uppercase tracking-wider text-slate-400">{{ comp.codigo }}</span>
-              <p class="mt-0.5 text-sm font-semibold text-slate-900">{{ comp.nombre }}</p>
+      <!-- Fallback Flat List -->
+      <div v-else class="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 shadow-xs">
+        <div
+          v-for="comp in getFilteredCompetencies(currentPhase)"
+          :key="comp.id_competencia"
+          class="p-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-bold text-slate-700">
+                Norma: {{ comp.codigo_juicio || comp.codigo }}
+              </span>
+              <p class="mt-1 text-xs font-bold text-slate-900">{{ comp.nombre }}</p>
             </div>
-            <button class="shrink-0 ml-4 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-amber-600 transition" type="button" @click="openAssignModal(comp)">
-              Asignar a fase
+            <button
+              v-if="isEditMode"
+              class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:border-emerald-600 hover:text-emerald-700"
+              type="button"
+              @click="openAssignModal(comp)"
+            >
+              Vincular
             </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Learner Progress Dashboard -->
-      <div v-else-if="activePhaseId === 'learner-progress'" class="grid gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-        <!-- Desertion Chart -->
-        <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div class="mb-8">
-            <p class="text-[0.6rem] font-black uppercase tracking-widest text-rose-500">Tendencia de Deserción</p>
-            <h3 class="mt-1 text-2xl font-black text-slate-900">Histórico de Retiros/Traslados</h3>
-            <p class="text-xs text-slate-500">Visualización por fases del proyecto</p>
-          </div>
-
-          <div class="relative h-64 w-full">
-            <Line :data="desertionChartData" :options="desertionChartOptions" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 gap-8">
-          <div v-for="stat in learnerStats" :key="stat.id_fase" class="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-              <div>
-                <span class="inline-block rounded-lg bg-slate-950 px-3 py-1 text-[0.6rem] font-black uppercase tracking-widest text-white">{{ formatPhaseName(stat.nombre) }}</span>
-                <h4 class="mt-2 text-2xl font-black text-slate-900">Estado de Aprendices</h4>
-              </div>
-              <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
-                <div class="flex flex-col rounded-2xl bg-slate-50 p-3 text-center">
-                  <p class="text-2xl font-black text-slate-700">{{ stat.expectedResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-slate-500">Esperados</p>
-                </div>
-                <div class="flex flex-col rounded-2xl bg-emerald-50 p-3 text-center">
-                  <p class="text-2xl font-black text-emerald-700">{{ stat.approvedResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-emerald-600">Aprobados</p>
-                </div>
-                <div class="flex flex-col rounded-2xl bg-amber-50 p-3 text-center">
-                  <p class="text-2xl font-black text-amber-600">{{ stat.pendingResults }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-amber-600">Pendientes</p>
-                </div>
-                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-center">
-                  <p class="text-2xl font-black text-rose-700">{{ stat.desertedCount }}</p>
-                  <p class="text-[0.6rem] font-bold uppercase text-rose-600">Desertores</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="space-y-2">
-              <div class="flex justify-between items-end">
-                <p class="text-[0.65rem] font-black uppercase tracking-widest text-slate-400">Progreso de Aprobación</p>
-                <p class="text-sm font-black text-emerald-600">{{ Math.round(stat.progressPercentage) }}%</p>
-              </div>
-              <div class="relative h-4 w-full overflow-hidden rounded-full bg-slate-100">
-                <div class="absolute left-0 h-full bg-emerald-500 transition-all duration-1000" :style="{ width: `${stat.progressPercentage}%` }"></div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Management Modal -->
-    <Teleport to="body">
-      <div v-if="selectedCompToAssign" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-md" @click.self="selectedCompToAssign = null">
-        <div class="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in-95 duration-200">
-          <div class="bg-slate-950 p-8 text-white">
-            <h3 class="text-xl font-bold tracking-tight">Gestionar Asignación de Fases</h3>
-            <p class="mt-2 text-xs text-slate-400 uppercase tracking-widest font-bold">Competencia:</p>
-            <p class="mt-1 text-sm font-medium leading-relaxed text-slate-200">{{ selectedCompToAssign.nombre }}</p>
+    <!-- Unassigned View -->
+    <div v-else-if="activePhaseId === 'unassigned'" class="rounded-xl border border-amber-200 bg-white shadow-xs">
+      <div class="border-b border-amber-100 bg-amber-50/40 px-5 py-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-800">Competencias Sueltas</h3>
+        <p class="text-xs text-amber-600">Competencias formativas sin fase asignada en el proyecto.</p>
+      </div>
+      <div class="divide-y divide-slate-100">
+        <div
+          v-for="comp in unassignedComps"
+          :key="comp.id_competencia"
+          class="flex items-center justify-between p-4"
+        >
+          <div>
+            <span class="text-[0.65rem] font-bold uppercase text-slate-400">{{ comp.codigo }}</span>
+            <p class="text-xs font-bold text-slate-900">{{ comp.nombre }}</p>
           </div>
-          <div class="p-8 space-y-6">
-            <div>
-              <p class="mb-4 text-[0.65rem] font-black uppercase tracking-widest text-slate-400">Selecciona las fases a vincular:</p>
-              <div class="grid grid-cols-2 gap-3">
-                <button
-                  v-for="phase in phases"
-                  :key="phase.id_fase"
-                  :disabled="isAssigning"
-                  class="flex flex-col items-center justify-center rounded-2xl border-2 p-5 text-center transition"
-                  :class="selectedPhasesForComp.has(phase.id_fase) ? 'border-indigo-500 bg-indigo-50/50' : 'border-slate-100 hover:border-slate-300 bg-white hover:bg-slate-50'"
-                  type="button"
-                  @click="togglePhaseSelection(phase.id_fase)"
-                >
-                  <span class="text-[0.65rem] font-black uppercase tracking-tighter" :class="selectedPhasesForComp.has(phase.id_fase) ? 'text-indigo-500' : 'text-slate-400'">Fase</span>
-                  <span class="mt-1 text-xs font-bold" :class="selectedPhasesForComp.has(phase.id_fase) ? 'text-indigo-900' : 'text-slate-900'">{{ formatPhaseName(phase.nombre) }}</span>
-                </button>
-              </div>
+          <button
+            class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700"
+            type="button"
+            @click="openAssignModal(comp)"
+          >
+            Asignar a Fase
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learner Progress & Desertion Dashboard -->
+    <div v-else-if="activePhaseId === 'learner-progress'" class="grid gap-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+        <div class="mb-4">
+          <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600">Analítica de Retención</span>
+          <h3 class="text-base font-bold text-slate-900">Tendencia de Deserción por Fases</h3>
+        </div>
+        <div class="h-56 w-full">
+          <Line :data="desertionChartData" :options="desertionChartOptions" />
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          v-for="stat in learnerStats"
+          :key="stat.id_fase"
+          class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs"
+        >
+          <span class="text-xs font-bold text-slate-900">{{ formatPhaseName(stat.nombre) }}</span>
+          <div class="mt-3 flex items-baseline justify-between">
+            <span class="text-2xl font-black text-emerald-600">{{ Math.round(stat.progressPercentage) }}%</span>
+            <span class="text-xs text-slate-500">{{ stat.approvedResults }}/{{ stat.expectedResults }} juicios</span>
+          </div>
+          <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div class="h-full bg-emerald-500 transition-all duration-500" :style="{ width: `${stat.progressPercentage}%` }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase Assignment Modal -->
+    <Teleport to="body">
+      <div v-if="selectedCompToAssign" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4" @click.self="selectedCompToAssign = null">
+        <div class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl animate-in zoom-in-95 duration-150">
+          <div class="border-b border-slate-200/80 px-6 py-4">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Mapeo Pedagógico</span>
+            <h3 class="text-base font-bold text-slate-900">Asignar Fases a Competencia</h3>
+            <p class="mt-1 text-xs text-slate-500">{{ selectedCompToAssign.nombre }}</p>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <p class="text-xs font-semibold text-slate-700">Selecciona las fases a las cuales vincular esta norma:</p>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button
+                v-for="phase in phases"
+                :key="phase.id_fase"
+                class="flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition shadow-2xs"
+                :class="
+                  selectedPhasesForComp.has(phase.id_fase)
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-900'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                "
+                type="button"
+                @click="togglePhaseSelection(phase.id_fase)"
+              >
+                <span class="text-xs font-bold">{{ formatPhaseName(phase.nombre) }}</span>
+              </button>
             </div>
-            <button class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 p-4 font-bold text-white transition hover:bg-slate-800 disabled:opacity-50" :disabled="isAssigning" type="button" @click="saveAssignChanges">
-              <span v-if="isAssigning">Guardando...</span>
-              <span v-else>Guardar Cambios</span>
-            </button>
+
+            <div class="pt-2">
+              <button
+                class="inline-flex w-full items-center justify-center rounded-lg bg-emerald-600 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 disabled:opacity-50"
+                :disabled="isAssigning"
+                type="button"
+                @click="saveAssignChanges"
+              >
+                {{ isAssigning ? 'Guardando...' : 'Confirmar Asignación' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
