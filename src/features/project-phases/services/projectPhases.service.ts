@@ -34,11 +34,11 @@ export const projectPhasesService = {
   },
 
   async assignCompetency(competencyId: number, phaseId: number): Promise<void> {
-    await apiClient.post(`/api/competencies/${competencyId}/assign`, { phaseId })
+    await apiClient.post(`/api/projects/phases/${phaseId}/competencies/${competencyId}`)
   },
 
   async unassignCompetency(competencyId: number, phaseId: number): Promise<void> {
-    await apiClient.post(`/api/competencies/${competencyId}/unassign`, { phaseId })
+    await apiClient.delete(`/api/projects/phases/${phaseId}/competencies/${competencyId}`)
   },
 
   async deleteProject(projectId: number): Promise<void> {
