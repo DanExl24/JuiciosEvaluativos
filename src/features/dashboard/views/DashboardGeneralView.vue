@@ -69,7 +69,9 @@ const filteredResultOptions = computed(() => getFilteredResults(filters.value.fi
 
 // 1. GAUGE DE SALUD Y AVANCE CURRICULAR
 const gaugeOption = computed(() => {
-  const progressVal = Math.round((dashboard.value?.overview.averageProgress ?? 0) * 100)
+  const rawProgress = dashboard.value?.overview.averageProgress ?? 0
+  const progressVal = rawProgress > 1 ? Number(rawProgress.toFixed(1)) : Number((rawProgress * 100).toFixed(1))
+
   return {
     series: [
       {
@@ -124,7 +126,7 @@ const gaugeOption = computed(() => {
           fontSize: 24,
           offsetCenter: [0, '10%'],
           valueAnimation: true,
-          formatter: (value: number) => `${Math.round(value)}%`,
+          formatter: (value: number) => `${value.toFixed(1)}%`,
           color: '#0f172a',
           fontWeight: '900',
         },
@@ -144,10 +146,14 @@ const radarOption = computed(() => {
   const comps = (dashboard.value?.competencies ?? []).slice(0, 6)
   if (!comps.length) return {}
 
-  const indicators = comps.map((c) => ({
-    name: c.code,
-    max: 100,
-  }))
+  const indicators = comps.map((c) => {
+    const label = c.codigo_juicio || c.codigo_proyecto || (c.name.length > 18 ? c.name.slice(0, 16) + '...' : c.name)
+    return {
+      name: label,
+      max: 100,
+      min: 0,
+    }
+  })
 
   const values = comps.map((c) => Math.round(c.approvalRate))
 
@@ -157,6 +163,14 @@ const radarOption = computed(() => {
       backgroundColor: '#0f172a',
       borderColor: '#0f172a',
       textStyle: { color: '#fff', fontSize: 11 },
+      formatter: () => {
+        let html = '<div style="font-weight:bold;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:2px;">% Aprobación por Norma:</div>'
+        comps.forEach((c) => {
+          const name = c.codigo_juicio ? `Norma ${c.codigo_juicio}` : c.name.slice(0, 22) + '...'
+          html += `<div style="display:flex;justify-content:space-between;gap:12px;margin-top:2px;"><span>${name}:</span><b>${Math.round(c.approvalRate)}%</b></div>`
+        })
+        return html
+      },
     },
     radar: {
       indicator: indicators,
