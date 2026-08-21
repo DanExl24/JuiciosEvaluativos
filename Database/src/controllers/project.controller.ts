@@ -90,50 +90,38 @@ export async function getUnassigned(req: Request, res: Response): Promise<void> 
 }
 
 export async function assignCompetency(req: Request, res: Response): Promise<void> {
-  const phaseId = Number(req.params.phaseId);
-  const competencyId = Number(req.params.competencyId);
+  const phaseId = Number(req.params.phaseId ?? req.body?.phaseId);
+  const competencyId = Number(req.params.competencyId ?? req.body?.competencyId);
 
   if (!Number.isInteger(phaseId) || !Number.isInteger(competencyId)) {
     res.status(400).json({ error: 'Identificadores invalidos.' });
     return;
   }
 
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    const result = await assignCompetencyToPhase(client, phaseId, competencyId);
-    await client.query('COMMIT');
+    const result = await assignCompetencyToPhase(pool, competencyId, phaseId);
     res.json({ ok: true, result });
   } catch (error) {
-    await client.query('ROLLBACK');
     const message = error instanceof Error ? error.message : 'No se pudo asignar la competencia.';
     res.status(500).json({ error: message });
-  } finally {
-    client.release();
   }
 }
 
 export async function unassign(req: Request, res: Response): Promise<void> {
-  const phaseId = Number(req.params.phaseId);
-  const competencyId = Number(req.params.competencyId);
+  const phaseId = Number(req.params.phaseId ?? req.body?.phaseId);
+  const competencyId = Number(req.params.competencyId ?? req.body?.competencyId);
 
   if (!Number.isInteger(phaseId) || !Number.isInteger(competencyId)) {
     res.status(400).json({ error: 'Identificadores invalidos.' });
     return;
   }
 
-  const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    const result = await unassignCompetency(client, phaseId, competencyId);
-    await client.query('COMMIT');
+    const result = await unassignCompetency(pool, competencyId, phaseId);
     res.json({ ok: true, result });
   } catch (error) {
-    await client.query('ROLLBACK');
     const message = error instanceof Error ? error.message : 'No se pudo desasignar la competencia.';
     res.status(500).json({ error: message });
-  } finally {
-    client.release();
   }
 }
 

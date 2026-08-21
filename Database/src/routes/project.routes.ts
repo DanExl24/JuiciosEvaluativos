@@ -21,5 +21,7 @@ projectRouter.get('/projects/:projectId/unassigned', getUnassigned);
 projectRouter.get('/projects/:projectId/unassigned-competencies', getUnassigned);
 projectRouter.post('/projects/phases/:phaseId/competencies/:competencyId', assignCompetency);
 projectRouter.delete('/projects/phases/:phaseId/competencies/:competencyId', unassign);
+projectRouter.post('/competencies/:competencyId/assign', assignCompetency);
+projectRouter.post('/competencies/:competencyId/unassign', unassign);
 projectRouter.delete('/projects/:projectId', deleteProject);
 projectRouter.post('/import/project', importProject);
