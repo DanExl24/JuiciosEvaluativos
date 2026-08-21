@@ -223,7 +223,12 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
     }
   }
 
+  // Only use heuristic matching for competencies that have NOT been linked to any phase yet
   for (const comp of compsRes.rows) {
+    if (linkedCompetencies.has(comp.id_competencia)) {
+      continue;
+    }
+
     const matchingPhases: number[] = [];
 
     for (const phase of persistedPhases) {
@@ -247,7 +252,7 @@ export async function importProject(client: PoolClient, payload: ProjectImportPa
         competenciesUpdated += 1;
       }
 
-      // Also link all results of this matched competency to this phase
+      // Also link results of this matched competency to this phase if not linked elsewhere
       const compResults = resultsRes.rows.filter(r => r.id_competencia === comp.id_competencia);
       for (const r of compResults) {
         await client.query(`
