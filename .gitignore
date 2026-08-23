@@ -23,6 +23,8 @@ __pycache__/
 uploads/*
 !uploads/.gitkeep
 Database/
+*.sql
+bd.sql
 
 # Editor directories and files
 .vscode/*
