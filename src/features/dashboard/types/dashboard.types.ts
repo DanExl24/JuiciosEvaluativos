@@ -111,6 +111,11 @@ export interface DashboardOptions {
   aprendices: LearnerOption[]
 }
 
+export interface TimelineEntry {
+  date: string
+  count: number
+}
+
 export interface DashboardPayload {
   overview: DashboardOverview
   programs: ProgramSummary[]
@@ -118,6 +123,7 @@ export interface DashboardPayload {
   competencies: CompetencySummary[]
   pendingLearners: PendingLearnerSummary[]
   recentJudgements: RecentJudgement[]
+  timeline?: TimelineEntry[]
   options: DashboardOptions
 }
 

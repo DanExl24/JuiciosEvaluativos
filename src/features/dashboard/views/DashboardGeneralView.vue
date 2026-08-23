@@ -559,60 +559,138 @@ const pendingCompetenciesBarOption = computed(() => {
 })
 
 // Gráfico: Línea de Tiempo del Ritmo de Evaluación
-const timelineOption = computed(() => {
+function formatTimelineDate(d: string) {
+  if (!d) return ''
+  const parts = d.split('-')
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`
+  }
+  return d
+}
+
+const timelineEntries = computed(() => {
+  if (dashboard.value?.timeline && dashboard.value.timeline.length > 0) {
+    return dashboard.value.timeline
+  }
   const judgements = dashboard.value?.recentJudgements ?? []
   const dateCounts: Record<string, number> = {}
-
   judgements.forEach((j) => {
     if (j.registeredAt) {
-      const d = j.registeredAt.split('T')[0] || 'Reciente'
-      dateCounts[d] = (dateCounts[d] || 0) + 1
+      const d = j.registeredAt.split('T')[0]
+      if (d) dateCounts[d] = (dateCounts[d] || 0) + 1
     }
   })
+  return Object.entries(dateCounts)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+})
 
-  const sortedDates = Object.keys(dateCounts).sort()
-  const dateLabels = sortedDates.length > 0 ? sortedDates : ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4']
-  const counts = sortedDates.length > 0 ? sortedDates.map((d) => dateCounts[d] ?? 0) : [12, 28, 45, 30]
+const timelineSummaryText = computed(() => {
+  const entries = timelineEntries.value
+  if (!entries.length) return ''
+  const total = entries.reduce((acc, e) => acc + e.count, 0)
+  if (entries.length === 1) {
+    const singleDate = formatTimelineDate(entries[0]?.date ?? '')
+    return `${total} juicios registrados el ${singleDate}`
+  }
+  return `${total} juicios evaluados en ${entries.length} fechas`
+})
+
+const timelineOption = computed(() => {
+  const entries = timelineEntries.value
+
+  if (entries.length === 0) {
+    return {
+      title: {
+        text: 'Sin registros de fechas en los juicios evaluativos',
+        left: 'center',
+        top: 'middle',
+        textStyle: { color: '#94a3b8', fontSize: 12, fontWeight: 'normal' },
+      },
+    }
+  }
+
+  const dateLabels = entries.map((e) => formatTimelineDate(e.date))
+  const counts = entries.map((e) => e.count)
+  const isFewPoints = entries.length <= 2
 
   return {
-    tooltip: { trigger: 'axis', backgroundColor: '#0f172a', textStyle: { color: '#fff', fontSize: 11 } },
-    grid: { top: '12%', left: '3%', right: '4%', bottom: '8%', containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#0f172a',
+      borderColor: '#0f172a',
+      textStyle: { color: '#fff', fontSize: 11 },
+      formatter: (params: any) => {
+        const item = Array.isArray(params) ? params[0] : params
+        const entry = entries[item.dataIndex]
+        return `<b>Fecha: ${formatTimelineDate(entry?.date ?? item.name)}</b><br/>Juicios Registrados: <b>${item.value}</b>`
+      },
+    },
+    grid: { top: '15%', left: '3%', right: '4%', bottom: '10%', containLabel: true },
     xAxis: {
       type: 'category',
-      boundaryGap: false,
+      boundaryGap: true,
       data: dateLabels,
       axisLine: { lineStyle: { color: '#cbd5e1' } },
       axisLabel: { fontSize: 10, color: '#64748b' },
     },
     yAxis: {
       type: 'value',
+      minInterval: 1,
       splitLine: { lineStyle: { color: '#f1f5f9' } },
       axisLabel: { fontSize: 10, color: '#64748b' },
     },
     series: [
-      {
-        name: 'Juicios Registrados',
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        itemStyle: { color: '#059669' },
-        lineStyle: { width: 2.5, color: '#059669' },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(5, 150, 105, 0.3)' },
-              { offset: 1, color: 'rgba(5, 150, 105, 0.01)' },
-            ],
+      isFewPoints
+        ? {
+            name: 'Juicios Registrados',
+            type: 'bar',
+            barMaxWidth: 72,
+            data: counts,
+            itemStyle: {
+              color: '#059669',
+              borderRadius: [6, 6, 0, 0],
+            },
+            label: {
+              show: true,
+              position: 'top',
+              formatter: '{c} juicios',
+              color: '#0f172a',
+              fontWeight: 'bold',
+              fontSize: 11,
+            },
+          }
+        : {
+            name: 'Juicios Registrados',
+            type: 'line',
+            smooth: 0.35,
+            symbol: 'circle',
+            symbolSize: 7,
+            itemStyle: { color: '#059669', borderColor: '#fff', borderWidth: 2 },
+            lineStyle: { width: 3, color: '#059669' },
+            areaStyle: {
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [
+                  { offset: 0, color: 'rgba(5, 150, 105, 0.35)' },
+                  { offset: 1, color: 'rgba(5, 150, 105, 0.02)' },
+                ],
+              },
+            },
+            label: {
+              show: entries.length <= 8,
+              position: 'top',
+              formatter: '{c}',
+              color: '#059669',
+              fontWeight: 'bold',
+              fontSize: 10,
+            },
+            data: counts,
           },
-        },
-        data: counts,
-      },
     ],
   }
 })
@@ -1295,9 +1373,14 @@ onMounted(() => {
 
         <!-- Línea de Tiempo del Ritmo de Evaluación -->
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-          <div class="border-b border-slate-100 pb-2 mb-3">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Actividad de Calificación</span>
-            <h3 class="text-xs font-bold text-slate-900">Ritmo Histórico de Juicios Registrados</h3>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-2 mb-3 gap-1">
+            <div>
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Actividad de Calificación</span>
+              <h3 class="text-xs font-bold text-slate-900">Ritmo Histórico de Juicios Registrados</h3>
+            </div>
+            <span v-if="timelineSummaryText" class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[0.65rem] font-bold text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+              {{ timelineSummaryText }}
+            </span>
           </div>
           <div class="h-56 w-full">
             <VChart :option="timelineOption" autoresize />

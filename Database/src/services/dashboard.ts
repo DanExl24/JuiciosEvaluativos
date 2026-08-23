@@ -429,6 +429,20 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
     .map((item) => JSON.parse(item) as { id: number; nombre: string; documento: string; ficha: string; estado: string })
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.documento.localeCompare(b.documento, 'es'));
 
+  const timelineMap = new Map<string, number>();
+  for (const row of rows) {
+    if (row.juicio_fecha) {
+      const datePart = row.juicio_fecha.split('T')[0];
+      if (datePart) {
+        timelineMap.set(datePart, (timelineMap.get(datePart) ?? 0) + 1);
+      }
+    }
+  }
+
+  const timeline = [...timelineMap.entries()]
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   const options = optionsResult.rows[0] ?? {
     estados: [],
     fichas: [],
@@ -443,6 +457,7 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
     competencies,
     pendingLearners,
     recentJudgements,
+    timeline,
     options: {
       ...options,
       fichasDetalle: options.fichas_detalle,
