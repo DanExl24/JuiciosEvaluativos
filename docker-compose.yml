@@ -7,8 +7,6 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-juicios}
-    ports:
-      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +14,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - internal_net
 
   backend:
     build:
@@ -34,11 +34,12 @@ services:
       DB_NAME: ${DB_NAME:-juicios}
       PORT: 4000
       NODE_ENV: production
-    ports:
-      - "4000:4000"
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
+    networks:
+      - internal_net
+      - proxy
 
   frontend:
     build:
@@ -48,8 +49,9 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    ports:
-      - "80:80"
+    networks:
+      - internal_net
+      - proxy
 
 volumes:
   pgdata:
@@ -58,3 +60,9 @@ volumes:
     driver: local
   backend_logs:
     driver: local
+
+networks:
+  internal_net:
+    driver: bridge
+  proxy:
+    external: true

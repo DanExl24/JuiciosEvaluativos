@@ -46,6 +46,9 @@ jobs:
             git reset --hard origin/master
             
             echo "🐳 [4/5] Construyendo y levantando contenedores con Docker Compose..."
+            # Asegurar que la red externa 'proxy' exista en el VPS
+            docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
+            
             docker compose down --remove-orphans || true
             docker compose up --build -d --remove-orphans
             
