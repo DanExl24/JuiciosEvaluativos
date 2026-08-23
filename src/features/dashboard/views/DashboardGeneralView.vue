@@ -558,51 +558,14 @@ const pendingCompetenciesBarOption = computed(() => {
   }
 })
 
-// Gráfico: Línea de Tiempo del Ritmo de Evaluación
-function formatTimelineDate(d: string) {
-  if (!d) return ''
-  const parts = d.split('-')
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`
-  }
-  return d
-}
+// Gráfico: Distribución 100% Apilada por Competencia (Aprobados / Por Evaluar / No Aprobados)
+const competencyDistributionStackedOption = computed(() => {
+  const comps = (dashboard.value?.competencies ?? []).slice().reverse()
 
-const timelineEntries = computed(() => {
-  if (dashboard.value?.timeline && dashboard.value.timeline.length > 0) {
-    return dashboard.value.timeline
-  }
-  const judgements = dashboard.value?.recentJudgements ?? []
-  const dateCounts: Record<string, number> = {}
-  judgements.forEach((j) => {
-    if (j.registeredAt) {
-      const d = j.registeredAt.split('T')[0]
-      if (d) dateCounts[d] = (dateCounts[d] || 0) + 1
-    }
-  })
-  return Object.entries(dateCounts)
-    .map(([date, count]) => ({ date, count }))
-    .sort((a, b) => a.date.localeCompare(b.date))
-})
-
-const timelineSummaryText = computed(() => {
-  const entries = timelineEntries.value
-  if (!entries.length) return ''
-  const total = entries.reduce((acc, e) => acc + e.count, 0)
-  if (entries.length === 1) {
-    const singleDate = formatTimelineDate(entries[0]?.date ?? '')
-    return `${total} juicios registrados el ${singleDate}`
-  }
-  return `${total} juicios evaluados en ${entries.length} fechas`
-})
-
-const timelineOption = computed(() => {
-  const entries = timelineEntries.value
-
-  if (entries.length === 0) {
+  if (comps.length === 0) {
     return {
       title: {
-        text: 'Sin registros de fechas en los juicios evaluativos',
+        text: 'Sin competencias disponibles para el filtro actual',
         left: 'center',
         top: 'middle',
         textStyle: { color: '#94a3b8', fontSize: 12, fontWeight: 'normal' },
@@ -610,87 +573,140 @@ const timelineOption = computed(() => {
     }
   }
 
-  const dateLabels = entries.map((e) => formatTimelineDate(e.date))
-  const counts = entries.map((e) => e.count)
-  const isFewPoints = entries.length <= 2
+  const labels = comps.map((c) => {
+    const code = c.codigo_juicio || c.codigo_proyecto || c.code
+    const shortName = c.name.length > 32 ? `${c.name.slice(0, 30)}...` : c.name
+    return `${code} - ${shortName}`
+  })
+
+  const approvedPercents = comps.map((c) => (c.total > 0 ? Number(((c.approved / c.total) * 100).toFixed(1)) : 0))
+  const pendingPercents = comps.map((c) => (c.total > 0 ? Number(((c.pending / c.total) * 100).toFixed(1)) : 0))
+  const disapprovedPercents = comps.map((c) => (c.total > 0 ? Number(((c.disapproved / c.total) * 100).toFixed(1)) : 0))
 
   return {
     tooltip: {
       trigger: 'axis',
+      axisPointer: { type: 'shadow' },
       backgroundColor: '#0f172a',
       borderColor: '#0f172a',
       textStyle: { color: '#fff', fontSize: 11 },
       formatter: (params: any) => {
         const item = Array.isArray(params) ? params[0] : params
-        const entry = entries[item.dataIndex]
-        return `<b>Fecha: ${formatTimelineDate(entry?.date ?? item.name)}</b><br/>Juicios Registrados: <b>${item.value}</b>`
+        const comp = comps[item.dataIndex]
+        if (!comp) return ''
+        const appPct = comp.total > 0 ? ((comp.approved / comp.total) * 100).toFixed(1) : '0'
+        const pendPct = comp.total > 0 ? ((comp.pending / comp.total) * 100).toFixed(1) : '0'
+        const disPct = comp.total > 0 ? ((comp.disapproved / comp.total) * 100).toFixed(1) : '0'
+
+        return `
+          <div style="font-weight:bold;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:3px;max-width:280px;white-space:normal;">
+            ${comp.codigo_juicio ? `Cód. ${comp.codigo_juicio}` : comp.code}: ${comp.name}
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;color:#34d399;margin-top:2px;">
+            <span>🟢 Aprobados:</span><b>${comp.approved} (${appPct}%)</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;color:#fbbf24;margin-top:2px;">
+            <span>🟡 Por Evaluar:</span><b>${comp.pending} (${pendPct}%)</b>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:12px;color:#f87171;margin-top:2px;">
+            <span>🔴 No Aprobados:</span><b>${comp.disapproved} (${disPct}%)</b>
+          </div>
+          <div style="margin-top:5px;font-size:10px;color:#94a3b8;border-top:1px solid rgba(255,255,255,0.1);padding-top:3px;display:flex;justify-content:space-between;">
+            <span>Total Evaluaciones:</span><b>${comp.total}</b>
+          </div>
+        `
       },
     },
-    grid: { top: '15%', left: '3%', right: '4%', bottom: '10%', containLabel: true },
+    legend: {
+      top: '0%',
+      right: '4%',
+      icon: 'roundRect',
+      itemWidth: 12,
+      itemHeight: 8,
+      textStyle: { fontSize: 11, color: '#475569', fontWeight: 'bold' },
+      data: ['Aprobados', 'Por Evaluar', 'No Aprobados'],
+    },
+    grid: { top: '12%', left: '3%', right: '5%', bottom: '4%', containLabel: true },
     xAxis: {
-      type: 'category',
-      boundaryGap: true,
-      data: dateLabels,
-      axisLine: { lineStyle: { color: '#cbd5e1' } },
-      axisLabel: { fontSize: 10, color: '#64748b' },
+      type: 'value',
+      max: 100,
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLabel: {
+        formatter: '{value}%',
+        fontSize: 10,
+        color: '#64748b',
+      },
     },
     yAxis: {
-      type: 'value',
-      minInterval: 1,
-      splitLine: { lineStyle: { color: '#f1f5f9' } },
-      axisLabel: { fontSize: 10, color: '#64748b' },
+      type: 'category',
+      data: labels,
+      axisLine: { lineStyle: { color: '#cbd5e1' } },
+      axisTick: { show: false },
+      axisLabel: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: '#334155',
+        width: 220,
+        overflow: 'truncate',
+      },
     },
     series: [
-      isFewPoints
-        ? {
-            name: 'Juicios Registrados',
-            type: 'bar',
-            barMaxWidth: 72,
-            data: counts,
-            itemStyle: {
-              color: '#059669',
-              borderRadius: [6, 6, 0, 0],
-            },
-            label: {
-              show: true,
-              position: 'top',
-              formatter: '{c} juicios',
-              color: '#0f172a',
-              fontWeight: 'bold',
-              fontSize: 11,
-            },
-          }
-        : {
-            name: 'Juicios Registrados',
-            type: 'line',
-            smooth: 0.35,
-            symbol: 'circle',
-            symbolSize: 7,
-            itemStyle: { color: '#059669', borderColor: '#fff', borderWidth: 2 },
-            lineStyle: { width: 3, color: '#059669' },
-            areaStyle: {
-              color: {
-                type: 'linear',
-                x: 0,
-                y: 0,
-                x2: 0,
-                y2: 1,
-                colorStops: [
-                  { offset: 0, color: 'rgba(5, 150, 105, 0.35)' },
-                  { offset: 1, color: 'rgba(5, 150, 105, 0.02)' },
-                ],
-              },
-            },
-            label: {
-              show: entries.length <= 8,
-              position: 'top',
-              formatter: '{c}',
-              color: '#059669',
-              fontWeight: 'bold',
-              fontSize: 10,
-            },
-            data: counts,
-          },
+      {
+        name: 'Aprobados',
+        type: 'bar',
+        stack: 'total',
+        barMaxWidth: 22,
+        data: approvedPercents,
+        itemStyle: {
+          color: '#059669',
+          borderRadius: [4, 0, 0, 4],
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: (p: any) => (p.value >= 12 ? `${Math.round(p.value)}%` : ''),
+          color: '#ffffff',
+          fontWeight: 'bold',
+          fontSize: 9,
+        },
+      },
+      {
+        name: 'Por Evaluar',
+        type: 'bar',
+        stack: 'total',
+        barMaxWidth: 22,
+        data: pendingPercents,
+        itemStyle: {
+          color: '#d97706',
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: (p: any) => (p.value >= 12 ? `${Math.round(p.value)}%` : ''),
+          color: '#ffffff',
+          fontWeight: 'bold',
+          fontSize: 9,
+        },
+      },
+      {
+        name: 'No Aprobados',
+        type: 'bar',
+        stack: 'total',
+        barMaxWidth: 22,
+        data: disapprovedPercents,
+        itemStyle: {
+          color: '#e11d48',
+          borderRadius: [0, 4, 4, 0],
+        },
+        label: {
+          show: true,
+          position: 'inside',
+          formatter: (p: any) => (p.value >= 12 ? `${Math.round(p.value)}%` : ''),
+          color: '#ffffff',
+          fontWeight: 'bold',
+          fontSize: 9,
+        },
+      },
     ],
   }
 })
@@ -1371,19 +1387,19 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Línea de Tiempo del Ritmo de Evaluación -->
+        <!-- Matriz de Distribución 100% Apilada por Competencia -->
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-2 mb-3 gap-1">
             <div>
-              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Actividad de Calificación</span>
-              <h3 class="text-xs font-bold text-slate-900">Ritmo Histórico de Juicios Registrados</h3>
+              <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-700">Radiografía Curricular Completa</span>
+              <h3 class="text-xs font-bold text-slate-900">Distribución 100% Apilada de Juicios por Competencia</h3>
             </div>
-            <span v-if="timelineSummaryText" class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[0.65rem] font-bold text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-              {{ timelineSummaryText }}
+            <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[0.65rem] font-bold text-emerald-800 border border-emerald-200 self-start sm:self-auto">
+              {{ (dashboard?.competencies || []).length }} Competencias Registradas
             </span>
           </div>
-          <div class="h-56 w-full">
-            <VChart :option="timelineOption" autoresize />
+          <div class="h-80 w-full">
+            <VChart :option="competencyDistributionStackedOption" autoresize />
           </div>
         </div>
       </div>
