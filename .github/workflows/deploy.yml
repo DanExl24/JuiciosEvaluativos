@@ -1,0 +1,56 @@
+name: 🚀 Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: 🌐 Deploy Docker Stack to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔑 Execute Remote Deployment via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          command_timeout: 15m
+          script: |
+            echo "🚀 [1/5] Iniciando despliegue de JuiciosEvaluativos..."
+            
+            # Directorio de despliegue en el VPS (configurable o por defecto)
+            DEPLOY_PATH="${{ secrets.VPS_DEPLOY_PATH || '~/juiciosevaluativos' }}"
+            DEPLOY_DIR=$(eval echo "$DEPLOY_PATH")
+            
+            echo "📂 [2/5] Verificando directorio de la aplicación en: $DEPLOY_DIR"
+            if [ ! -d "$DEPLOY_DIR/.git" ]; then
+              echo "Clonando repositorio por primera vez..."
+              mkdir -p "$DEPLOY_DIR"
+              git clone https://github.com/DanExl24/JuiciosEvaluativos.git "$DEPLOY_DIR"
+            fi
+            
+            cd "$DEPLOY_DIR"
+            
+            echo "🔄 [3/5] Actualizando código fuente a la última versión de master..."
+            git fetch --all
+            git reset --hard origin/master
+            
+            echo "🐳 [4/5] Construyendo y levantando contenedores con Docker Compose..."
+            docker compose down --remove-orphans || true
+            docker compose up --build -d --remove-orphans
+            
+            echo "🧹 [5/5] Limpiando imágenes y artefactos residuales de Docker..."
+            docker image prune -f
+            
+            echo "✅ ¡Despliegue finalizado con éxito en el VPS!"
+            docker compose ps
