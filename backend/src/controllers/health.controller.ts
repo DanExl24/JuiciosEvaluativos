@@ -7,7 +7,7 @@ export async function checkRoot(_req: Request, res: Response): Promise<void> {
     res.json({
       ok: true,
       databaseTime: result.rows[0]?.now ?? null,
-      apiPort: process.env.PORT || 4000,
+      apiPort: process.env.PORT || 3000,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'No se pudo consultar la base de datos.';

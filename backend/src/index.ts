@@ -5,7 +5,7 @@ import { ensureSchemaCompatibility } from './services/schema.ts';
 
 dotenv.config();
 
-const apiPort = Number(process.env.PORT) || 4000;
+const apiPort = Number(process.env.PORT) || 3000;
 
 async function bootstrap() {
   try {

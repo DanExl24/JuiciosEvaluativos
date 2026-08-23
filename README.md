@@ -52,7 +52,7 @@ docker compose up --build -d
 
 ### 3. Accesos del Sistema
 - **Frontend SPA (Nginx)**: `http://localhost` (Puerto 80)
-- **Backend API REST**: `http://localhost:4000/api`
+- **Backend API REST**: `http://localhost:3000/api`
 - **PostgreSQL Database**: `localhost:5432` (`db: juicios`, `user: postgres`)
 
 ### 4. Ver logs y detener servicios
@@ -73,7 +73,7 @@ docker compose down
 cd backend
 npm install
 npm run dev
-# Servidor escuchando en http://localhost:4000
+# Servidor escuchando en http://localhost:3000
 ```
 
 ### 2. Iniciar el Frontend

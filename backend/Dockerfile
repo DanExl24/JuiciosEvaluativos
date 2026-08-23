@@ -24,9 +24,9 @@ COPY . .
 RUN npm run build
 
 # Configurar variables de entorno y puerto
-EXPOSE 4000
+EXPOSE 3000
 ENV NODE_ENV=production
-ENV PORT=4000
+ENV PORT=3000
 
 # Iniciar servidor backend
 CMD ["node", "dist/index.js"]
