@@ -34,6 +34,8 @@ services:
       DB_NAME: ${DB_NAME:-juicios}
       PORT: 4000
       NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-https://juicios-evaluativos-jp.adsoproject.dev}
+      API_URL: ${API_URL:-https://api-juicios-evaluativos-jp.adsoproject.dev}
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
@@ -45,10 +47,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api-juicios-evaluativos-jp.adsoproject.dev}
     container_name: juicios_jorge_frontend
     restart: unless-stopped
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-https://api-juicios-evaluativos-jp.adsoproject.dev}
     networks:
       - internal_net
       - proxy
