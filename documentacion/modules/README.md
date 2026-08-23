@@ -11,6 +11,7 @@ documentacion/
 ├── architecture/                     # Documentación Técnica de Arquitectura
 │   ├── backend_architecture.md       # Arquitectura en capas Backend (Express + PostgreSQL)
 │   └── frontend_architecture.md      # Arquitectura Feature-Driven Frontend (Vue 3 + Pinia)
+├── graficas_interactivas.md          # Catálogo Técnico y Funcional de Gráficas Interactivas (ECharts & Chart.js)
 ├── plantilla-frontend-estructura.md  # Guía y plantilla de estructura de componentes
 └── modules/                          # DOCUMENTACIÓN FUNCIONAL POR MÓDULOS
     ├── README.md                     # Índice general y matriz de trazabilidad (este archivo)
