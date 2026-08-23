@@ -14,11 +14,12 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
 
     CREATE TABLE IF NOT EXISTS formacion (
       id_formacion SERIAL PRIMARY KEY,
-      ficha VARCHAR(50) NOT NULL UNIQUE,
+      ficha_caracterizacion VARCHAR(100) NOT NULL UNIQUE,
       id_programa INTEGER NOT NULL REFERENCES programa(id_programa) ON DELETE CASCADE,
       fecha_inicio DATE,
       fecha_fin DATE,
-      estado VARCHAR(50)
+      estado VARCHAR(50) DEFAULT 'en ejecucion',
+      modalidad VARCHAR(50) DEFAULT 'presencial'
     );
 
     CREATE TABLE IF NOT EXISTS fases (
@@ -63,8 +64,9 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
     CREATE TABLE IF NOT EXISTS funcionario (
       id_funcionario SERIAL PRIMARY KEY,
       documento VARCHAR(50) UNIQUE,
-      nombres VARCHAR(100),
-      apellidos VARCHAR(100)
+      tipo_documento VARCHAR(20),
+      nombre VARCHAR(100),
+      apellido VARCHAR(100)
     );
 
     CREATE TABLE IF NOT EXISTS juicios_evaluativos (
@@ -80,6 +82,19 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
 
   await pool.query(`
     DROP TABLE IF EXISTS importacion_archivo
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'formacion' AND column_name = 'ficha'
+      ) THEN
+        ALTER TABLE formacion RENAME COLUMN ficha TO ficha_caracterizacion;
+      END IF;
+    END
+    $$;
   `);
 
   await pool.query(`
