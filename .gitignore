@@ -11,6 +11,18 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+
+# Uploads & Temp
+uploads/*
+!uploads/.gitkeep
+Database/
 
 # Editor directories and files
 .vscode/*

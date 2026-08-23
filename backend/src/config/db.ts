@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
-dotenv.config({ path: path.resolve(process.cwd(), 'Database/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'backend/.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const cleanPassword = (process.env.DB_PASSWORD || 'postgres').replace(/^['"]|['"]$/g, '');

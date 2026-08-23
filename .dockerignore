@@ -1,0 +1,10 @@
+node_modules
+.git
+.agents
+.vscode
+dist
+__pycache__
+*.pyc
+logs/*
+uploads/*
+documentacion

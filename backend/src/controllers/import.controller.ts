@@ -80,7 +80,8 @@ export async function extractProjectPdf(req: Request, res: Response): Promise<vo
       throw new Error('No se encontro el script extractor parse_pdf.py en el sistema.');
     }
 
-    const { stdout, stderr } = await execAsync(`python "${scriptToRun}" "${tempPath}"`, {
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const { stdout, stderr } = await execAsync(`${pythonCmd} "${scriptToRun}" "${tempPath}"`, {
       maxBuffer: 15 * 1024 * 1024,
     });
 
