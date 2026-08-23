@@ -4,6 +4,80 @@ import { pool as defaultPool } from '../config/db.ts';
 export async function ensureSchemaCompatibility(poolParam?: Pool) {
   const pool = poolParam || defaultPool;
 
+  // 1. Crear tablas base si la base de datos es nueva
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS programa (
+      id_programa SERIAL PRIMARY KEY,
+      codigo VARCHAR(50) NOT NULL UNIQUE,
+      nombre TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS formacion (
+      id_formacion SERIAL PRIMARY KEY,
+      ficha VARCHAR(50) NOT NULL UNIQUE,
+      id_programa INTEGER NOT NULL REFERENCES programa(id_programa) ON DELETE CASCADE,
+      fecha_inicio DATE,
+      fecha_fin DATE,
+      estado VARCHAR(50)
+    );
+
+    CREATE TABLE IF NOT EXISTS fases (
+      id_fase SERIAL PRIMARY KEY,
+      nombre VARCHAR(100) NOT NULL,
+      id_programa INTEGER NOT NULL REFERENCES programa(id_programa) ON DELETE CASCADE,
+      actividad TEXT,
+      CONSTRAINT unique_fases_nombre_programa UNIQUE (nombre, id_programa)
+    );
+
+    CREATE TABLE IF NOT EXISTS competencia (
+      id_competencia SERIAL PRIMARY KEY,
+      codigo VARCHAR(50) NOT NULL,
+      codigo_juicio VARCHAR(50),
+      codigo_proyecto VARCHAR(50),
+      nombre TEXT NOT NULL,
+      id_programa INTEGER NOT NULL REFERENCES programa(id_programa) ON DELETE CASCADE,
+      CONSTRAINT unique_competencia_codigo_programa UNIQUE (codigo, id_programa)
+    );
+
+    CREATE TABLE IF NOT EXISTS resultados_aprendizaje (
+      id_resultado SERIAL PRIMARY KEY,
+      codigo VARCHAR(50) NOT NULL,
+      codigo_juicio VARCHAR(50),
+      codigo_proyecto VARCHAR(50),
+      detalle TEXT NOT NULL,
+      id_competencia INTEGER NOT NULL REFERENCES competencia(id_competencia) ON DELETE CASCADE,
+      CONSTRAINT unique_resultado_codigo_competencia UNIQUE (codigo, id_competencia)
+    );
+
+    CREATE TABLE IF NOT EXISTS aprendiz (
+      id_aprendiz SERIAL PRIMARY KEY,
+      documento VARCHAR(50) NOT NULL,
+      tipo_documento VARCHAR(20),
+      nombres VARCHAR(100) NOT NULL,
+      apellidos VARCHAR(100) NOT NULL,
+      estado VARCHAR(50),
+      id_formacion INTEGER NOT NULL REFERENCES formacion(id_formacion) ON DELETE CASCADE,
+      CONSTRAINT unique_aprendiz_documento_formacion UNIQUE (documento, id_formacion)
+    );
+
+    CREATE TABLE IF NOT EXISTS funcionario (
+      id_funcionario SERIAL PRIMARY KEY,
+      documento VARCHAR(50) UNIQUE,
+      nombres VARCHAR(100),
+      apellidos VARCHAR(100)
+    );
+
+    CREATE TABLE IF NOT EXISTS juicios_evaluativos (
+      id_juicio SERIAL PRIMARY KEY,
+      id_aprendiz INTEGER NOT NULL REFERENCES aprendiz(id_aprendiz) ON DELETE CASCADE,
+      id_resultado INTEGER NOT NULL REFERENCES resultados_aprendizaje(id_resultado) ON DELETE CASCADE,
+      id_funcionario INTEGER REFERENCES funcionario(id_funcionario) ON DELETE SET NULL,
+      estado VARCHAR(50) NOT NULL,
+      fecha TIMESTAMP WITH TIME ZONE,
+      CONSTRAINT uq_juicio_aprendiz_resultado UNIQUE (id_aprendiz, id_resultado)
+    );
+  `);
+
   await pool.query(`
     DROP TABLE IF EXISTS importacion_archivo
   `);
