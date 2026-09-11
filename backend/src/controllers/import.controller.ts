@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { pool } from '../config/db.ts';
-import { importCsvPayload } from '../services/csvImport.ts';
+import { importCsvPayload, ReportInconsistencyError } from '../services/csvImport.ts';
 import type { CsvImportPayload } from '../types.ts';
 import { listImportLogs, readImportLog, writeImportLog } from '../utils/log-writer.ts';
 
@@ -41,6 +41,17 @@ export async function importCsv(req: Request, res: Response): Promise<void> {
     });
   } catch (error) {
     await client.query('ROLLBACK');
+    if (error instanceof ReportInconsistencyError) {
+      res.status(409).json({
+        ok: false,
+        code: error.code,
+        error: error.message,
+        ficha: error.ficha,
+        totalInconsistencies: error.totalInconsistencies,
+        inconsistencies: error.inconsistencies,
+      });
+      return;
+    }
     const message = error instanceof Error ? error.message : 'No se pudo guardar la informacion en la base de datos.';
     res.status(500).json({ error: message });
   } finally {

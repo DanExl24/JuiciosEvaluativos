@@ -1,6 +1,5 @@
 import type { PoolClient } from 'pg';
-
-import type { CsvImportPayload, CsvMetadata, CsvRow } from '../types.ts';
+import type { CsvImportPayload, CsvMetadata, CsvRow, ImportSummary, ReportInconsistencyItem } from '../types.ts';
 
 const metadataAliases = {
   ficha: ['Ficha de Caracterizacion'],
@@ -49,13 +48,21 @@ const judgementStateMap: Record<string, string> = {
   'POR EVALUAR': 'por evaluar',
 };
 
-interface ImportSummary {
-  programa: string;
-  ficha: string;
-  learners: number;
-  competencies: number;
-  results: number;
-  judgements: number;
+export class ReportInconsistencyError extends Error {
+  public readonly code = 'REPORT_INCONSISTENCY';
+  public readonly ficha: string;
+  public readonly inconsistencies: ReportInconsistencyItem[];
+  public readonly totalInconsistencies: number;
+
+  constructor(ficha: string, inconsistencies: ReportInconsistencyItem[]) {
+    super(
+      `El reporte para la ficha ${ficha} contiene ${inconsistencies.length} juicios inconsistentes o desactualizados. Se bloqueó la importación para proteger los datos legítimos.`
+    );
+    this.name = 'ReportInconsistencyError';
+    this.ficha = ficha;
+    this.inconsistencies = inconsistencies;
+    this.totalInconsistencies = inconsistencies.length;
+  }
 }
 
 function normalizeText(value: string | undefined) {
@@ -349,6 +356,116 @@ async function ensureFuncionario(client: PoolClient, row: CsvRow) {
   return funcionarioCreado.id_funcionario;
 }
 
+async function validateReportConsistency(
+  client: PoolClient,
+  ficha: string,
+  rows: CsvRow[],
+): Promise<void> {
+  const existingJudgements = await client.query<{
+    documento: string;
+    nombres: string;
+    apellidos: string;
+    resultado_codigo: string;
+    resultado_detalle: string;
+    estado_actual: string;
+    fecha_actual: string | null;
+  }>(
+    `
+      SELECT 
+        a.documento,
+        a.nombres,
+        a.apellidos,
+        r.codigo AS resultado_codigo,
+        r.detalle AS resultado_detalle,
+        j.estado AS estado_actual,
+        j.fecha AS fecha_actual
+      FROM formacion f
+      JOIN aprendiz a ON a.id_formacion = f.id_formacion
+      JOIN juicios_evaluativos j ON j.id_aprendiz = a.id_aprendiz
+      JOIN resultados_aprendizaje r ON r.id_resultado = j.id_resultado
+      WHERE f.ficha_caracterizacion = $1
+    `,
+    [ficha],
+  );
+
+  if (existingJudgements.rows.length === 0) {
+    return;
+  }
+
+  const existingMap = new Map<string, {
+    documento: string;
+    nombres: string;
+    apellidos: string;
+    resultado_codigo: string;
+    resultado_detalle: string;
+    estado_actual: string;
+    fecha_actual: string | null;
+  }>();
+
+  for (const item of existingJudgements.rows) {
+    const key = `${normalizeText(item.documento)}::${normalizeText(item.resultado_codigo)}`;
+    existingMap.set(key, item);
+  }
+
+  const inconsistencies: ReportInconsistencyItem[] = [];
+  const seenInconsistency = new Set<string>();
+
+  for (const row of rows) {
+    const doc = normalizeText(getRowValue(row, rowAliases.numeroDocumento));
+    if (!doc) continue;
+
+    const rawResultado = getRowValue(row, rowAliases.resultado);
+    if (!rawResultado) continue;
+
+    let resultadoCode = '';
+    let resultadoDetalle = '';
+    try {
+      const parsed = splitCodeAndName(rawResultado, 'resultado de aprendizaje');
+      resultadoCode = parsed.code;
+      resultadoDetalle = parsed.name;
+    } catch {
+      continue;
+    }
+
+    const rawJuicio = getRowValue(row, rowAliases.juicio);
+    if (!rawJuicio) continue;
+
+    let incomingEstado = '';
+    try {
+      incomingEstado = mapRequiredEnum(rawJuicio, judgementStateMap, 'juicio evaluativo');
+    } catch {
+      continue;
+    }
+
+    const key = `${doc}::${resultadoCode}`;
+    const existing = existingMap.get(key);
+
+    if (existing) {
+      const isAprobadoDegraded = existing.estado_actual === 'aprobado' && incomingEstado !== 'aprobado';
+      const isEvaluatedReverted = existing.estado_actual === 'desaprobado' && incomingEstado === 'por evaluar';
+
+      if (isAprobadoDegraded || isEvaluatedReverted) {
+        if (!seenInconsistency.has(key)) {
+          seenInconsistency.add(key);
+          const rowNombre = `${getRowValue(row, rowAliases.nombre)} ${getRowValue(row, rowAliases.apellidos)}`.trim();
+          inconsistencies.push({
+            documento: doc,
+            aprendiz: rowNombre || `${existing.nombres} ${existing.apellidos}`.trim(),
+            resultadoCodigo: resultadoCode,
+            resultadoDetalle: resultadoDetalle || existing.resultado_detalle,
+            estadoActual: existing.estado_actual,
+            estadoReporte: incomingEstado,
+          });
+        }
+      }
+    }
+  }
+
+  if (inconsistencies.length > 0) {
+    throw new ReportInconsistencyError(ficha, inconsistencies);
+  }
+}
+
 async function ensureJuicio(
   client: PoolClient,
   row: CsvRow,
@@ -365,9 +482,31 @@ async function ensureJuicio(
       VALUES ($1, $2, $3::juicio_estado_enum, $4, $5)
       ON CONFLICT (id_resultado, id_aprendiz)
       DO UPDATE SET
-        estado = EXCLUDED.estado,
-        fecha = EXCLUDED.fecha,
-        id_funcionario = EXCLUDED.id_funcionario
+        estado = CASE
+          WHEN juicios_evaluativos.estado = 'aprobado' AND EXCLUDED.estado != 'aprobado'
+            THEN juicios_evaluativos.estado
+          WHEN juicios_evaluativos.estado = 'desaprobado' AND EXCLUDED.estado = 'por evaluar'
+            THEN juicios_evaluativos.estado
+          ELSE EXCLUDED.estado
+        END,
+        fecha = CASE
+          WHEN juicios_evaluativos.estado = 'aprobado' AND EXCLUDED.estado != 'aprobado'
+            THEN juicios_evaluativos.fecha
+          WHEN juicios_evaluativos.estado = 'desaprobado' AND EXCLUDED.estado = 'por evaluar'
+            THEN juicios_evaluativos.fecha
+          WHEN juicios_evaluativos.estado = 'aprobado' AND EXCLUDED.estado = 'aprobado' AND juicios_evaluativos.fecha IS NOT NULL
+            THEN juicios_evaluativos.fecha
+          ELSE COALESCE(EXCLUDED.fecha, juicios_evaluativos.fecha)
+        END,
+        id_funcionario = CASE
+          WHEN juicios_evaluativos.estado = 'aprobado' AND EXCLUDED.estado != 'aprobado'
+            THEN juicios_evaluativos.id_funcionario
+          WHEN juicios_evaluativos.estado = 'desaprobado' AND EXCLUDED.estado = 'por evaluar'
+            THEN juicios_evaluativos.id_funcionario
+          WHEN juicios_evaluativos.estado = 'aprobado' AND EXCLUDED.estado = 'aprobado' AND juicios_evaluativos.id_funcionario IS NOT NULL
+            THEN juicios_evaluativos.id_funcionario
+          ELSE COALESCE(EXCLUDED.id_funcionario, juicios_evaluativos.id_funcionario)
+        END
     `,
     [resultadoId, aprendizId, estado, fecha, funcionarioId],
   );
@@ -377,6 +516,13 @@ export async function importCsvPayload(client: PoolClient, payload: CsvImportPay
   if (!payload.fileName || !payload.summary || !Array.isArray(payload.rows) || payload.rows.length === 0) {
     throw new Error('El CSV no contiene filas para importar.');
   }
+
+  const ficha = getMetadataValue(payload.metadata, metadataAliases.ficha);
+  if (!ficha) {
+    throw new Error('El metadata del CSV no contiene la ficha de caracterizacion.');
+  }
+
+  await validateReportConsistency(client, ficha, payload.rows);
 
   const program = await ensureProgram(client, payload.metadata);
   const formacion = await ensureFormacion(client, program.id_programa, payload.metadata);

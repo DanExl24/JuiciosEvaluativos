@@ -54,3 +54,21 @@ export interface ProjectImportPayload {
   programCode: string;
   phases: ProjectPhase[];
 }
+
+export interface ReportInconsistencyItem {
+  documento: string;
+  aprendiz: string;
+  resultadoCodigo: string;
+  resultadoDetalle: string;
+  estadoActual: string;
+  estadoReporte: string;
+}
+
+export interface ImportSummary {
+  programa: string;
+  ficha: string;
+  learners: number;
+  competencies: number;
+  results: number;
+  judgements: number;
+}

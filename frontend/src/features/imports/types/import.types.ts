@@ -34,3 +34,21 @@ export interface ImportHistoryEntry {
   summary: CsvSummary | null
   previewRows: CsvRow[] | null
 }
+
+export interface ReportInconsistencyItem {
+  documento: string
+  aprendiz: string
+  resultadoCodigo: string
+  resultadoDetalle: string
+  estadoActual: string
+  estadoReporte: string
+}
+
+export interface ReportInconsistencyDetails {
+  ok: boolean
+  code: string
+  error: string
+  ficha: string
+  totalInconsistencies: number
+  inconsistencies: ReportInconsistencyItem[]
+}

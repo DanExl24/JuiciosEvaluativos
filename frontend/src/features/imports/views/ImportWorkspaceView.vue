@@ -6,6 +6,9 @@ import { createImportFingerprint, useImportHistoryStore } from '../stores/import
 import { useAcademicContextStore } from '../../../stores/academicContext.store'
 import { formatBytes } from '../../../utils/formatters/number'
 
+import { ApiError } from '../../../services/api/errors'
+import type { ReportInconsistencyDetails } from '../types/import.types'
+
 const emit = defineEmits<{
   (event: 'imported', ficha: string): void
   (event: 'open-imports'): void
@@ -36,6 +39,8 @@ const isDeleting = ref(false)
 const availableFichas = ref<string[]>([])
 const selectedFichaToDelete = ref('')
 const showManageFichas = ref(false)
+const inconsistencyDetails = ref<ReportInconsistencyDetails | null>(null)
+const showInconsistencyList = ref(false)
 
 async function fetchAvailableFichas() {
   try {
@@ -65,6 +70,8 @@ async function handleFileSelection(event: Event) {
 async function processSelectedFile(file: File) {
   importMessage.value = ''
   importError.value = ''
+  inconsistencyDetails.value = null
+  showInconsistencyList.value = false
   try {
     await parseFile(file)
   } catch (err) {
@@ -79,6 +86,8 @@ async function importToDatabase() {
   isImporting.value = true
   importError.value = ''
   importMessage.value = ''
+  inconsistencyDetails.value = null
+  showInconsistencyList.value = false
 
   try {
     const fingerprint = await createImportFingerprint(payload)
@@ -96,8 +105,18 @@ async function importToDatabase() {
     await fetchAvailableFichas()
     emit('imported', result.ficha)
   } catch (error) {
-    importError.value =
-      error instanceof Error ? error.message : 'Ocurrió un error inesperado al importar el archivo.'
+    if (
+      error instanceof ApiError &&
+      error.details &&
+      typeof error.details === 'object' &&
+      (error.details as ReportInconsistencyDetails).code === 'REPORT_INCONSISTENCY'
+    ) {
+      inconsistencyDetails.value = error.details as ReportInconsistencyDetails
+      importError.value = ''
+    } else {
+      importError.value =
+        error instanceof Error ? error.message : 'Ocurrió un error inesperado al importar el archivo.'
+    }
   } finally {
     isImporting.value = false
   }
@@ -260,6 +279,93 @@ onMounted(() => {
       <p v-if="importError || parseError" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
         {{ importError || parseError }}
       </p>
+
+      <!-- Security / Inconsistency Blocked Alert -->
+      <div
+        v-if="inconsistencyDetails"
+        class="rounded-2xl border border-rose-200 bg-gradient-to-br from-rose-50/90 to-amber-50/60 p-5 shadow-xs transition animate-in fade-in duration-200"
+      >
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div class="flex items-start gap-3.5">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-700 border border-rose-200 shadow-2xs">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <h4 class="text-sm font-bold text-rose-900">
+                  Importación Bloqueada: Reporte Inconsistente o Desactualizado
+                </h4>
+                <span class="rounded-full bg-rose-200/80 px-2 py-0.5 text-[0.65rem] font-bold text-rose-900 uppercase">
+                  Ficha {{ inconsistencyDetails.ficha }}
+                </span>
+              </div>
+              <p class="text-xs text-rose-800 leading-relaxed">
+                El archivo intentó registrar como <strong class="underline decoration-rose-400">Por evaluar</strong>
+                o modificar <strong>{{ inconsistencyDetails.totalInconsistencies }} juicio(s)</strong> que ya habían sido previamente
+                <strong class="text-emerald-700 font-bold">APROBADOS</strong> en el sistema legítimo.
+              </p>
+              <p class="text-[0.7rem] text-rose-700/90 font-medium">
+                🛡️ <strong>Protección de Integridad:</strong> Para evitar que un reporte desactualizado o con fechas alteradas destruya el progreso de los aprendices, la importación se canceló por completo y los datos legítimos se mantienen intactos.
+              </p>
+            </div>
+          </div>
+
+          <button
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-rose-300 bg-white/80 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-2xs transition hover:bg-white"
+            type="button"
+            @click="showInconsistencyList = !showInconsistencyList"
+          >
+            <span>{{ showInconsistencyList ? 'Ocultar Casos' : 'Ver Inconsistencias (' + inconsistencyDetails.totalInconsistencies + ')' }}</span>
+            <svg
+              class="h-3.5 w-3.5 transition-transform"
+              :class="{ 'rotate-180': showInconsistencyList }"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Inconsistencies Table -->
+        <div v-if="showInconsistencyList" class="mt-4 overflow-x-auto rounded-xl border border-rose-200 bg-white shadow-2xs">
+          <table class="w-full min-w-max border-collapse text-left text-xs">
+            <thead>
+              <tr class="bg-rose-50/70 text-rose-900">
+                <th class="border-b border-rose-200 px-3.5 py-2 font-bold uppercase text-[0.65rem]">Aprendiz</th>
+                <th class="border-b border-rose-200 px-3.5 py-2 font-bold uppercase text-[0.65rem]">Documento</th>
+                <th class="border-b border-rose-200 px-3.5 py-2 font-bold uppercase text-[0.65rem]">Resultado</th>
+                <th class="border-b border-rose-200 px-3.5 py-2 font-bold uppercase text-[0.65rem] text-emerald-800">Estado en BD (Legítimo)</th>
+                <th class="border-b border-rose-200 px-3.5 py-2 font-bold uppercase text-[0.65rem] text-rose-800">Estado en Reporte</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-rose-100 text-slate-700">
+              <tr v-for="(inc, idx) in inconsistencyDetails.inconsistencies" :key="idx" class="hover:bg-rose-50/30">
+                <td class="px-3.5 py-2 font-medium text-slate-900 whitespace-nowrap">{{ inc.aprendiz }}</td>
+                <td class="px-3.5 py-2 font-mono text-[0.7rem] text-slate-600 whitespace-nowrap">{{ inc.documento }}</td>
+                <td class="max-w-xs truncate px-3.5 py-2 text-slate-600" :title="inc.resultadoCodigo + ' - ' + inc.resultadoDetalle">
+                  <span class="font-semibold text-slate-800">{{ inc.resultadoCodigo }}</span> - {{ inc.resultadoDetalle }}
+                </td>
+                <td class="px-3.5 py-2 whitespace-nowrap">
+                  <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-[0.65rem] font-bold text-emerald-800 uppercase">
+                    {{ inc.estadoActual }}
+                  </span>
+                </td>
+                <td class="px-3.5 py-2 whitespace-nowrap">
+                  <span class="inline-flex items-center rounded-md bg-rose-100 px-2 py-0.5 text-[0.65rem] font-bold text-rose-800 uppercase">
+                    {{ inc.estadoReporte }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- Summary & Preview Section -->
       <div v-if="summary" class="w-full min-w-0 max-w-full rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs animate-in fade-in duration-200 overflow-hidden">
