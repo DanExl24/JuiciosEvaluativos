@@ -152,3 +152,34 @@ El usuario sube un archivo `.pdf` en el modal de importación de proyectos. El b
 - **Endpoints relacionados**: `POST /api/extract/project`
 - **Componentes frontend relacionados**: `ProjectPhasesView.vue`, `projectPhases.service.ts` (`extractPdf`)
 - **Controllers/Services relacionados**: `import.controller.ts` (`extractProjectPdf`), `parse_pdf.py` (`extract_project_data`), `middlewares/upload.ts`
+
+---
+
+# HU-IMP-006: Bloqueo de Ingesta por Inconsistencia o Reporte Desactualizado
+
+## Historia
+**Como** Administrador del Sistema / Instructor  
+**Quiero** que el sistema detecte y bloquee inmediatamente cualquier reporte entrante que contenga resultados marcados como "Por evaluar" cuando en la base de datos ya han sido "Aprobados"  
+**Para** evitar la pérdida del progreso académico real de los aprendices y proteger la base de datos de reportes desactualizados o adulterados.
+
+## Descripción
+Durante la importación de un archivo de seguimiento para una ficha existente, el backend realiza una validación atómica cruzada (`validateReportConsistency`) comparando los estados de cada aprendiz y resultado frente a los juicios evaluativos legítimos guardados en PostgreSQL. Si se detecta un intento de degradar un resultado ya aprobado a "por evaluar" o "desaprobado" (o revertir un juicio desaprobado a no evaluado), el sistema cancela la transacción completa (`ROLLBACK`), rechaza la importación con código HTTP 409 (`REPORT_INCONSISTENCY`), preserva los datos legítimos al 100% y devuelve una lista detallada de los registros en conflicto. En el frontend, se muestra una alerta destacada de seguridad explicando la causa del rechazo y una tabla interactiva para inspeccionar cada inconsistencia.
+
+## Criterios de Aceptación
+- Comparar los resultados del reporte entrante contra los juicios existentes en la base de datos para la misma ficha.
+- Si un resultado ya está `aprobado` en BD y viene como `por evaluar` o `desaprobado` en el archivo, clasificarlo como inconsistencia crítica.
+- Si un resultado ya está `desaprobado` en BD y viene como `por evaluar` en el archivo, clasificarlo como inconsistencia crítica.
+- Si se detecta 1 o más inconsistencias, cancelar de forma atómica la importación completa (`ROLLBACK`), sin aplicar modificaciones parciales.
+- Responder con código HTTP 409 Conflict, identificador de error `REPORT_INCONSISTENCY` y lista estructurada de inconsistencias (documento, aprendiz, código de resultado, detalle de resultado, estado legítimo actual, estado en reporte).
+- La protección debe ser inmune a fechas manipuladas en el archivo, ya que evalúa estados de aprendizaje consolidados y no simples marcas temporales.
+- El frontend debe capturar el error 409 y mostrar un banner de advertencia de seguridad con fondo degradado y badge con el conteo de juicios protegidos.
+- Permitir al usuario desplegar u ocultar la tabla interactiva de inconsistencias para auditoría.
+- Permitir la carga normal de reportes progresivos legítimos que mantengan los aprobados e incorporen nuevos aprobados o aprendices.
+
+## Información Técnica
+- **Prioridad**: Alta / Crítica
+- **Roles involucrados**: Administrador del Sistema, Instructor
+- **Reglas de negocio relacionadas**: RN-IMP-005, RN-IMP-013
+- **Endpoints relacionados**: `POST /api/import/csv` (HTTP 409 Conflict)
+- **Componentes frontend relacionados**: `ImportWorkspaceView.vue`, `import.types.ts` (`ReportInconsistencyDetails`, `ReportInconsistencyItem`)
+- **Controllers/Services relacionados**: `backend/src/services/csvImport.ts` (`validateReportConsistency`, `ReportInconsistencyError`, `ensureJuicio`), `backend/src/controllers/import.controller.ts` (`importCsv`)

@@ -44,13 +44,21 @@ sequenceDiagram
         View->>Service: importCsv(payload)
         Service->>Backend: POST /api/import/csv
         Backend->>SQL: BEGIN
-        Backend->>SQL: Inserción/Actualización en cascada
-        SQL-->>Backend: COMMIT OK
-        Backend->>Backend: Escribir log en logs/*.json
-        Backend-->>Service: { ok: true, ficha, learners, results, judgements }
-        Service-->>View: Resultado exitoso
-        View->>Store: saveEntry(payload, ficha, fingerprint)
-        View-->>Usuario: Notificación de éxito y actualización de contexto
+        Backend->>SQL: SELECT juicios previos de la ficha
+        alt Inconsistencia Crítica (Aprobado degradado a Por evaluar)
+            Backend->>SQL: ROLLBACK (Cero cambios)
+            Backend-->>Service: HTTP 409 { ok: false, code: "REPORT_INCONSISTENCY", totalInconsistencies, inconsistencies }
+            Service-->>View: Error ApiError(409)
+            View-->>Usuario: Banner de Seguridad: "Importación Bloqueada" + Tabla desplegable de casos
+        else Reporte Consistente / Ficha Nueva
+            Backend->>SQL: Inserción/Actualización en cascada (ensureJuicio con CASE)
+            SQL-->>Backend: COMMIT OK
+            Backend->>Backend: Escribir log en logs/*.json
+            Backend-->>Service: { ok: true, ficha, learners, results, judgements }
+            Service-->>View: Resultado exitoso
+            View->>Store: saveEntry(payload, ficha, fingerprint)
+            View-->>Usuario: Notificación de éxito y actualización de contexto
+        end
     end
 ```
 
@@ -67,10 +75,11 @@ sequenceDiagram
 6. El cliente calcula el *fingerprint* SHA-256 del archivo y valida que no haya sido cargado previamente.
 7. El servicio `importService.importCsv` envía el payload estructurado al endpoint `POST /api/import/csv`.
 8. El controlador inicia una transacción en PostgreSQL y ejecuta `importCsvPayload`:
+   - Ejecuta la **pre-validación estricta de consistencia** (`validateReportConsistency`): si la ficha ya existe, verifica que ningún resultado previamente `aprobado` venga marcado como `por evaluar` o `desaprobado`.
    - Crea o actualiza el registro en la tabla `programa`.
    - Crea o actualiza el registro en la tabla `formacion`.
    - Itera sobre las filas registrando funcionarios, aprendices, competencias y resultados de aprendizaje.
-   - Registra o actualiza cada juicio evaluativo en `juicios_evaluativos` con su estado y fecha formateada.
+   - Registra o actualiza cada juicio evaluativo en `juicios_evaluativos` aplicando la cláusula de seguridad SQL defensiva `CASE`.
 9. La transacción se confirma con `COMMIT`.
 10. El backend escribe el archivo de auditoría en la carpeta `logs/` del servidor.
 11. El backend responde con el resumen consolidado (`{ ok: true, ficha, learners, results, judgements }`).
@@ -86,6 +95,7 @@ sequenceDiagram
 - **E2: Estructura corrupta sin fila de encabezados**: Si el archivo carece de la columna `"Tipo de Documento"` o de filas tabulares válidas, se captura la excepción y se muestra: *"No se encontró una fila de encabezados válida dentro del archivo."*
 - **E3: Archivo duplicado**: Si el fingerprint SHA-256 ya existe en el historial local, la operación se cancela antes de contactar al servidor, mostrando: *"Este mismo archivo ya fue importado anteriormente en el sistema."*
 - **E4: Error en base de datos durante la transacción**: Si una fila contiene un valor de enum inválido o se produce un fallo de integridad, el backend ejecuta `ROLLBACK`, registra el error y responde con código HTTP 500. El frontend muestra la alerta roja correspondiente sin alterar el estado de la base de datos.
+- **E5: Detección de Reporte Inconsistente o Desactualizado (Bloqueo Total)**: Si en el paso 8 la función `validateReportConsistency` detecta que el reporte intenta registrar como `'por evaluar'` o `'desaprobado'` resultados que ya habían sido consolidados como `'aprobado'` en la base de datos legítima (o revertir evaluaciones desaprobadas a no evaluadas), el backend ejecuta inmediatamente `ROLLBACK` y responde con código `HTTP 409 Conflict` (`REPORT_INCONSISTENCY`), devolviendo el listado de casos conflictivos. El frontend captura el error y despliega el panel de advertencia de seguridad con el badge de juicios protegidos y la tabla interactiva de aprendices y resultados afectados. La base de datos no sufre modificación alguna.
 
 ## 8. Postcondiciones
 - La base de datos contiene los registros completos y consistentes de la ficha importada.

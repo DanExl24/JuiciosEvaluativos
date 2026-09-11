@@ -169,3 +169,27 @@
 - **Archivos donde se implementa**: `parse_pdf.py` (`deduplicate_activities`, `get_act_num`)
 - **Endpoints relacionados**: `POST /api/extract/project`
 - **Historias de usuario relacionadas**: `HU-IMP-005`
+
+---
+
+## 5. Categoría: Protección Estricta contra Reportes Desactualizados o Manipulados
+
+### RN-IMP-013: Detección y Bloqueo Total de Inconsistencias Curriculares
+- **Identificador**: `RN-IMP-013`
+- **Descripción**: Cuando se intenta importar un reporte para una ficha de formación que ya cuenta con juicios evaluativos en la base de datos, el sistema ejecuta una pre-validación de coherencia obligatoria (`validateReportConsistency`) antes de realizar cualquier actualización:
+  1. **Regla de Inmutabilidad del `APROBADO`**: Si en la base de datos un resultado de aprendizaje ya está consolidado como `'aprobado'`, y en el archivo entrante dicho resultado figura como `'por evaluar'` o `'desaprobado'`, se cataloga como **Inconsistencia Crítica**.
+  2. **Regla de No Regresión de Evaluación**: Si en la base de datos un resultado ya figura como `'desaprobado'`, y en el archivo entrante aparece como `'por evaluar'`, se cataloga como **Inconsistencia Crítica**.
+  3. **Inmunidad ante Manipulación de Fechas**: La validación evalúa los estados de aprendizaje consolidados y no únicamente las marcas temporales del archivo. Por tanto, si un usuario altera manualmente la fecha de un reporte viejo para aparentar que es reciente, el archivo es **rechazado de inmediato** al contradecir los resultados ya aprobados.
+  4. **Bloqueo Total sin Fusión Parcial (Cero Escritura)**: Ante la presencia de **al menos una inconsistencia**, el sistema interrumpe la ejecución, aborta la transacción con `ROLLBACK`, preserva el 100% de los datos legítimos de la ficha sin aplicar modificaciones parciales y responde con código HTTP `409 Conflict` (`REPORT_INCONSISTENCY`), suministrando el desglose de los aprendices y resultados en conflicto.
+  5. **Doble Capa de Seguridad en Base de Datos**: Como medida de defensa en profundidad, la instrucción `ensureJuicio` implementa sentencias condicionales `CASE` en la cláusula `ON CONFLICT (id_resultado, id_aprendiz) DO UPDATE SET`, bloqueando a nivel de motor SQL cualquier degradación de un estado `'aprobado'`.
+  6. **Aceptación de Reportes Progresivos**: Un reporte nuevo es procesado con éxito únicamente si es consistente: mantiene los resultados ya aprobados y promueve de `'por evaluar'` a `'aprobado'` los nuevos logros alcanzados por la ficha.
+- **Motivo**: Blindar el sistema contra la degradación involuntaria de datos por carga de archivos antiguos, garantizar la inmutabilidad de los logros académicos de los aprendices e impedir que reportes fraudulentos o adulterados corrompan el historial oficial.
+- **Módulos afectados**: `imports`, `academic-tracking`, `dashboard`
+- **Archivos donde se implementa**:
+  - `backend/src/services/csvImport.ts` (`validateReportConsistency`, `ReportInconsistencyError`, `ensureJuicio`)
+  - `backend/src/controllers/import.controller.ts` (`importCsv`)
+  - `backend/src/types.ts` (`ReportInconsistencyItem`)
+  - `frontend/src/features/imports/types/import.types.ts` (`ReportInconsistencyDetails`)
+  - `frontend/src/features/imports/views/ImportWorkspaceView.vue` (Alerta visual de seguridad y tabla interactiva de casos)
+- **Endpoints relacionados**: `POST /api/import/csv` (HTTP 409 Conflict)
+- **Historias de usuario relacionadas**: `HU-IMP-006`

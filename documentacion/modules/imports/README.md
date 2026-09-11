@@ -5,15 +5,15 @@ El módulo **Imports** es el punto de entrada de información oficial al sistema
 1. **Reportes de Juicios Evaluativos de SofiaPlus** (`.csv`, `.xlsx`, `.xls`): Contienen la caracterización del programa, la ficha, aprendices, competencias, resultados de aprendizaje (RAPs), juicios emitidos (`aprobado`, `desaprobado`, `por evaluar`), marcas temporales y funcionarios evaluadores.
 2. **Proyectos Formativos en PDF** (`.pdf`): Documentos oficiales de planeación pedagógica de los cuales se extraen automáticamente mediante un motor en Python las 4 fases formativas (`ANALISIS`, `PLANEACION`, `EJECUCION`, `EVALUACION`), actividades de proyecto numeradas y códigos curriculares asociados.
 
-Adicionalmente, el módulo provee capacidades de **administración y depuración de fichas** con borrado seguro en cascada y un **historial local y de auditoría en disco** con cálculo de huella digital (*fingerprint* SHA-256) para evitar cargas duplicadas accidentales.
+Adicionalmente, el módulo provee capacidades de **administración y depuración de fichas** con borrado seguro en cascada, un **historial local y de auditoría en disco** con cálculo de huella digital (*fingerprint* SHA-256) para evitar cargas duplicadas accidentales, y un **motor de protección contra reportes desactualizados o manipulados** que bloquea atómicamente cargas con contradicciones curriculares preservando la integridad del historial legítimo.
 
 ---
 
 ## 👥 2. Actores y Roles Involucrados
 | Rol | Descripción de Interacción en el Módulo |
 | :--- | :--- |
-| **Administrador del Sistema / Coordinador Académico** | Realiza la ingesta masiva de reportes de SofiaPlus, importa proyectos pedagógicos en PDF, inspecciona logs de auditoría y depura fichas obsoletas o corruptas. |
-| **Instructor / Docente Líder** | Carga archivos de seguimiento de su ficha asignada y verifica la integridad del previo tabular antes de confirmar la persistencia. |
+| **Administrador del Sistema / Coordinador Académico** | Realiza la ingesta masiva de reportes de SofiaPlus, importa proyectos pedagógicos en PDF, inspecciona logs de auditoría, analiza reportes inconsistentes o desactualizados bloqueados por seguridad y depura fichas obsoletas o corruptas. |
+| **Instructor / Docente Líder** | Carga archivos de seguimiento de su ficha asignada, verifica la integridad del previo tabular antes de confirmar la persistencia e inspecciona alertas de inconsistencia en caso de discrepancias de estados. |
 
 ---
 
@@ -21,7 +21,7 @@ Adicionalmente, el módulo provee capacidades de **administración y depuración
 
 ### Frontend (`src/features/imports/`):
 - **Vistas**:
-  - `ImportWorkspaceView.vue`: Dropzone interactivo, previsualización tabular de las primeras filas, indicadores de progreso, drawer colapsable de administración y depuración de fichas.
+  - `ImportWorkspaceView.vue`: Dropzone interactivo, previsualización tabular de las primeras filas, indicadores de progreso, drawer colapsable de administración y depuración de fichas, y banner interactivo de seguridad contra reportes desactualizados o inconsistentes con desglose desplegable de aprendices y resultados afectados.
   - `ImportsHistoryModal.vue`: Modal con el listado histórico de ingestas almacenadas en el cliente, selector de detalle y visualizador de filas previas.
 - **Composables**:
   - `useFileParser.ts`: Lógica reactiva de detección de formato, decodificación UTF-8 / ANSI, eliminación de BOM (`\uFEFF`), extracción de metadatos de cabecera y normalización de columnas con PapaParse y SheetJS (XLSX).
@@ -29,13 +29,15 @@ Adicionalmente, el módulo provee capacidades de **administración y depuración
   - `import.service.ts`: Abstracción HTTP hacia `/api/import/csv`, `/api/formations/:ficha` y `/api/dashboard`.
 - **Stores**:
   - `importHistory.store.ts`: Store Pinia persistido en `localStorage` con cálculo de fingerprints criptográficos y filtrado por ficha.
+- **Tipos**:
+  - `import.types.ts`: Definición de payloads, metadatos, resúmenes, interfaces de auditoría y tipos de inconsistencia (`ReportInconsistencyItem`, `ReportInconsistencyDetails`).
 
 ### Backend (`Database/src/` & Root):
 - **Controladores**:
-  - `import.controller.ts`: Endpoints `importCsv`, `extractProjectPdf`, `getLogs`, `getLogByFileName`.
+  - `import.controller.ts`: Endpoints `importCsv` (con manejo específico de error HTTP 409 `REPORT_INCONSISTENCY`), `extractProjectPdf`, `getLogs`, `getLogByFileName`.
   - `formation.controller.ts`: Endpoint `deleteFormation`.
 - **Servicios**:
-  - `csvImport.ts`: Transacción SQL ACID (`BEGIN`, `COMMIT`, `ROLLBACK`), resolución de catálogos (`ensureProgram`, `ensureFormacion`, `ensureAprendiz`, `ensureCompetencia`, `ensureResultado`, `ensureFuncionario`, `ensureJuicio`).
+  - `csvImport.ts`: Transacción SQL ACID (`BEGIN`, `COMMIT`, `ROLLBACK`), pre-validación de coherencia (`validateReportConsistency`, `ReportInconsistencyError`), resolución de catálogos (`ensureProgram`, `ensureFormacion`, `ensureAprendiz`, `ensureCompetencia`, `ensureResultado`, `ensureFuncionario`, `ensureJuicio` blindado con sentencias condicionales `CASE` en SQL).
   - `formations.ts`: Borrado relacional en cascada (`deleteFormationByFicha`).
   - `schema.ts`: Verificación de compatibilidad y restricciones únicas compuestas.
 - **Utilidades**:
@@ -55,10 +57,11 @@ Adicionalmente, el módulo provee capacidades de **administración y depuración
 | **HU-IMP-003**: Consulta y Auditoría de Ingestas | RN-IMP-007 | `GET /api/logs`, `GET /api/logs/:fileName` | `ImportsHistoryModal.vue` |
 | **HU-IMP-004**: Eliminación y Depuración en Cascada de Fichas | RN-IMP-008, RN-IMP-010 | `DELETE /api/formations/:ficha` | `ImportWorkspaceView.vue`, `formations.ts` |
 | **HU-IMP-005**: Extracción Automatizada de Proyectos PDF | RN-IMP-011, RN-IMP-012 | `POST /api/extract/project` | `ProjectPhasesView.vue`, `parse_pdf.py` |
+| **HU-IMP-006**: Bloqueo de Ingesta por Inconsistencia o Reporte Desactualizado | RN-IMP-005, RN-IMP-013 | `POST /api/import/csv` (HTTP 409) | `ImportWorkspaceView.vue`, `csvImport.ts`, `import.controller.ts` |
 
 ---
 
 ## 📂 5. Documentos del Módulo
-- [Historias de Usuario](file:///c:/Users/alejo/Downloads/juicioss/JuiciosEvaluativos/documentacion/modules/imports/historias_usuario.md)
-- [Reglas de Negocio](file:///c:/Users/alejo/Downloads/juicioss/JuiciosEvaluativos/documentacion/modules/imports/reglas_negocio.md)
-- [Casos de Uso](file:///c:/Users/alejo/Downloads/juicioss/JuiciosEvaluativos/documentacion/modules/imports/casos_uso.md)
+- [Historias de Usuario](file:///c:/Users/alejo/Downloads/proyectos-dev/JuiciosEvaluativos/documentacion/modules/imports/historias_usuario.md)
+- [Reglas de Negocio](file:///c:/Users/alejo/Downloads/proyectos-dev/JuiciosEvaluativos/documentacion/modules/imports/reglas_negocio.md)
+- [Casos de Uso](file:///c:/Users/alejo/Downloads/proyectos-dev/JuiciosEvaluativos/documentacion/modules/imports/casos_uso.md)
