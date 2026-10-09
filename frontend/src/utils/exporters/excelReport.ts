@@ -1,5 +1,7 @@
 import * as XLSX from 'xlsx'
+import { Capacitor } from '@capacitor/core'
 import { prettyState } from '../formatters/number'
+import { saveAndShareFile } from '../mobile/fileDownloader'
 import type { FormationCatalogResultLearner } from '../../features/academic-tracking/types/tracking.types'
 
 export interface ResultExportOptions {
@@ -11,7 +13,7 @@ export interface ResultExportOptions {
   learners: FormationCatalogResultLearner[]
 }
 
-export function exportResultToExcel(options: ResultExportOptions) {
+export async function exportResultToExcel(options: ResultExportOptions) {
   const now = new Date().toLocaleString('es-CO', {
     dateStyle: 'short',
     timeStyle: 'medium',
@@ -44,5 +46,16 @@ export function exportResultToExcel(options: ResultExportOptions) {
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte')
 
-  XLSX.writeFile(workbook, `Reporte_Seguimiento_${options.resultCode}_Ficha_${options.ficha}.xlsx`)
+  const fileName = `Reporte_Seguimiento_${options.resultCode}_Ficha_${options.ficha}.xlsx`
+
+  if (Capacitor.isNativePlatform()) {
+    const base64 = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' })
+    await saveAndShareFile(
+      fileName,
+      base64,
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+  } else {
+    XLSX.writeFile(workbook, fileName)
+  }
 }

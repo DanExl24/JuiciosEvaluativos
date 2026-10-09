@@ -1,6 +1,8 @@
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { Capacitor } from '@capacitor/core'
 import { formatPercent, prettyState } from '../formatters/number'
+import { saveAndShareFile } from '../mobile/fileDownloader'
 import type { FormationCatalogResultLearner } from '../../features/academic-tracking/types/tracking.types'
 
 export interface ResultPdfExportOptions {
@@ -16,7 +18,7 @@ export interface ResultPdfExportOptions {
   learners: FormationCatalogResultLearner[]
 }
 
-export function exportResultToPdf(options: ResultPdfExportOptions) {
+export async function exportResultToPdf(options: ResultPdfExportOptions) {
   // eslint-disable-next-line new-cap
   const doc = new jsPDF()
 
@@ -73,5 +75,13 @@ export function exportResultToPdf(options: ResultPdfExportOptions) {
     alternateRowStyles: { fillColor: [248, 250, 252] },
   })
 
-  doc.save(`Resultado_${options.resultCode}_Ficha_${options.ficha}.pdf`)
+  const fileName = `Resultado_${options.resultCode}_Ficha_${options.ficha}.pdf`
+
+  if (Capacitor.isNativePlatform()) {
+    const dataUri = doc.output('datauristring')
+    const base64 = dataUri.split(',')[1] || ''
+    await saveAndShareFile(fileName, base64, 'application/pdf')
+  } else {
+    doc.save(fileName)
+  }
 }

@@ -24,9 +24,9 @@ const filteredLearners = computed<FormationCatalogResultLearner[]>(() => {
   return props.result.learners.filter((l) => l.judgement.toLowerCase() === props.judgementFilter?.toLowerCase())
 })
 
-function handleExportExcel() {
+async function handleExportExcel() {
   if (!props.result) return
-  exportResultToExcel({
+  await exportResultToExcel({
     ficha: props.ficha,
     competencyCode: props.competencyCode,
     competencyName: props.competencyName,
@@ -36,9 +36,9 @@ function handleExportExcel() {
   })
 }
 
-function handleExportPdf() {
+async function handleExportPdf() {
   if (!props.result) return
-  exportResultToPdf({
+  await exportResultToPdf({
     ficha: props.ficha,
     competencyCode: props.competencyCode,
     competencyName: props.competencyName,
