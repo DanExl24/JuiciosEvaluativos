@@ -4,17 +4,21 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// URL oficial de descarga directa del APK generado
-const apkDownloadUrl = ref(
-  'https://github.com/DanExl24/JuiciosEvaluativos/releases/download/v1.0.0/app-debug.apk',
-)
+// URL oficial de descarga directa del APK servido por la propia plataforma web
+const apkDownloadUrl = ref('/downloads/juicios-evaluativos.apk')
+const githubReleaseUrl =
+  'https://github.com/DanExl24/JuiciosEvaluativos/releases/download/v1.0.0/app-debug.apk'
 const githubRepoUrl = 'https://github.com/DanExl24/JuiciosEvaluativos'
 const actionsUrl = 'https://github.com/DanExl24/JuiciosEvaluativos/actions'
 
 const copied = ref(false)
 
 function copyDownloadLink() {
-  navigator.clipboard.writeText(apkDownloadUrl.value)
+  const fullUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${apkDownloadUrl.value}`
+      : githubReleaseUrl
+  navigator.clipboard.writeText(fullUrl)
   copied.value = true
   setTimeout(() => {
     copied.value = false
