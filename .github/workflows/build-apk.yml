@@ -50,6 +50,11 @@ jobs:
         working-directory: frontend
         run: npx cap sync android
 
+      - name: Install Android Platform 36
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36"
+
       - name: Grant Execute Permission to gradlew
         working-directory: frontend/android
         run: chmod +x gradlew
