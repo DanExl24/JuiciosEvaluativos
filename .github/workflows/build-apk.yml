@@ -52,6 +52,7 @@ jobs:
 
       - name: Install Android Platform 36
         run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-36"
 
