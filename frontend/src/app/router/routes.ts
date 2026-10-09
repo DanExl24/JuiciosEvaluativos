@@ -3,7 +3,9 @@ import type { RouteRecordRaw } from 'vue-router'
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    redirect: '/import',
+    name: 'landing',
+    component: () => import('../../features/landing/views/LandingView.vue'),
+    meta: { title: 'Juicios Evaluativos SENA - Plataforma & App Móvil', layout: 'landing' },
   },
   {
     path: '/import',
@@ -31,6 +33,6 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/import',
+    redirect: '/',
   },
 ]

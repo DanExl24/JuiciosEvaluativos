@@ -168,6 +168,18 @@ onBeforeUnmount(() => {
           </svg>
           <span class="hidden sm:inline">Historial</span>
         </button>
+
+        <button
+          class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100/80 hover:border-emerald-300"
+          type="button"
+          title="Ver página de inicio y descargar APK Android"
+          @click="navigateTo('/')"
+        >
+          <svg class="h-3.5 w-3.5 text-emerald-700" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.75h24c-.3432-4.0911-2.6889-7.5633-6.1185-9.4286"/>
+          </svg>
+          <span class="hidden sm:inline">App Móvil</span>
+        </button>
       </div>
     </div>
   </header>
