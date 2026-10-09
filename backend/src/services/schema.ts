@@ -9,7 +9,8 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
     CREATE TABLE IF NOT EXISTS programa (
       id_programa SERIAL PRIMARY KEY,
       codigo VARCHAR(50) NOT NULL UNIQUE,
-      nombre TEXT NOT NULL
+      nombre TEXT NOT NULL,
+      version VARCHAR(50)
     );
 
     CREATE TABLE IF NOT EXISTS formacion (
@@ -99,7 +100,10 @@ export async function ensureSchemaCompatibility(poolParam?: Pool) {
 
   await pool.query(`
     ALTER TABLE programa
-    ALTER COLUMN nombre TYPE TEXT
+    ALTER COLUMN nombre TYPE TEXT;
+
+    ALTER TABLE programa
+    ADD COLUMN IF NOT EXISTS version VARCHAR(50);
   `);
 
   await pool.query(`
