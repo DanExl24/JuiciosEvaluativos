@@ -1,5 +1,6 @@
 node_modules
 dist
+android
 npm-debug.log
 .git
 .DS_Store
