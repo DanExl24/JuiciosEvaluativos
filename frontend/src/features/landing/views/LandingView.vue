@@ -4,9 +4,9 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// URL oficial de descarga del APK compilado por GitHub Actions / Releases
+// URL oficial de descarga directa del APK generado
 const apkDownloadUrl = ref(
-  'https://github.com/DanExl24/JuiciosEvaluativos/releases/latest/download/app-debug.apk',
+  'https://github.com/DanExl24/JuiciosEvaluativos/releases/download/v1.0.0/app-debug.apk',
 )
 const githubRepoUrl = 'https://github.com/DanExl24/JuiciosEvaluativos'
 const actionsUrl = 'https://github.com/DanExl24/JuiciosEvaluativos/actions'
@@ -85,6 +85,7 @@ function scrollToSection(id: string) {
           </button>
           <a
             :href="apkDownloadUrl"
+            download="juicios-evaluativos.apk"
             class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -126,6 +127,7 @@ function scrollToSection(id: string) {
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-16">
             <a
               :href="apkDownloadUrl"
+              download="juicios-evaluativos.apk"
               class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -513,6 +515,7 @@ function scrollToSection(id: string) {
                 <div class="flex flex-wrap items-center gap-4">
                   <a
                     :href="apkDownloadUrl"
+                    download="juicios-evaluativos.apk"
                     class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02]"
                   >
                     <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
