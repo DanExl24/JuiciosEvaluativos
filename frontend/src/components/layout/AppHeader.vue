@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
     <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
       <!-- Brand & Global Context Selector -->
       <div class="flex items-center gap-4 lg:gap-6">
-        <div class="flex items-center gap-2.5 cursor-pointer" @click="navigateTo('/dashboard')">
+        <div class="flex items-center gap-2.5 cursor-pointer" @click="navigateTo('/')">
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
