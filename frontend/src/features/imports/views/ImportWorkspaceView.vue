@@ -252,12 +252,12 @@ onMounted(() => {
           </div>
 
           <div>
-            <h3 class="text-base font-bold text-slate-900">Arrastra tu archivo CSV o Excel aquí</h3>
+            <h3 class="text-base font-bold text-slate-900">Sube o selecciona tu archivo CSV o Excel</h3>
             <p class="mt-1 text-xs text-slate-500">Compatible con reportes oficiales generados por SofiaPlus (.csv, .xlsx, .xls)</p>
           </div>
 
-          <label class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700">
-            Explorar en mi equipo
+          <label class="inline-flex cursor-pointer items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95">
+            Seleccionar archivo
             <input accept=".csv, .xlsx, .xls" type="file" class="sr-only" @change="handleFileSelection" />
           </label>
         </div>

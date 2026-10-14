@@ -402,11 +402,11 @@ const desertionChartOptions: ChartOptions<'line'> = {
     </div>
 
     <!-- Phase Selector Navigation Bar -->
-    <div v-if="!isLoading && !error" class="flex flex-wrap items-center gap-2 rounded-xl bg-slate-100/80 p-1.5">
+    <div v-if="!isLoading && !error" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 px-1 rounded-xl bg-slate-100/80 whitespace-nowrap">
       <button
         v-for="phase in phases"
         :key="phase.id_fase"
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activePhaseId === phase.id_fase
             ? 'bg-white text-slate-900 shadow-xs'
@@ -422,7 +422,7 @@ const desertionChartOptions: ChartOptions<'line'> = {
       </button>
 
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activePhaseId === 'unassigned'
             ? 'bg-white text-amber-700 shadow-xs'
@@ -438,7 +438,7 @@ const desertionChartOptions: ChartOptions<'line'> = {
       </button>
 
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activePhaseId === 'learner-progress'
             ? 'bg-white text-emerald-700 shadow-xs'
@@ -454,7 +454,7 @@ const desertionChartOptions: ChartOptions<'line'> = {
     <!-- Phase KPI Highlights Cards -->
     <div
       v-if="!isLoading && !error && typeof activePhaseId === 'number' && currentPhaseMetrics"
-      class="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 animate-in fade-in duration-150"
+      class="grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 animate-in fade-in duration-150"
     >
       <!-- KPI 1: Actividades -->
       <div class="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs">

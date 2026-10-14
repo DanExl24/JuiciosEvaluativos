@@ -59,6 +59,17 @@ const {
 
 const isSyncingLearnerContext = ref(false)
 const activeTab = ref<'overview' | 'phases' | 'learners' | 'competencies'>('overview')
+const isFiltersOpenMobile = ref(false)
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (filters.value.ficha) count++
+  if (filters.value.estado) count++
+  if (filters.value.competencia) count++
+  if (filters.value.resultado) count++
+  if (filters.value.aprendiz) count++
+  return count
+})
 
 // Project Phases Extra Analytics
 const projects = ref<ProjectData[]>([])
@@ -894,10 +905,10 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Sub-View Navigation Tabs (4 Pestañas Analíticas) -->
-    <div class="flex items-center gap-1.5 rounded-xl bg-slate-100/90 p-1.5">
+    <!-- Sub-View Navigation Tabs (4 Pestañas Analíticas con scroll táctil en móvil) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-1 rounded-xl bg-slate-100/90 whitespace-nowrap">
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activeTab === 'overview'
             ? 'bg-white text-slate-900 shadow-xs'
@@ -913,7 +924,7 @@ onMounted(() => {
       </button>
 
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activeTab === 'phases'
             ? 'bg-white text-slate-900 shadow-xs'
@@ -929,7 +940,7 @@ onMounted(() => {
       </button>
 
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activeTab === 'learners'
             ? 'bg-white text-slate-900 shadow-xs'
@@ -945,7 +956,7 @@ onMounted(() => {
       </button>
 
       <button
-        class="flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
+        class="flex items-center shrink-0 gap-2 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition"
         :class="
           activeTab === 'competencies'
             ? 'bg-white text-slate-900 shadow-xs'
@@ -961,63 +972,99 @@ onMounted(() => {
       </button>
     </div>
 
-    <!-- Filters Toolbar -->
-    <div class="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div>
-          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Ficha</label>
-          <select
-            v-model="filters.ficha"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+    <!-- Filters Toolbar (Collapsible on mobile) -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+      <div
+        class="flex sm:hidden items-center justify-between p-3 cursor-pointer bg-slate-50/50 hover:bg-slate-50 border-b border-slate-100"
+        @click="isFiltersOpenMobile = !isFiltersOpenMobile"
+      >
+        <div class="flex items-center gap-2">
+          <svg class="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span class="text-xs font-bold text-slate-800">Filtros de Búsqueda</span>
+          <span
+            v-if="activeFilterCount > 0"
+            class="px-1.5 py-0.2 rounded-full bg-emerald-600 text-[10px] font-bold text-white"
           >
-            <option value="">Todas las Fichas</option>
-            <option v-for="f in fichaOptions" :key="f.codigo" :value="f.codigo">{{ f.codigo }} - {{ f.nombre }}</option>
-          </select>
+            {{ activeFilterCount }}
+          </span>
         </div>
-
-        <div>
-          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Estado Formación</label>
-          <select
-            v-model="filters.estado"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+        <span class="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+          <span>{{ isFiltersOpenMobile ? 'Ocultar' : 'Configurar' }}</span>
+          <svg
+            class="h-3.5 w-3.5 transition-transform"
+            :class="{ 'rotate-180': isFiltersOpenMobile }"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
           >
-            <option value="">Todos los Estados</option>
-            <option v-for="e in dashboard?.options.estados ?? []" :key="e" :value="e">{{ prettyState(e) }}</option>
-          </select>
-        </div>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+      </div>
 
-        <div>
-          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Competencia</label>
-          <select
-            v-model="filters.competencia"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
-          >
-            <option value="">Todas las Competencias</option>
-            <option v-for="c in filteredCompetencyOptions" :key="c.codigo" :value="c.codigo">{{ c.codigo }} - {{ c.nombre }}</option>
-          </select>
-        </div>
+      <div
+        class="p-3.5"
+        :class="{ 'hidden sm:block': !isFiltersOpenMobile }"
+      >
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div>
+            <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Ficha</label>
+            <select
+              v-model="filters.ficha"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+            >
+              <option value="">Todas las Fichas</option>
+              <option v-for="f in fichaOptions" :key="f.codigo" :value="f.codigo">{{ f.codigo }} - {{ f.nombre }}</option>
+            </select>
+          </div>
 
-        <div>
-          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Resultado (RAP)</label>
-          <select
-            v-model="filters.resultado"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
-          >
-            <option value="">Todos los Resultados</option>
-            <option v-for="r in filteredResultOptions" :key="r.codigo" :value="r.codigo">{{ r.codigo }} - {{ r.detalle }}</option>
-          </select>
-        </div>
+          <div>
+            <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Estado Formación</label>
+            <select
+              v-model="filters.estado"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+            >
+              <option value="">Todos los Estados</option>
+              <option v-for="e in dashboard?.options.estados ?? []" :key="e" :value="e">{{ prettyState(e) }}</option>
+            </select>
+          </div>
 
-        <div>
-          <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Aprendiz</label>
-          <select
-            :value="filters.aprendiz"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
-            @change="applyLearnerSelection(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="">Todos los Aprendices</option>
-            <option v-for="a in filteredLearnerOptions" :key="a.id" :value="String(a.id)">{{ a.nombre }}</option>
-          </select>
+          <div>
+            <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Competencia</label>
+            <select
+              v-model="filters.competencia"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+            >
+              <option value="">Todas las Competencias</option>
+              <option v-for="c in filteredCompetencyOptions" :key="c.codigo" :value="c.codigo">{{ c.codigo }} - {{ c.nombre }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Resultado (RAP)</label>
+            <select
+              v-model="filters.resultado"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+            >
+              <option value="">Todos los Resultados</option>
+              <option v-for="r in filteredResultOptions" :key="r.codigo" :value="r.codigo">{{ r.codigo }} - {{ r.detalle }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 mb-1">Aprendiz</label>
+            <select
+              :value="filters.aprendiz"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-800 outline-none transition focus:border-emerald-600 focus:bg-white cursor-pointer"
+              @change="applyLearnerSelection(($event.target as HTMLSelectElement).value)"
+            >
+              <option value="">Todos los Aprendices</option>
+              <option v-for="a in filteredLearnerOptions" :key="a.id" :value="String(a.id)">{{ a.nombre }}</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -1039,8 +1086,8 @@ onMounted(() => {
     </div>
 
     <div v-else-if="dashboard" class="space-y-6">
-      <!-- Top Universal KPI Cards -->
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- Top Universal KPI Cards (2x2 on mobile, 4-col on lg) -->
+      <div class="grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
           <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Población Estudiantil</span>
           <p class="mt-1 text-2xl font-black text-slate-900">{{ dashboard.overview.learnerCount }}</p>
@@ -1113,7 +1160,37 @@ onMounted(() => {
             <span class="text-xs text-slate-400 font-medium">Haz clic en una fila para abrir su expediente</span>
           </div>
 
-          <div class="overflow-x-auto">
+          <!-- Mobile Cards View (< sm) -->
+          <div class="divide-y divide-slate-100 sm:hidden">
+            <div
+              v-for="learner in visiblePendingLearners"
+              :key="'mob-' + learner.id"
+              class="p-3.5 active:bg-emerald-50/50 transition cursor-pointer"
+              @click="navigateToCompetencies(learner.id, learner.ficha)"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 leading-snug">{{ learner.fullName }}</h4>
+                  <p class="text-[0.7rem] text-slate-500 mt-0.5">{{ learner.documentType }} {{ learner.document }} · Ficha {{ learner.ficha }}</p>
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded text-[0.65rem] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  {{ learner.pendingResults }} Pend.
+                </span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-[0.7rem]">
+                <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700">
+                  {{ prettyState(learner.state) }}
+                </span>
+                <span class="font-bold text-emerald-700 flex items-center gap-1">
+                  <span>{{ formatPercent(learner.progress) }}</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop / Tablet Table View (>= sm) -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead>
                 <tr class="bg-slate-50/80 text-slate-600">
@@ -1214,8 +1291,8 @@ onMounted(() => {
         </div>
 
         <div v-else class="space-y-6">
-          <!-- Phase Overview Cards -->
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Phase Overview Cards (2x2 on mobile, 4-col on lg) -->
+          <div class="grid gap-3 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
             <div
               v-for="stat in phaseStats"
               :key="stat.id_fase"
@@ -1317,7 +1394,38 @@ onMounted(() => {
             <span class="text-xs text-slate-500 font-semibold">{{ dashboard.learners.length }} Aprendices</span>
           </div>
 
-          <div class="max-h-[50vh] overflow-y-auto">
+          <!-- Mobile Cards View (< sm) -->
+          <div class="divide-y divide-slate-100 sm:hidden max-h-[50vh] overflow-y-auto">
+            <div
+              v-for="l in dashboard.learners"
+              :key="'tab3-mob-' + l.id"
+              class="p-3.5 active:bg-slate-50 transition cursor-pointer"
+              @click="navigateToCompetencies(l.id, l.ficha)"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 leading-snug">{{ l.fullName }}</h4>
+                  <p class="text-[0.7rem] text-slate-500 mt-0.5">{{ l.documentType }} {{ l.document }}</p>
+                </div>
+                <span class="rounded bg-slate-100 px-2 py-0.5 text-[0.65rem] font-semibold text-slate-700 shrink-0">
+                  {{ prettyState(l.state) }}
+                </span>
+              </div>
+              <div class="mt-2.5 flex items-center justify-between text-[0.7rem]">
+                <div class="flex items-center gap-3">
+                  <span class="text-emerald-700 font-bold">🟢 {{ l.approvedResults }} Aprob.</span>
+                  <span class="text-amber-700 font-bold">🟡 {{ l.pendingResults }} Pend.</span>
+                </div>
+                <span class="font-bold text-slate-900 flex items-center gap-1">
+                  <span>{{ formatPercent(l.progress) }}</span>
+                  <span class="text-emerald-700">→</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Table (>= sm) -->
+          <div class="hidden sm:block max-h-[50vh] overflow-y-auto">
             <table class="w-full text-left text-xs">
               <thead class="sticky top-0 bg-slate-50 text-slate-600">
                 <tr>

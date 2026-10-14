@@ -125,11 +125,11 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Global Ficha Context Switcher -->
-        <div class="hidden sm:flex items-center pl-4 border-l border-slate-200">
+        <div class="flex items-center pl-2 sm:pl-4 border-l border-slate-200">
           <div class="relative">
             <select
               :value="academicStore.selectedFicha"
-              class="h-8 appearance-none rounded-lg border border-slate-200 bg-slate-50/80 pl-2.5 pr-7 text-xs font-semibold text-slate-700 transition hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/10 cursor-pointer"
+              class="h-8 max-w-[125px] sm:max-w-[180px] appearance-none rounded-lg border border-slate-200 bg-slate-50/80 pl-2 pr-6 text-xs font-semibold text-slate-700 transition hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/10 cursor-pointer truncate"
               @change="handleFichaChange"
             >
               <option value="">Todas las Fichas</option>
@@ -137,7 +137,7 @@ onBeforeUnmount(() => {
                 Ficha {{ ficha }}
               </option>
             </select>
-            <div class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
+            <div class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400">
               <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -146,8 +146,8 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Navigation Segmented Tabs -->
-      <nav class="flex items-center gap-1 rounded-xl bg-slate-100/90 p-1">
+      <!-- Navigation Segmented Tabs (Desktop only, mobile uses BottomNav) -->
+      <nav class="hidden md:flex items-center gap-1 rounded-xl bg-slate-100/90 p-1">
         <button
           v-for="item in navItems"
           :key="item.path"

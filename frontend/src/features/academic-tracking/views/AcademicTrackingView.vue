@@ -48,6 +48,7 @@ const filters = ref({
 })
 
 const selectedLearnerId = ref<number | null>(academicStore.selectedLearnerId)
+const activeMobileTab = ref<'learners' | 'detail'>(selectedLearnerId.value ? 'detail' : 'learners')
 
 const fichaLearners = computed(() => {
   const search = normalizeSearchValue(fichaLearnerSearch.value)
@@ -181,6 +182,7 @@ function selectLearner(id: number | null) {
   academicStore.setLearner(id)
   currentPage.value = 1
   if (id) {
+    activeMobileTab.value = 'detail'
     void loadLearnerDetail(id)
   } else {
     learnerDetail.value = null
@@ -308,10 +310,33 @@ onMounted(() => {
       </div>
     </div>
 
+    <!-- Mobile View Switcher (< lg) -->
+    <div class="flex lg:hidden items-center gap-1.5 rounded-xl bg-slate-100/90 p-1">
+      <button
+        type="button"
+        class="flex-1 py-1.5 text-xs font-bold rounded-lg transition"
+        :class="activeMobileTab === 'learners' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+        @click="activeMobileTab = 'learners'"
+      >
+        👥 Aprendices ({{ fichaLearners.length }})
+      </button>
+      <button
+        type="button"
+        class="flex-1 py-1.5 text-xs font-bold rounded-lg transition truncate px-2"
+        :class="activeMobileTab === 'detail' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'"
+        @click="activeMobileTab = 'detail'"
+      >
+        📋 {{ selectedLearnerSummary ? selectedLearnerSummary.fullName : 'Catálogo General' }}
+      </button>
+    </div>
+
     <!-- Master-Detail Split Grid -->
     <div class="grid w-full gap-6 lg:grid-cols-[300px_1fr] items-start">
       <!-- Master Panel (Left): Sticky Learners Selector List -->
-      <div class="lg:sticky lg:top-20 flex flex-col max-h-[calc(100vh-6.5rem)] space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+      <div
+        class="lg:sticky lg:top-20 flex flex-col max-h-[calc(100vh-6.5rem)] space-y-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs"
+        :class="{ 'hidden lg:flex': activeMobileTab !== 'learners' }"
+      >
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <span class="text-xs font-bold text-slate-900">Población Estudiantil</span>
           <span class="text-[0.65rem] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -388,7 +413,27 @@ onMounted(() => {
       </div>
 
       <!-- Detail Panel (Right): Content Area -->
-      <div class="space-y-4">
+      <div
+        class="space-y-4"
+        :class="{ 'hidden lg:block': activeMobileTab !== 'detail' }"
+      >
+        <!-- Mobile Back Button to Learner List -->
+        <div v-if="selectedLearnerSummary" class="flex lg:hidden items-center justify-between gap-2 p-3 bg-emerald-50/80 border border-emerald-200/70 rounded-xl">
+          <div class="truncate">
+            <span class="text-[0.65rem] uppercase font-bold text-emerald-700 block">Expediente Activo</span>
+            <span class="text-xs font-bold text-slate-900 truncate block">{{ selectedLearnerSummary.fullName }}</span>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 shadow-2xs hover:bg-emerald-100"
+            @click="activeMobileTab = 'learners'"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Cambiar</span>
+          </button>
+        </div>
         <!-- Search within outcomes/catalog -->
         <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
           <input

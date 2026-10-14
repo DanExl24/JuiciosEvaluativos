@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { Capacitor } from '@capacitor/core'
 import AppHeader from './components/layout/AppHeader.vue'
+import BottomNav from './components/layout/BottomNav.vue'
 import ImportsHistoryModal from './features/imports/views/ImportsHistoryModal.vue'
 
 const route = useRoute()
@@ -35,13 +36,15 @@ function openImportsModal() {
     />
 
     <main
-      class="mx-auto flex min-h-screen w-full max-w-7xl min-w-0 flex-col gap-6 px-4 pb-8 sm:px-6 lg:px-8"
-      :style="{ paddingTop: `${headerHeight + 20}px` }"
+      class="mx-auto flex min-h-screen w-full max-w-7xl min-w-0 flex-col gap-6 px-3.5 pb-24 sm:px-6 md:pb-8 lg:px-8"
+      :style="{ paddingTop: `${headerHeight + 14}px` }"
     >
       <div class="w-full min-w-0">
         <router-view />
       </div>
     </main>
+
+    <BottomNav />
 
     <ImportsHistoryModal
       :open="isImportsModalOpen"
