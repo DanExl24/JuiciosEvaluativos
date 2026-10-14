@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { Capacitor } from '@capacitor/core'
 import { useAcademicContextStore } from '../../stores/academicContext.store'
 import { importService } from '../../features/imports/services/import.service'
+import AppUpdateModal from './AppUpdateModal.vue'
+import { checkForAppUpdates } from '../../services/appUpdate.service'
 
 const emit = defineEmits<{
   'open-imports': []
@@ -15,6 +17,8 @@ const router = useRouter()
 const academicStore = useAcademicContextStore()
 const isNative = Capacitor.isNativePlatform()
 
+const showUpdateModal = ref(false)
+const hasPendingUpdate = ref(false)
 const availableFichas = ref<string[]>([])
 const headerElement = ref<HTMLElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
@@ -83,6 +87,13 @@ onMounted(async () => {
   await nextTick()
   emitHeight()
   void loadFichas()
+
+  // Silently check if an update is available (non-blocking)
+  void checkForAppUpdates()
+    .then((info) => {
+      hasPendingUpdate.value = info.hasUpdate
+    })
+    .catch(() => {})
 
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => emitHeight())
@@ -180,6 +191,42 @@ onBeforeUnmount(() => {
           <span class="hidden sm:inline">Historial</span>
         </button>
 
+        <!-- Check updates button (Always available, with active update indicator) -->
+        <button
+          type="button"
+          class="relative inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-xs transition"
+          :class="
+            hasPendingUpdate
+              ? 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-400'
+              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+          "
+          :title="hasPendingUpdate ? '¡Nueva versión disponible! Toca para actualizar' : 'Buscar actualizaciones de la App'"
+          @click="showUpdateModal = true"
+        >
+          <!-- Notification ping dot if update is ready -->
+          <span
+            v-if="hasPendingUpdate"
+            class="absolute -top-1 -right-1 flex h-2.5 w-2.5"
+          >
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+          </span>
+
+          <svg
+            class="h-3.5 w-3.5"
+            :class="hasPendingUpdate ? 'text-emerald-700' : 'text-slate-500'"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span class="hidden sm:inline">
+            {{ hasPendingUpdate ? 'Actualizar' : 'Actualizar' }}
+          </span>
+        </button>
+
         <button
           v-if="!isNative"
           class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100/80 hover:border-emerald-300"
@@ -194,5 +241,12 @@ onBeforeUnmount(() => {
         </button>
       </div>
     </div>
+
+    <!-- In-App APK Updater Modal -->
+    <AppUpdateModal
+      :is-open="showUpdateModal"
+      @close="showUpdateModal = false"
+      @update-found="(val) => (hasPendingUpdate = val)"
+    />
   </header>
 </template>

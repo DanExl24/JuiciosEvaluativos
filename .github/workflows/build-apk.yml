@@ -71,13 +71,19 @@ jobs:
           path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
+      - name: Extract App Version
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./frontend/package.json').version || '1.0.0'")
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: 'Juicios Evaluativos Mobile v1.0.0'
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: 'Juicios Evaluativos Mobile ${{ steps.get_version.outputs.VERSION }}'
           body: |
-            ### 📱 Juicios Evaluativos - APK Oficial para Android
+            ### 📱 Juicios Evaluativos - APK Oficial para Android (${{ steps.get_version.outputs.VERSION }})
             Compilación automática lista para instalar en cualquier teléfono Android (Android 8.0 o superior).
           files: frontend/android/app/build/outputs/apk/debug/app-debug.apk
         env:
