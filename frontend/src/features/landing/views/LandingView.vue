@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Capacitor } from '@capacitor/core'
 
 const router = useRouter()
 
@@ -12,8 +13,18 @@ const githubRepoUrl = 'https://github.com/DanExl24/JuiciosEvaluativos'
 const actionsUrl = 'https://github.com/DanExl24/JuiciosEvaluativos/actions'
 
 const copied = ref(false)
+const alreadyDownloaded = ref(false)
+
+function handleDownloadApk() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('juicios_apk_downloaded', 'true')
+    localStorage.setItem('juicios_apk_downloaded_at', String(Date.now()))
+    alreadyDownloaded.value = true
+  }
+}
 
 function copyDownloadLink() {
+  handleDownloadApk()
   const fullUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}${apkDownloadUrl.value}`
@@ -35,6 +46,27 @@ function scrollToSection(id: string) {
     el.scrollIntoView({ behavior: 'smooth' })
   }
 }
+
+onMounted(() => {
+  // 1. En la app nativa (APK instalada en el teléfono), NUNCA mostrar la landing
+  if (Capacitor.isNativePlatform()) {
+    router.replace('/dashboard')
+    return
+  }
+
+  // 2. En navegadores que ya descargaron la APK
+  const isDownloaded =
+    typeof window !== 'undefined' &&
+    localStorage.getItem('juicios_apk_downloaded') === 'true'
+
+  if (isDownloaded) {
+    alreadyDownloaded.value = true
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('force') !== 'true') {
+      router.replace('/dashboard')
+    }
+  }
+})
 </script>
 
 <template>
@@ -47,8 +79,23 @@ function scrollToSection(id: string) {
       <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
     </div>
 
+    <!-- Alert banner if app already installed/downloaded -->
+    <div
+      v-if="alreadyDownloaded"
+      class="sticky top-0 z-50 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 px-4 py-2 text-center text-xs text-white font-medium flex items-center justify-center gap-3 shadow-md"
+    >
+      <span>📱 Ya descargaste la aplicación móvil en este dispositivo.</span>
+      <button
+        @click="navigateToApp"
+        class="font-bold underline text-white hover:text-emerald-100 flex items-center gap-1 cursor-pointer"
+      >
+        <span>Entrar al Dashboard</span>
+        <span>&rarr;</span>
+      </button>
+    </div>
+
     <!-- Sticky Navigation -->
-    <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 transition-all">
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80 transition-all">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <!-- Logo -->
         <div class="flex items-center gap-3.5 cursor-pointer" @click="scrollToSection('hero')">
@@ -90,6 +137,7 @@ function scrollToSection(id: string) {
           <a
             :href="apkDownloadUrl"
             download="juicios-evaluativos.apk"
+            @click="handleDownloadApk"
             class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 rounded-xl shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -132,6 +180,7 @@ function scrollToSection(id: string) {
             <a
               :href="apkDownloadUrl"
               download="juicios-evaluativos.apk"
+              @click="handleDownloadApk"
               class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
               <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -520,6 +569,7 @@ function scrollToSection(id: string) {
                   <a
                     :href="apkDownloadUrl"
                     download="juicios-evaluativos.apk"
+                    @click="handleDownloadApk"
                     class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-extrabold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/25 transition-all hover:scale-[1.02]"
                   >
                     <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">

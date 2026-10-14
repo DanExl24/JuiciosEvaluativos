@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Capacitor } from '@capacitor/core'
 import { useAcademicContextStore } from '../../stores/academicContext.store'
 import { importService } from '../../features/imports/services/import.service'
 
@@ -12,6 +13,7 @@ const emit = defineEmits<{
 const route = useRoute()
 const router = useRouter()
 const academicStore = useAcademicContextStore()
+const isNative = Capacitor.isNativePlatform()
 
 const availableFichas = ref<string[]>([])
 const headerElement = ref<HTMLElement | null>(null)
@@ -64,6 +66,15 @@ function navigateTo(path: string) {
   router.push(path)
 }
 
+function handleLogoClick() {
+  const isDownloaded = typeof window !== 'undefined' && localStorage.getItem('juicios_apk_downloaded') === 'true'
+  if (isNative || isDownloaded) {
+    router.push('/dashboard')
+  } else {
+    router.push('/')
+  }
+}
+
 watch(() => academicStore.lastRefreshTimestamp, () => {
   void loadFichas()
 })
@@ -97,7 +108,7 @@ onBeforeUnmount(() => {
     <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
       <!-- Brand & Global Context Selector -->
       <div class="flex items-center gap-4 lg:gap-6">
-        <div class="flex items-center gap-2.5 cursor-pointer" @click="navigateTo('/')">
+        <div class="flex items-center gap-2.5 cursor-pointer" @click="handleLogoClick">
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-xs">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -170,10 +181,11 @@ onBeforeUnmount(() => {
         </button>
 
         <button
+          v-if="!isNative"
           class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100/80 hover:border-emerald-300"
           type="button"
           title="Ver página de inicio y descargar APK Android"
-          @click="navigateTo('/')"
+          @click="navigateTo('/landing?force=true')"
         >
           <svg class="h-3.5 w-3.5 text-emerald-700" viewBox="0 0 24 24" fill="currentColor">
             <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.75h24c-.3432-4.0911-2.6889-7.5633-6.1185-9.4286"/>

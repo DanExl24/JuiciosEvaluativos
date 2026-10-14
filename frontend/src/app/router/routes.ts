@@ -8,6 +8,12 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Juicios Evaluativos SENA - Plataforma & App Móvil', layout: 'landing' },
   },
   {
+    path: '/landing',
+    name: 'landing-direct',
+    component: () => import('../../features/landing/views/LandingView.vue'),
+    meta: { title: 'Juicios Evaluativos SENA - Plataforma & App Móvil', layout: 'landing' },
+  },
+  {
     path: '/import',
     name: 'import',
     component: () => import('../../features/imports/views/ImportWorkspaceView.vue'),

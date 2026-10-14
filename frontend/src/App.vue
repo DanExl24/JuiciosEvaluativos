@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { Capacitor } from '@capacitor/core'
 import AppHeader from './components/layout/AppHeader.vue'
 import ImportsHistoryModal from './features/imports/views/ImportsHistoryModal.vue'
 
@@ -8,7 +9,14 @@ const route = useRoute()
 const isImportsModalOpen = ref(false)
 const headerHeight = ref(56)
 
-const isLanding = computed(() => route.meta.layout === 'landing' || route.path === '/')
+const isLanding = computed(() => {
+  if (Capacitor.isNativePlatform()) return false
+  const isDownloaded = typeof window !== 'undefined' && localStorage.getItem('juicios_apk_downloaded') === 'true'
+  if (route.path === '/' && isDownloaded && route.query.force !== 'true') {
+    return false
+  }
+  return route.meta.layout === 'landing' || route.path === '/landing' || route.path === '/'
+})
 
 function openImportsModal() {
   isImportsModalOpen.value = true
