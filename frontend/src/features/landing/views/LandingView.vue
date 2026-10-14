@@ -127,12 +127,21 @@ onMounted(() => {
         </nav>
 
         <!-- Action CTAs -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button
+            @click="router.push('/consulta')"
+            class="px-3 py-2 text-xs sm:text-sm font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+            </svg>
+            <span>Consulta Aprendiz</span>
+          </button>
           <button
             @click="navigateToApp"
             class="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700/70 rounded-xl transition-all shadow-sm"
           >
-            Abrir Web
+            Panel Web
           </button>
           <a
             :href="apkDownloadUrl"
@@ -176,26 +185,36 @@ onMounted(() => {
           </p>
 
           <!-- Dual Call to Actions -->
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-16">
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-16">
+            <button
+              @click="router.push('/consulta')"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-xl shadow-emerald-600/30 hover:shadow-emerald-600/40 transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+              </svg>
+              <span>Consulta tus Juicios (Aprendices)</span>
+            </button>
+
             <a
               :href="apkDownloadUrl"
               download="juicios-evaluativos.apk"
               @click="handleDownloadApk"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl font-bold text-base text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 shadow-xl shadow-emerald-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
             >
-              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001s.4482-.9997.9993-.9997c.552 0 1.0001.4482 1.0001.9997 0 .5515-.4481 1.0001-1.0001 1.0001m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.4116 13.8533 8.125 12 8.125c-1.8533 0-3.5902.2866-5.1368.8247L4.8409 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.75h24c-.3432-4.0911-2.6889-7.5633-6.1185-9.4286"/>
               </svg>
-              <span>Descargar APK para Android</span>
+              <span>Descargar .APK</span>
               <span class="text-xs bg-slate-950/20 px-2 py-0.5 rounded-full font-mono">v1.0</span>
             </a>
 
             <button
               @click="navigateToApp"
-              class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-semibold text-base text-white bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700/80 shadow-lg hover:border-slate-600 transition-all hover:-translate-y-0.5"
+              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-base text-white bg-slate-900/90 hover:bg-slate-800/90 border border-slate-700/80 shadow-lg hover:border-slate-600 transition-all hover:-translate-y-0.5 cursor-pointer"
             >
-              <span>Acceder al Sistema Web</span>
-              <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span>Panel Instructor</span>
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
               </svg>
             </button>

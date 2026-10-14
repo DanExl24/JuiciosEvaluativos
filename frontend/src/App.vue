@@ -10,7 +10,10 @@ const route = useRoute()
 const isImportsModalOpen = ref(false)
 const headerHeight = ref(56)
 
-const isLanding = computed(() => {
+const isStandalone = computed(() => {
+  if (route.meta.layout === 'kiosk' || route.path === '/consulta') {
+    return true
+  }
   if (Capacitor.isNativePlatform()) return false
   const isDownloaded = typeof window !== 'undefined' && localStorage.getItem('juicios_apk_downloaded') === 'true'
   if (route.path === '/' && isDownloaded && route.query.force !== 'true') {
@@ -25,7 +28,7 @@ function openImportsModal() {
 </script>
 
 <template>
-  <div v-if="isLanding" class="w-full min-h-screen">
+  <div v-if="isStandalone" class="w-full min-h-screen">
     <router-view />
   </div>
 

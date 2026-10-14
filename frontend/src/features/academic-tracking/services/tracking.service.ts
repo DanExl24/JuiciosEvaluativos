@@ -1,6 +1,6 @@
 import { apiClient } from '../../../services/api/client'
 import type { DashboardPayload } from '../../dashboard/types/dashboard.types'
-import type { FormationCatalogCompetency, LearnerDetail } from '../types/tracking.types'
+import type { FormationCatalogCompetency, LearnerDetail, LearnerByDocumentResponse } from '../types/tracking.types'
 
 export interface TrackingFilterParams {
   ficha?: string
@@ -19,4 +19,10 @@ export const trackingService = {
   async getLearnerDetail(learnerId: number): Promise<LearnerDetail> {
     return apiClient.get<LearnerDetail>(`/api/learners/${learnerId}`)
   },
+
+  async getLearnerByDocument(documento: string, ficha?: string): Promise<LearnerByDocumentResponse> {
+    const params = ficha ? { ficha } : undefined
+    return apiClient.get<LearnerByDocumentResponse>(`/api/learners/by-document/${encodeURIComponent(documento)}`, params)
+  },
 }
+

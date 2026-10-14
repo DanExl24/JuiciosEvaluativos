@@ -73,6 +73,12 @@ function buildWhere(filters: DashboardFilters) {
     clauses.push(`a.id_aprendiz::text = $${values.length}`);
   }
 
+  const documento = normalizeFilterValue(filters.documento);
+  if (documento) {
+    values.push(documento);
+    clauses.push(`a.documento = $${values.length}`);
+  }
+
   const sql = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
   return { sql, values };
 }
@@ -468,9 +474,7 @@ export async function getDashboardData(pool: Pool, filters: DashboardFilters) {
   };
 }
 
-export async function getLearnerDetail(pool: Pool, learnerId: number) {
-  const rows = await queryJoinedRows(pool, { aprendiz: String(learnerId) });
-
+function formatLearnerDetail(rows: JoinedRow[]) {
   if (!rows.length) {
     return null;
   }
@@ -574,6 +578,59 @@ export async function getLearnerDetail(pool: Pool, learnerId: number) {
       progress: buildProgress(approvedResults, totalResults),
     },
     competencies,
+  };
+}
+
+export async function getLearnerDetail(pool: Pool, learnerId: number) {
+  const rows = await queryJoinedRows(pool, { aprendiz: String(learnerId) });
+  return formatLearnerDetail(rows);
+}
+
+export async function getLearnerDetailByDocument(pool: Pool, documento: string, ficha?: string) {
+  const queryFilters: DashboardFilters = { documento };
+  if (ficha) {
+    queryFilters.ficha = ficha;
+  }
+
+  const rows = await queryJoinedRows(pool, queryFilters);
+
+  if (!rows.length) {
+    return null;
+  }
+
+  const firstRow = rows[0]!;
+  const distinctFichas = [...new Set(rows.map((r) => r.ficha_caracterizacion))];
+  if (distinctFichas.length > 1 && !ficha) {
+    const fichasList = distinctFichas.map((f) => {
+      const match = rows.find((r) => r.ficha_caracterizacion === f)!;
+      return {
+        ficha: f,
+        program: match.programa_nombre,
+        learnerId: match.aprendiz_id,
+        state: match.aprendiz_estado,
+      };
+    });
+
+    return {
+      multipleFichas: true,
+      learnerName: `${firstRow.aprendiz_nombres} ${firstRow.aprendiz_apellidos}`,
+      document: firstRow.aprendiz_documento,
+      documentType: firstRow.aprendiz_tipo_documento,
+      fichas: fichasList,
+    };
+  }
+
+  const targetFicha = ficha || distinctFichas[0] || '';
+  const learnerRows = rows.filter((r) => r.ficha_caracterizacion === targetFicha);
+
+  const detail = formatLearnerDetail(learnerRows);
+  if (!detail) {
+    return null;
+  }
+
+  return {
+    multipleFichas: false,
+    ...detail,
   };
 }
 

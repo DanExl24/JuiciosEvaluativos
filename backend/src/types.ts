@@ -19,12 +19,13 @@ export interface CsvImportPayload {
 }
 
 export interface DashboardFilters {
-  estado?: string;
-  ficha?: string;
-  juicio?: string;
-  competencia?: string;
-  resultado?: string;
-  aprendiz?: string;
+  estado?: string | undefined;
+  ficha?: string | undefined;
+  juicio?: string | undefined;
+  competencia?: string | undefined;
+  resultado?: string | undefined;
+  aprendiz?: string | undefined;
+  documento?: string | undefined;
 }
 
 export interface ProjectPhaseMapping {

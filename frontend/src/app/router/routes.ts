@@ -38,7 +38,22 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: 'Seguimiento Curricular - Juicios Evaluativos' },
   },
   {
+    path: '/consulta',
+    name: 'learner-consultation',
+    component: () => import('../../features/learner-portal/views/LearnerConsultationView.vue'),
+    meta: { title: 'Consulta tus Juicios Evaluativos - SENA', layout: 'kiosk' },
+  },
+  {
+    path: '/kiosco',
+    redirect: '/consulta',
+  },
+  {
+    path: '/mis-juicios',
+    redirect: '/consulta',
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },
 ]
+

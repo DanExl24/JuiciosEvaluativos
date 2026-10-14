@@ -29,6 +29,27 @@ export interface LearnerDetail {
   competencies: LearnerCompetencyDetail[]
 }
 
+export interface LearnerFichaOption {
+  ficha: string
+  program: string
+  learnerId: number
+  state: string
+}
+
+export interface LearnerByDocumentMultipleFichas {
+  multipleFichas: true
+  learnerName: string
+  document: string
+  documentType: string
+  fichas: LearnerFichaOption[]
+}
+
+export interface LearnerByDocumentDetail extends LearnerDetail {
+  multipleFichas: false
+}
+
+export type LearnerByDocumentResponse = LearnerByDocumentDetail | LearnerByDocumentMultipleFichas
+
 export interface FormationCatalogResultLearner {
   id: number
   fullName: string
