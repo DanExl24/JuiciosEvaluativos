@@ -13,6 +13,16 @@ import { exportLearnerDetailToPdf } from '../../../utils/exporters/learnerPdfRep
 
 const router = useRouter()
 
+// Theme State (Dark / Light Mode)
+const isDarkMode = ref(true)
+
+function toggleTheme() {
+  isDarkMode.value = !isDarkMode.value
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('juicios_portal_theme', isDarkMode.value ? 'dark' : 'light')
+  }
+}
+
 // Search input
 const searchDocument = ref('')
 const isSearching = ref(false)
@@ -44,6 +54,15 @@ function handleUserActivity() {
 }
 
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    const savedTheme = localStorage.getItem('juicios_portal_theme')
+    if (savedTheme) {
+      isDarkMode.value = savedTheme === 'dark'
+    } else {
+      isDarkMode.value = true
+    }
+  }
+
   window.addEventListener('mousemove', handleUserActivity, { passive: true })
   window.addEventListener('keydown', handleUserActivity, { passive: true })
   window.addEventListener('touchstart', handleUserActivity, { passive: true })
@@ -202,29 +221,49 @@ function getJudgementBadge(judgement: string) {
   if (norm === 'aprobado') {
     return {
       text: 'Aprobado',
-      class: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+      class: isDarkMode.value
+        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+        : 'bg-emerald-50 text-emerald-700 border-emerald-200',
       iconClass: 'text-emerald-500',
     }
   }
   if (norm === 'desaprobado') {
     return {
       text: 'Desaprobado',
-      class: 'bg-rose-50 text-rose-700 border-rose-200/80',
+      class: isDarkMode.value
+        ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+        : 'bg-rose-50 text-rose-700 border-rose-200',
       iconClass: 'text-rose-500',
     }
   }
   return {
     text: 'Por evaluar',
-    class: 'bg-amber-50 text-amber-700 border-amber-200/80',
+    class: isDarkMode.value
+      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      : 'bg-amber-50 text-amber-700 border-amber-200',
     iconClass: 'text-amber-500',
   }
 }
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+  <div
+    class="min-h-screen flex flex-col font-sans transition-colors duration-200 selection:bg-emerald-500 selection:text-white"
+    :class="
+      isDarkMode
+        ? 'bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 text-slate-100'
+        : 'bg-slate-50 text-slate-800'
+    "
+  >
     <!-- Header Bar (Kiosk Mode) -->
-    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl px-4 py-3 sm:px-6">
+    <header
+      class="sticky top-0 z-40 border-b backdrop-blur-xl px-4 py-3 sm:px-6 transition-colors duration-200"
+      :class="
+        isDarkMode
+          ? 'border-slate-800/80 bg-slate-950/80 text-white'
+          : 'border-slate-200 bg-white/90 text-slate-900 shadow-2xs'
+      "
+    >
       <div class="mx-auto flex max-w-6xl items-center justify-between">
         <!-- Logo & Branding -->
         <div class="flex items-center gap-3">
@@ -233,20 +272,63 @@ function getJudgementBadge(judgement: string) {
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-sm font-bold text-white sm:text-base">Portal de Consulta del Aprendiz</h1>
-              <span class="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.65rem] font-semibold text-emerald-400 border border-emerald-500/20">
+              <h1 class="text-sm font-bold sm:text-base" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                Portal de Consulta del Aprendiz
+              </h1>
+              <span
+                class="rounded-full px-2 py-0.5 text-[0.65rem] font-semibold border"
+                :class="
+                  isDarkMode
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                "
+              >
                 Autoservicio
               </span>
             </div>
-            <p class="text-[0.7rem] text-slate-400">Verifica tus juicios evaluativos y avance curricular en tiempo real</p>
+            <p class="text-[0.7rem]" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+              Verifica tus juicios evaluativos y avance curricular en tiempo real
+            </p>
           </div>
         </div>
 
-        <!-- Controls (Fullscreen & Back to Home) -->
+        <!-- Controls: Theme Toggle, Fullscreen & Back to Home -->
         <div class="flex items-center gap-2">
+          <!-- Theme Toggle Button -->
           <button
             type="button"
-            class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white transition"
+            class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition cursor-pointer"
+            :class="
+              isDarkMode
+                ? 'border-slate-800 bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 shadow-2xs'
+            "
+            :title="isDarkMode ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'"
+            @click="toggleTheme"
+          >
+            <span v-if="isDarkMode" class="flex items-center gap-1">
+              <svg class="h-3.5 w-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+              </svg>
+              <span class="hidden sm:inline">Modo Claro</span>
+            </span>
+            <span v-else class="flex items-center gap-1">
+              <svg class="h-3.5 w-3.5 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+              </svg>
+              <span class="hidden sm:inline">Modo Oscuro</span>
+            </span>
+          </button>
+
+          <!-- Fullscreen Toggle -->
+          <button
+            type="button"
+            class="hidden sm:inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition cursor-pointer"
+            :class="
+              isDarkMode
+                ? 'border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 hover:text-white'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 shadow-2xs'
+            "
             title="Pantalla Completa"
             @click="toggleFullscreen"
           >
@@ -256,9 +338,15 @@ function getJudgementBadge(judgement: string) {
             <span>{{ isFullscreen ? 'Salir' : 'Pantalla Completa' }}</span>
           </button>
 
+          <!-- Back to Landing / Home -->
           <button
             type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition"
+            class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer"
+            :class="
+              isDarkMode
+                ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
+                : 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200'
+            "
             @click="router.push('/')"
           >
             <svg class="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -276,27 +364,41 @@ function getJudgementBadge(judgement: string) {
       <section v-if="!learnerData && !multipleFichasData" class="flex flex-col items-center justify-center min-h-[60vh] max-w-xl mx-auto text-center space-y-6">
         <!-- Hero Icon -->
         <div class="relative">
-          <div class="h-20 w-20 rounded-3xl bg-gradient-to-tr from-emerald-500/20 via-teal-500/10 to-emerald-500/30 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-2xl shadow-emerald-500/20">
+          <div
+            class="h-20 w-20 rounded-3xl flex items-center justify-center shadow-2xl transition-colors duration-200"
+            :class="
+              isDarkMode
+                ? 'bg-gradient-to-tr from-emerald-500/20 via-teal-500/10 to-emerald-500/30 border border-emerald-500/30 text-emerald-400 shadow-emerald-500/20'
+                : 'bg-emerald-50 border border-emerald-200 text-emerald-600 shadow-emerald-500/10'
+            "
+          >
             <svg class="h-10 w-10" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
             </svg>
           </div>
-          <span class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-slate-950 font-bold text-xs">
+          <span class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white font-bold text-xs shadow-md">
             ✓
           </span>
         </div>
 
         <div class="space-y-2">
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
             Consulta tus Juicios Evaluativos
           </h2>
-          <p class="text-sm text-slate-400 max-w-md mx-auto">
+          <p class="text-sm max-w-md mx-auto" :class="isDarkMode ? 'text-slate-400' : 'text-slate-600'">
             Ingresa tu número de documento de identidad para conocer de forma inmediata tu avance, resultados aprobados y pendientes.
           </p>
         </div>
 
         <!-- Form Card -->
-        <div class="w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl backdrop-blur-md space-y-4">
+        <div
+          class="w-full rounded-2xl p-4 sm:p-6 shadow-2xl backdrop-blur-md space-y-4 border transition-colors duration-200"
+          :class="
+            isDarkMode
+              ? 'bg-slate-900/80 border-slate-800'
+              : 'bg-white border-slate-200 shadow-slate-200/50'
+          "
+        >
           <form @submit.prevent="performSearch()" class="space-y-3">
             <div class="relative">
               <input
@@ -306,11 +408,16 @@ function getJudgementBadge(judgement: string) {
                 inputmode="numeric"
                 autocomplete="off"
                 placeholder="Digita tu número de documento..."
-                class="w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3.5 text-center sm:text-left text-base sm:text-lg font-semibold text-white placeholder-slate-500 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                class="w-full rounded-xl border px-4 py-3.5 text-center sm:text-left text-base sm:text-lg font-semibold outline-none transition focus:ring-2 focus:ring-emerald-500/20"
+                :class="
+                  isDarkMode
+                    ? 'border-slate-700 bg-slate-950/80 text-white placeholder-slate-500 focus:border-emerald-500'
+                    : 'border-slate-300 bg-slate-50 text-slate-900 placeholder-slate-400 focus:border-emerald-600 focus:bg-white'
+                "
                 :disabled="isSearching"
                 autofocus
               />
-              <span v-if="searchDocument" class="absolute right-3 top-3.5 text-xs text-slate-400">
+              <span v-if="searchDocument" class="absolute right-3 top-3.5 text-xs" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
                 Presiona Enter ↵
               </span>
             </div>
@@ -335,16 +442,24 @@ function getJudgementBadge(judgement: string) {
           </form>
 
           <!-- Error Alert -->
-          <div v-if="searchError" class="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-center gap-2 text-left animate-in fade-in">
-            <svg class="h-4 w-4 shrink-0 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <div
+            v-if="searchError"
+            class="rounded-xl border p-3 text-xs flex items-center gap-2 text-left animate-in fade-in"
+            :class="
+              isDarkMode
+                ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
+                : 'border-rose-200 bg-rose-50 text-rose-700'
+            "
+          >
+            <svg class="h-4 w-4 shrink-0 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span>{{ searchError }}</span>
           </div>
 
           <!-- Privacy Tag -->
-          <div class="pt-2 border-t border-slate-800 text-center">
-            <p class="text-[0.72rem] text-slate-500 flex items-center justify-center gap-1.5">
+          <div class="pt-2 border-t text-center" :class="isDarkMode ? 'border-slate-800' : 'border-slate-100'">
+            <p class="text-[0.72rem] flex items-center justify-center gap-1.5" :class="isDarkMode ? 'text-slate-500' : 'text-slate-600'">
               <svg class="h-3.5 w-3.5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
@@ -356,18 +471,34 @@ function getJudgementBadge(judgement: string) {
 
       <!-- 2. Multiple Fichas Selection Screen -->
       <section v-else-if="multipleFichasData" class="max-w-2xl mx-auto space-y-6 animate-in fade-in">
-        <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl text-center space-y-4">
-          <div class="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mx-auto flex items-center justify-center">
+        <div
+          class="rounded-2xl border p-6 shadow-xl text-center space-y-4 transition-colors"
+          :class="
+            isDarkMode
+              ? 'border-slate-800 bg-slate-900/90'
+              : 'border-slate-200 bg-white shadow-slate-200/50'
+          "
+        >
+          <div
+            class="h-12 w-12 rounded-2xl mx-auto flex items-center justify-center border"
+            :class="
+              isDarkMode
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                : 'bg-amber-50 border-amber-200 text-amber-600'
+            "
+          >
             <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
           </div>
           <div>
-            <h3 class="text-xl font-bold text-white">{{ multipleFichasData.learnerName }}</h3>
-            <p class="text-xs text-slate-400 mt-1">
+            <h3 class="text-xl font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+              {{ multipleFichasData.learnerName }}
+            </h3>
+            <p class="text-xs mt-1" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
               Documento: {{ multipleFichasData.documentType }} {{ multipleFichasData.document }}
             </p>
-            <p class="text-sm text-amber-300 font-medium mt-2">
+            <p class="text-sm font-semibold mt-2 text-amber-600 dark:text-amber-300">
               Se encontraron múltiples fichas asociadas a tu documento. Selecciona la que deseas consultar:
             </p>
           </div>
@@ -377,19 +508,31 @@ function getJudgementBadge(judgement: string) {
               v-for="item in multipleFichasData.fichas"
               :key="item.ficha"
               type="button"
-              class="flex items-center justify-between p-4 rounded-xl border border-slate-800 bg-slate-950 hover:border-emerald-500/60 hover:bg-slate-900 transition-all group"
+              class="flex items-center justify-between p-4 rounded-xl border transition-all group cursor-pointer"
+              :class="
+                isDarkMode
+                  ? 'border-slate-800 bg-slate-950 hover:border-emerald-500/60 hover:bg-slate-900'
+                  : 'border-slate-200 bg-slate-50 hover:border-emerald-500 hover:bg-emerald-50/50 shadow-2xs'
+              "
               @click="selectFicha(item.ficha)"
             >
               <div>
-                <span class="text-xs font-bold text-emerald-400">Ficha {{ item.ficha }}</span>
-                <h4 class="text-sm font-semibold text-white group-hover:text-emerald-300 transition">
+                <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Ficha {{ item.ficha }}</span>
+                <h4 class="text-sm font-semibold transition" :class="isDarkMode ? 'text-white group-hover:text-emerald-300' : 'text-slate-900 group-hover:text-emerald-800'">
                   {{ item.program }}
                 </h4>
-                <span class="text-[0.65rem] text-slate-400 font-medium capitalize mt-0.5 block">
+                <span class="text-[0.65rem] font-medium capitalize mt-0.5 block" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
                   Estado: {{ prettyState(item.state) }}
                 </span>
               </div>
-              <div class="h-8 w-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-slate-950 transition">
+              <div
+                class="h-8 w-8 rounded-lg flex items-center justify-center transition"
+                :class="
+                  isDarkMode
+                    ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950'
+                    : 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white'
+                "
+              >
                 &rarr;
               </div>
             </button>
@@ -397,7 +540,8 @@ function getJudgementBadge(judgement: string) {
 
           <button
             type="button"
-            class="text-xs font-semibold text-slate-400 hover:text-white underline pt-2"
+            class="text-xs font-semibold underline pt-2 cursor-pointer"
+            :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'"
             @click="clearConsultation"
           >
             Realizar otra consulta
@@ -408,22 +552,34 @@ function getJudgementBadge(judgement: string) {
       <!-- 3. Learner Results Detail Screen -->
       <section v-else-if="learnerData" class="space-y-6 animate-in fade-in duration-200">
         <!-- Security & Inactivity Banner -->
-        <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-400">
+        <div
+          class="flex items-center justify-between rounded-xl px-4 py-2.5 text-xs border transition-colors"
+          :class="
+            isDarkMode
+              ? 'bg-slate-900/90 border-slate-800 text-slate-400'
+              : 'bg-white border-slate-200 text-slate-600 shadow-2xs'
+          "
+        >
           <div class="flex items-center gap-2">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>Consulta activa para: <strong class="text-white">{{ learnerData.learner.fullName }}</strong></span>
+            <span>Consulta activa para: <strong :class="isDarkMode ? 'text-white' : 'text-slate-900'">{{ learnerData.learner.fullName }}</strong></span>
           </div>
 
           <div class="flex items-center gap-3">
-            <span class="text-[0.7rem] text-slate-500 hidden sm:inline">
-              Cierre automático en: <strong class="text-emerald-400 font-mono">{{ remainingSeconds }}s</strong>
+            <span class="text-[0.7rem] hidden sm:inline" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+              Cierre automático en: <strong class="text-emerald-500 dark:text-emerald-400 font-mono">{{ remainingSeconds }}s</strong>
             </span>
             <button
               type="button"
-              class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1 font-semibold text-xs transition"
+              class="rounded-lg px-3 py-1 font-semibold text-xs transition cursor-pointer"
+              :class="
+                isDarkMode
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+              "
               @click="clearConsultation"
             >
               Cerrar Consulta
@@ -432,7 +588,14 @@ function getJudgementBadge(judgement: string) {
         </div>
 
         <!-- Apprentice Profile Card -->
-        <div class="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        <div
+          class="relative overflow-hidden rounded-2xl border p-5 sm:p-6 shadow-xl backdrop-blur-md transition-colors"
+          :class="
+            isDarkMode
+              ? 'bg-slate-900/90 border-slate-800 shadow-black/40'
+              : 'bg-white border-slate-200 shadow-slate-200/60'
+          "
+        >
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-start gap-4">
               <!-- Avatar Initials -->
@@ -442,20 +605,27 @@ function getJudgementBadge(judgement: string) {
 
               <div class="space-y-1">
                 <div class="flex flex-wrap items-center gap-2">
-                  <h2 class="text-lg sm:text-xl font-black text-white">
+                  <h2 class="text-lg sm:text-xl font-black" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
                     {{ learnerData.learner.fullName }}
                   </h2>
-                  <span class="rounded-md bg-emerald-500/10 px-2 py-0.5 text-[0.68rem] font-bold text-emerald-400 border border-emerald-500/20 capitalize">
+                  <span
+                    class="rounded-md px-2 py-0.5 text-[0.68rem] font-bold border capitalize"
+                    :class="
+                      isDarkMode
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    "
+                  >
                     {{ prettyState(learnerData.learner.state) }}
                   </span>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                  <span>Doc: <strong class="text-slate-200">{{ learnerData.learner.documentType }} {{ learnerData.learner.document }}</strong></span>
-                  <span>Ficha: <strong class="text-slate-200">{{ learnerData.learner.ficha }}</strong></span>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+                  <span>Doc: <strong :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'">{{ learnerData.learner.documentType }} {{ learnerData.learner.document }}</strong></span>
+                  <span>Ficha: <strong :class="isDarkMode ? 'text-slate-200' : 'text-slate-800'">{{ learnerData.learner.ficha }}</strong></span>
                 </div>
 
-                <p class="text-xs text-slate-300 font-medium line-clamp-1">
+                <p class="text-xs font-medium line-clamp-1" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
                   {{ learnerData.learner.program }}
                 </p>
               </div>
@@ -482,14 +652,17 @@ function getJudgementBadge(judgement: string) {
           </div>
 
           <!-- Progress Bar -->
-          <div class="mt-5 space-y-1.5 pt-4 border-t border-slate-800">
+          <div class="mt-5 space-y-1.5 pt-4 border-t" :class="isDarkMode ? 'border-slate-800' : 'border-slate-100'">
             <div class="flex items-center justify-between text-xs">
-              <span class="text-slate-400 font-medium">Progreso General del Programa</span>
-              <span class="font-black text-emerald-400 text-sm">
+              <span class="font-medium" :class="isDarkMode ? 'text-slate-400' : 'text-slate-600'">Progreso General del Programa</span>
+              <span class="font-black text-sm text-emerald-600 dark:text-emerald-400">
                 {{ formatPercent(learnerData.learner.progress) }}
               </span>
             </div>
-            <div class="h-3 w-full overflow-hidden rounded-full bg-slate-950 border border-slate-800 p-0.5">
+            <div
+              class="h-3 w-full overflow-hidden rounded-full p-0.5 border"
+              :class="isDarkMode ? 'bg-slate-950 border-slate-800' : 'bg-slate-100 border-slate-200'"
+            >
               <div
                 class="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 transition-all duration-500"
                 :style="{ width: `${learnerData.learner.progress}%` }"
@@ -498,50 +671,200 @@ function getJudgementBadge(judgement: string) {
           </div>
         </div>
 
-        <!-- Metrics Strip -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="rounded-xl border border-slate-800 bg-slate-900/80 p-4 text-center">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400">Total RAPs</span>
-            <p class="text-2xl font-black text-white mt-1">{{ learnerData.learner.totalResults }}</p>
+        <!-- 4 Interactive KPI Filter Cards -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-[0.68rem] font-bold uppercase tracking-wider" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+              Indicadores de Aprendizaje (Haz clic en una tarjeta para filtrar)
+            </span>
+            <span v-if="filterStatus !== 'all'" class="text-[0.68rem] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span>● Filtro aplicado</span>
+            </span>
           </div>
-          <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400">Aprobados</span>
-            <p class="text-2xl font-black text-emerald-400 mt-1">{{ learnerData.learner.approvedResults }}</p>
-          </div>
-          <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-center">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-400">Por Evaluar</span>
-            <p class="text-2xl font-black text-amber-400 mt-1">{{ learnerData.learner.pendingResults }}</p>
-          </div>
-          <div class="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-center">
-            <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-400">Desaprobados</span>
-            <p class="text-2xl font-black text-rose-400 mt-1">{{ learnerData.learner.disapprovedResults }}</p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <!-- 1. Total RAPs KPI Button -->
+            <button
+              type="button"
+              class="rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer relative text-left group hover:-translate-y-0.5 active:translate-y-0"
+              :class="[
+                isDarkMode
+                  ? (filterStatus === 'all'
+                      ? 'border-slate-500 bg-slate-800/90 ring-2 ring-slate-400 shadow-lg'
+                      : 'border-slate-800 bg-slate-900/80 hover:border-slate-700 hover:bg-slate-800/50')
+                  : (filterStatus === 'all'
+                      ? 'border-slate-700 bg-slate-100 ring-2 ring-slate-800 shadow-md'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 shadow-2xs')
+              ]"
+              @click="filterStatus = 'all'"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+                  Total RAPs
+                </span>
+                <span
+                  v-if="filterStatus === 'all'"
+                  class="h-2 w-2 rounded-full bg-slate-400 dark:bg-white animate-pulse"
+                ></span>
+              </div>
+              <p class="text-2xl font-black mt-1" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                {{ learnerData.learner.totalResults }}
+              </p>
+              <span class="text-[0.62rem] font-medium block mt-1" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+                Ver todo el programa
+              </span>
+            </button>
+
+            <!-- 2. Aprobados KPI Button -->
+            <button
+              type="button"
+              class="rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer relative text-left group hover:-translate-y-0.5 active:translate-y-0"
+              :class="[
+                isDarkMode
+                  ? (filterStatus === 'aprobado'
+                      ? 'border-emerald-400 bg-emerald-500/20 ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
+                      : 'border-emerald-500/30 bg-emerald-500/10 hover:border-emerald-500/60 hover:bg-emerald-500/15')
+                  : (filterStatus === 'aprobado'
+                      ? 'border-emerald-500 bg-emerald-100 ring-2 ring-emerald-600 shadow-md text-emerald-950'
+                      : 'border-emerald-200 bg-emerald-50/80 hover:border-emerald-300 hover:bg-emerald-100/60 shadow-2xs')
+              ]"
+              @click="filterStatus = 'aprobado'"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Aprobados
+                </span>
+                <span
+                  v-if="filterStatus === 'aprobado'"
+                  class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"
+                ></span>
+              </div>
+              <p class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                {{ learnerData.learner.approvedResults }}
+              </p>
+              <span class="text-[0.62rem] font-medium block mt-1 text-emerald-700/80 dark:text-emerald-400/70">
+                Juicios aprobados
+              </span>
+            </button>
+
+            <!-- 3. Por Evaluar KPI Button -->
+            <button
+              type="button"
+              class="rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer relative text-left group hover:-translate-y-0.5 active:translate-y-0"
+              :class="[
+                isDarkMode
+                  ? (filterStatus === 'por evaluar'
+                      ? 'border-amber-400 bg-amber-500/20 ring-2 ring-amber-400 shadow-lg shadow-amber-500/20'
+                      : 'border-amber-500/30 bg-amber-500/10 hover:border-amber-500/60 hover:bg-amber-500/15')
+                  : (filterStatus === 'por evaluar'
+                      ? 'border-amber-500 bg-amber-100 ring-2 ring-amber-600 shadow-md text-amber-950'
+                      : 'border-amber-200 bg-amber-50/80 hover:border-amber-300 hover:bg-amber-100/60 shadow-2xs')
+              ]"
+              @click="filterStatus = 'por evaluar'"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                  Por Evaluar
+                </span>
+                <span
+                  v-if="filterStatus === 'por evaluar'"
+                  class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"
+                ></span>
+              </div>
+              <p class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                {{ learnerData.learner.pendingResults }}
+              </p>
+              <span class="text-[0.62rem] font-medium block mt-1 text-amber-700/80 dark:text-amber-400/70">
+                Pendientes por nota
+              </span>
+            </button>
+
+            <!-- 4. Desaprobados KPI Button -->
+            <button
+              type="button"
+              class="rounded-xl border p-4 text-center transition-all duration-200 cursor-pointer relative text-left group hover:-translate-y-0.5 active:translate-y-0"
+              :class="[
+                isDarkMode
+                  ? (filterStatus === 'desaprobado'
+                      ? 'border-rose-400 bg-rose-500/20 ring-2 ring-rose-400 shadow-lg shadow-rose-500/20'
+                      : 'border-rose-500/30 bg-rose-500/10 hover:border-rose-500/60 hover:bg-rose-500/15')
+                  : (filterStatus === 'desaprobado'
+                      ? 'border-rose-500 bg-rose-100 ring-2 ring-rose-600 shadow-md text-rose-950'
+                      : 'border-rose-200 bg-rose-50/80 hover:border-rose-300 hover:bg-rose-100/60 shadow-2xs')
+              ]"
+              @click="filterStatus = 'desaprobado'"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-[0.65rem] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  Desaprobados
+                </span>
+                <span
+                  v-if="filterStatus === 'desaprobado'"
+                  class="h-2 w-2 rounded-full bg-rose-500 animate-pulse"
+                ></span>
+              </div>
+              <p class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
+                {{ learnerData.learner.disapprovedResults }}
+              </p>
+              <span class="text-[0.62rem] font-medium block mt-1 text-rose-700/80 dark:text-rose-400/70">
+                Requiere plan de mejora
+              </span>
+            </button>
           </div>
         </div>
 
-        <!-- Controls: Filters + Expand/Collapse -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-900/80 border border-slate-800 rounded-xl p-3">
+        <!-- Controls: Filters + Search within outcomes + Expand/Collapse -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl p-3 border transition-colors"
+          :class="
+            isDarkMode
+              ? 'bg-slate-900/80 border-slate-800'
+              : 'bg-white border-slate-200 shadow-2xs'
+          "
+        >
           <!-- Status Filter Tabs -->
           <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-[0.65rem] font-bold uppercase tracking-wider mr-1" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+              Filtro:
+            </span>
             <button
               type="button"
-              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
-              :class="filterStatus === 'all' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer"
+              :class="
+                filterStatus === 'all'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : isDarkMode
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              "
               @click="filterStatus = 'all'"
             >
               Todos ({{ learnerData.learner.totalResults }})
             </button>
             <button
               type="button"
-              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
-              :class="filterStatus === 'aprobado' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer"
+              :class="
+                filterStatus === 'aprobado'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : isDarkMode
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              "
               @click="filterStatus = 'aprobado'"
             >
               Aprobados ({{ learnerData.learner.approvedResults }})
             </button>
             <button
               type="button"
-              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
-              :class="filterStatus === 'por evaluar' ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer"
+              :class="
+                filterStatus === 'por evaluar'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : isDarkMode
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              "
               @click="filterStatus = 'por evaluar'"
             >
               Por Evaluar ({{ learnerData.learner.pendingResults }})
@@ -549,8 +872,14 @@ function getJudgementBadge(judgement: string) {
             <button
               v-if="learnerData.learner.disapprovedResults > 0"
               type="button"
-              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition"
-              :class="filterStatus === 'desaprobado' ? 'bg-rose-600 text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'"
+              class="rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer"
+              :class="
+                filterStatus === 'desaprobado'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : isDarkMode
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              "
               @click="filterStatus = 'desaprobado'"
             >
               Desaprobados ({{ learnerData.learner.disapprovedResults }})
@@ -561,15 +890,17 @@ function getJudgementBadge(judgement: string) {
           <div class="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
-              class="text-[0.7rem] font-semibold text-slate-400 hover:text-white"
+              class="text-[0.7rem] font-semibold transition cursor-pointer"
+              :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
               @click="expandAll"
             >
               Expandir todo
             </button>
-            <span class="text-slate-600">|</span>
+            <span :class="isDarkMode ? 'text-slate-700' : 'text-slate-300'">|</span>
             <button
               type="button"
-              class="text-[0.7rem] font-semibold text-slate-400 hover:text-white"
+              class="text-[0.7rem] font-semibold transition cursor-pointer"
+              :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
               @click="collapseAll"
             >
               Colapsar todo
@@ -582,24 +913,37 @@ function getJudgementBadge(judgement: string) {
           <div
             v-for="comp in filteredCompetencies"
             :key="comp.code"
-            class="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-md transition"
+            class="rounded-2xl border overflow-hidden shadow-xs transition-colors"
+            :class="
+              isDarkMode
+                ? 'border-slate-800 bg-slate-900/90'
+                : 'border-slate-200 bg-white shadow-slate-200/40'
+            "
           >
             <!-- Accordion Header -->
             <button
               type="button"
-              class="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left hover:bg-slate-800/50 transition cursor-pointer"
+              class="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left transition cursor-pointer"
+              :class="isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'"
               @click="toggleCompetency(comp.code)"
             >
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
-                  <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-400">
+                  <span class="text-[0.65rem] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                     Norma / Competencia: {{ comp.code }}
                   </span>
-                  <span class="rounded-full bg-slate-800 px-2 py-0.5 text-[0.65rem] text-slate-300">
+                  <span
+                    class="rounded-full px-2 py-0.5 text-[0.65rem]"
+                    :class="
+                      isDarkMode
+                        ? 'bg-slate-800 text-slate-300'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                    "
+                  >
                     {{ comp.approvedResults }}/{{ comp.totalResults }} Aprobados
                   </span>
                 </div>
-                <h3 class="text-sm font-bold text-white">
+                <h3 class="text-sm font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
                   {{ comp.name }}
                 </h3>
               </div>
@@ -607,10 +951,13 @@ function getJudgementBadge(judgement: string) {
               <div class="flex items-center gap-3 shrink-0">
                 <!-- Competency Progress Badge -->
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-300">
+                  <span class="text-xs font-bold" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
                     {{ formatPercent(comp.progress) }}
                   </span>
-                  <div class="w-16 h-2 rounded-full bg-slate-950 overflow-hidden">
+                  <div
+                    class="w-16 h-2 rounded-full overflow-hidden"
+                    :class="isDarkMode ? 'bg-slate-950' : 'bg-slate-200'"
+                  >
                     <div
                       class="h-full bg-emerald-500 rounded-full"
                       :style="{ width: `${comp.progress}%` }"
@@ -619,7 +966,14 @@ function getJudgementBadge(judgement: string) {
                 </div>
 
                 <!-- Chevron -->
-                <div class="h-6 w-6 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
+                <div
+                  class="h-6 w-6 rounded-lg flex items-center justify-center transition"
+                  :class="
+                    isDarkMode
+                      ? 'bg-slate-800 text-slate-400'
+                      : 'bg-slate-100 text-slate-600'
+                  "
+                >
                   <svg
                     class="h-4 w-4 transition-transform duration-200"
                     :class="{ 'rotate-180': expandedCompetencies[comp.code] }"
@@ -637,16 +991,33 @@ function getJudgementBadge(judgement: string) {
             <!-- Accordion Content: Learning Outcomes -->
             <div
               v-show="expandedCompetencies[comp.code]"
-              class="border-t border-slate-800/80 bg-slate-950/60 p-3 sm:p-4 space-y-2.5"
+              class="border-t p-3 sm:p-4 space-y-2.5 transition-colors"
+              :class="
+                isDarkMode
+                  ? 'border-slate-800/80 bg-slate-950/60'
+                  : 'border-slate-100 bg-slate-50/70'
+              "
             >
               <div
                 v-for="result in comp.visibleResults"
                 :key="result.code"
-                class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 sm:p-4 space-y-2 transition hover:border-slate-700"
+                class="rounded-xl border p-3 sm:p-4 space-y-2 transition-all"
+                :class="
+                  isDarkMode
+                    ? 'border-slate-800/80 bg-slate-900/60 hover:border-slate-700'
+                    : 'border-slate-200 bg-white hover:border-slate-300 shadow-2xs'
+                "
               >
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div class="flex items-center gap-2">
-                    <span class="rounded bg-slate-800 px-2 py-0.5 font-mono text-[0.68rem] font-bold text-slate-300">
+                    <span
+                      class="rounded px-2 py-0.5 font-mono text-[0.68rem] font-bold"
+                      :class="
+                        isDarkMode
+                          ? 'bg-slate-800 text-slate-300'
+                          : 'bg-slate-100 text-slate-700 border border-slate-200'
+                      "
+                    >
                       RAP {{ result.code }}
                     </span>
                     <span
@@ -657,17 +1028,21 @@ function getJudgementBadge(judgement: string) {
                     </span>
                   </div>
 
-                  <span v-if="result.registeredAt" class="text-[0.65rem] text-slate-500">
+                  <span v-if="result.registeredAt" class="text-[0.65rem]" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
                     Evaluado: {{ formatDate(result.registeredAt) }}
                   </span>
                 </div>
 
-                <p class="text-xs text-slate-300 leading-relaxed">
+                <p class="text-xs leading-relaxed" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
                   {{ result.detail }}
                 </p>
 
-                <div v-if="result.funcionario && result.funcionario !== 'Sin funcionario'" class="pt-1 text-[0.7rem] text-slate-400 flex items-center gap-1.5">
-                  <svg class="h-3 w-3 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <div
+                  v-if="result.funcionario && result.funcionario !== 'Sin funcionario'"
+                  class="pt-1 text-[0.7rem] flex items-center gap-1.5"
+                  :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'"
+                >
+                  <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                   </svg>
                   <span>Evaluador: {{ result.funcionario }}</span>
@@ -678,10 +1053,11 @@ function getJudgementBadge(judgement: string) {
         </div>
 
         <!-- Sticky Bottom Actions -->
-        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+        <div class="flex items-center justify-between pt-4 border-t" :class="isDarkMode ? 'border-slate-800' : 'border-slate-200'">
           <button
             type="button"
-            class="text-xs font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition"
+            class="text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+            :class="isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
             @click="clearConsultation"
           >
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -692,10 +1068,15 @@ function getJudgementBadge(judgement: string) {
 
           <button
             type="button"
-            class="rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-bold text-slate-200 hover:bg-slate-700 transition flex items-center gap-1.5 cursor-pointer"
+            class="rounded-xl border px-4 py-2 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+            :class="
+              isDarkMode
+                ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
+                : 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 shadow-2xs'
+            "
             @click="handleDownloadPdf"
           >
-            <svg class="h-3.5 w-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
             </svg>
             <span>Descargar PDF</span>
@@ -705,7 +1086,14 @@ function getJudgementBadge(judgement: string) {
     </main>
 
     <!-- Footer -->
-    <footer class="mt-auto border-t border-slate-800/80 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
+    <footer
+      class="mt-auto border-t py-4 text-center text-xs transition-colors"
+      :class="
+        isDarkMode
+          ? 'border-slate-800/80 bg-slate-950/80 text-slate-500'
+          : 'border-slate-200 bg-white/80 text-slate-500 shadow-2xs'
+      "
+    >
       <div class="mx-auto max-w-6xl px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
         <span>Juicios Evaluativos SENA &copy; {{ new Date().getFullYear() }}</span>
         <span>Módulo de Exposición e Interacción Pública</span>
