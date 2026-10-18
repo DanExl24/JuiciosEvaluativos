@@ -47,7 +47,10 @@ function resetInactivityTimer() {
   remainingSeconds.value = INACTIVITY_TIMEOUT_SECONDS
 }
 
-function handleUserActivity() {
+function handleUserActivity(e?: Event) {
+  if (e instanceof KeyboardEvent && e.key === 'Escape' && selectedInstructor.value) {
+    closeInstructorModal()
+  }
   if (learnerData.value || multipleFichasData.value) {
     resetInactivityTimer()
   }
@@ -137,6 +140,7 @@ function clearConsultation() {
   searchError.value = ''
   filterStatus.value = 'all'
   outcomeSearch.value = ''
+  selectedInstructor.value = null
   resetInactivityTimer()
 }
 
@@ -351,23 +355,89 @@ const recentEvaluations = computed(() => {
     .slice(0, 4)
 })
 
-// 4. Evaluator Instructors List (Unique instructors and count of approved outcomes)
+// 4. Evaluator Instructors List & Details Modal
+function parseInstructorInfo(raw: string) {
+  const dashIndex = raw.indexOf(' - ')
+  if (dashIndex !== -1) {
+    const doc = raw.substring(0, dashIndex).trim()
+    const name = raw.substring(dashIndex + 3).trim()
+    const nameWords = name.split(/\s+/).filter(Boolean)
+    const initials = nameWords.slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'IN'
+    return { displayName: name, doc, initials, raw }
+  }
+  const nameWords = raw.split(/\s+/).filter(Boolean)
+  const initials = nameWords.slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'IN'
+  return { displayName: raw, doc: '', initials, raw }
+}
+
 const evaluatorsList = computed(() => {
   if (!learnerData.value) return []
   const counts = new Map<string, number>()
 
   for (const comp of learnerData.value.competencies) {
     for (const res of comp.results) {
-      if (res.funcionario && res.funcionario !== 'Sin funcionario' && res.judgement.toLowerCase() === 'aprobado') {
+      if (res.funcionario && res.funcionario !== 'Sin funcionario') {
         counts.set(res.funcionario, (counts.get(res.funcionario) || 0) + 1)
       }
     }
   }
 
   return Array.from(counts.entries())
-    .map(([name, count]) => ({ name, count }))
+    .map(([raw, count]) => ({
+      ...parseInstructorInfo(raw),
+      count,
+    }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
+})
+
+// Modal state for selected instructor details
+const selectedInstructor = ref<string | null>(null)
+
+function openInstructorModal(instructorRaw: string) {
+  selectedInstructor.value = instructorRaw
+}
+
+function closeInstructorModal() {
+  selectedInstructor.value = null
+}
+
+const selectedInstructorParsed = computed(() => {
+  if (!selectedInstructor.value) return null
+  return parseInstructorInfo(selectedInstructor.value)
+})
+
+const selectedInstructorOutcomes = computed(() => {
+  if (!learnerData.value || !selectedInstructor.value) return []
+  const target = selectedInstructor.value.trim().toLowerCase()
+  const results: Array<{
+    code: string
+    detail: string
+    judgement: string
+    registeredAt: string | null
+    compCode: string
+    compName: string
+  }> = []
+
+  for (const comp of learnerData.value.competencies) {
+    for (const res of comp.results) {
+      if (res.funcionario && res.funcionario.trim().toLowerCase() === target) {
+        results.push({
+          code: res.code,
+          detail: res.detail,
+          judgement: res.judgement,
+          registeredAt: res.registeredAt,
+          compCode: comp.code,
+          compName: comp.name,
+        })
+      }
+    }
+  }
+
+  return results.sort((a, b) => {
+    if (!a.registeredAt) return 1
+    if (!b.registeredAt) return -1
+    return new Date(b.registeredAt).getTime() - new Date(a.registeredAt).getTime()
+  })
 })
 </script>
 
@@ -947,32 +1017,61 @@ const evaluatorsList = computed(() => {
               </div>
 
               <div class="space-y-2 pt-3">
-                <div
+                <button
                   v-for="(instructor, idx) in evaluatorsList"
                   :key="idx"
-                  class="flex items-center justify-between text-xs p-2 rounded-xl transition"
-                  :class="isDarkMode ? 'bg-slate-950/60' : 'bg-slate-50'"
+                  type="button"
+                  class="w-full flex items-center justify-between text-xs p-2.5 rounded-xl border transition-all text-left group cursor-pointer hover:-translate-y-0.5 active:translate-y-0"
+                  :class="
+                    isDarkMode
+                      ? 'border-slate-800/80 bg-slate-950/60 hover:border-emerald-500/50 hover:bg-slate-900'
+                      : 'border-slate-200/80 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50/40 shadow-2xs'
+                  "
+                  :title="`Ver los ${instructor.count} juicios evaluados por ${instructor.displayName}`"
+                  @click="openInstructorModal(instructor.raw)"
                 >
-                  <div class="flex items-center gap-2 min-w-0 pr-2">
-                    <div class="h-6 w-6 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0 font-bold text-[0.65rem]">
-                      {{ instructor.name.slice(0, 1).toUpperCase() }}
+                  <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                    <div
+                      class="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 font-bold text-[0.68rem] transition-colors"
+                      :class="
+                        isDarkMode
+                          ? 'bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950'
+                          : 'bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white'
+                      "
+                    >
+                      {{ instructor.initials }}
                     </div>
-                    <span class="truncate font-medium" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
-                      {{ instructor.name }}
-                    </span>
+                    <div class="min-w-0">
+                      <span class="truncate font-semibold block text-xs transition-colors" :class="isDarkMode ? 'text-slate-200 group-hover:text-white' : 'text-slate-800 group-hover:text-emerald-900'">
+                        {{ instructor.displayName }}
+                      </span>
+                      <span v-if="instructor.doc" class="text-[0.62rem] block" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+                        {{ instructor.doc }}
+                      </span>
+                    </div>
                   </div>
-                  <span
-                    class="rounded-md px-1.5 py-0.5 text-[0.62rem] font-bold shrink-0"
-                    :class="
-                      isDarkMode
-                        ? 'bg-slate-800 text-slate-300'
-                        : 'bg-white text-slate-700 border border-slate-200'
-                    "
-                  >
-                    {{ instructor.count }} {{ instructor.count === 1 ? 'RAP' : 'RAPs' }}
-                  </span>
-                </div>
+
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <span
+                      class="rounded-md px-1.5 py-0.5 text-[0.62rem] font-bold"
+                      :class="
+                        isDarkMode
+                          ? 'bg-slate-800 text-slate-300 group-hover:bg-emerald-500/20 group-hover:text-emerald-300'
+                          : 'bg-white text-slate-700 border border-slate-200 group-hover:border-emerald-300 group-hover:text-emerald-800'
+                      "
+                    >
+                      {{ instructor.count }} {{ instructor.count === 1 ? 'RAP' : 'RAPs' }}
+                    </span>
+                    <svg class="h-3.5 w-3.5 text-slate-400 group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </div>
+                </button>
               </div>
+
+              <p class="text-[0.65rem] pt-3 text-center border-t mt-3" :class="isDarkMode ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'">
+                💡 Haz clic en un instructor para ver los juicios evaluados.
+              </p>
             </div>
           </aside>
 
@@ -1556,5 +1655,154 @@ const evaluatorsList = computed(() => {
         <span>Módulo de Exposición e Interacción Pública</span>
       </div>
     </footer>
+    <!-- Modal: Juicios Evaluados por el Instructor -->
+    <Teleport to="body">
+      <div
+        v-if="selectedInstructor && selectedInstructorParsed"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200"
+        @click.self="closeInstructorModal"
+      >
+        <div
+          class="w-full max-w-2xl max-h-[85vh] rounded-2xl border shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 transition-colors"
+          :class="
+            isDarkMode
+              ? 'bg-slate-900 border-slate-800 text-slate-100 shadow-black/60'
+              : 'bg-white border-slate-200 text-slate-900 shadow-slate-300/60'
+          "
+        >
+          <!-- Modal Header -->
+          <div
+            class="flex items-center justify-between p-4 sm:p-5 border-b shrink-0 transition-colors"
+            :class="isDarkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-100 bg-slate-50/80'"
+          >
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-black text-sm shadow-md shadow-emerald-500/20">
+                {{ selectedInstructorParsed.initials }}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-sm sm:text-base font-bold" :class="isDarkMode ? 'text-white' : 'text-slate-900'">
+                    {{ selectedInstructorParsed.displayName }}
+                  </h3>
+                  <span
+                    class="rounded-full px-2 py-0.5 text-[0.65rem] font-bold border"
+                    :class="
+                      isDarkMode
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    "
+                  >
+                    Instructor
+                  </span>
+                </div>
+                <p v-if="selectedInstructorParsed.doc" class="text-xs" :class="isDarkMode ? 'text-slate-400' : 'text-slate-500'">
+                  {{ selectedInstructorParsed.doc }}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="h-8 w-8 rounded-lg flex items-center justify-center transition cursor-pointer"
+              :class="
+                isDarkMode
+                  ? 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+              "
+              title="Cerrar modal (Esc)"
+              @click="closeInstructorModal"
+            >
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Modal Subheader Info -->
+          <div
+            class="px-5 py-2.5 text-xs flex items-center justify-between border-b shrink-0"
+            :class="isDarkMode ? 'bg-slate-900/40 border-slate-800/80 text-slate-400' : 'bg-white border-slate-100 text-slate-600'"
+          >
+            <span>Juicios evaluados al aprendiz:</span>
+            <span class="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              {{ selectedInstructorOutcomes.length }} {{ selectedInstructorOutcomes.length === 1 ? 'resultado' : 'resultados' }}
+            </span>
+          </div>
+
+          <!-- Modal Body: List of Evaluated Outcomes -->
+          <div
+            class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent"
+          >
+            <div
+              v-for="res in selectedInstructorOutcomes"
+              :key="res.code"
+              class="rounded-xl border p-3.5 space-y-2 transition-all"
+              :class="
+                isDarkMode
+                  ? 'border-slate-800 bg-slate-950/70 hover:border-slate-700'
+                  : 'border-slate-200 bg-slate-50/70 hover:border-slate-300 shadow-2xs'
+              "
+            >
+              <!-- Competency Tag & Date -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[0.68rem]">
+                <span class="font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 truncate max-w-md">
+                  Norma: {{ res.compCode }} - {{ res.compName }}
+                </span>
+                <span v-if="res.registeredAt" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+                  Calificado: {{ formatDate(res.registeredAt) }}
+                </span>
+              </div>
+
+              <!-- RAP Code & Judgement Badge -->
+              <div class="flex items-center gap-2">
+                <span
+                  class="rounded px-2 py-0.5 font-mono text-xs font-bold"
+                  :class="
+                    isDarkMode
+                      ? 'bg-slate-800 text-slate-200'
+                      : 'bg-white text-slate-800 border border-slate-200'
+                  "
+                >
+                  RAP {{ res.code }}
+                </span>
+                <span
+                  class="rounded-md border px-2 py-0.5 text-xs font-bold"
+                  :class="getJudgementBadge(res.judgement).class"
+                >
+                  {{ getJudgementBadge(res.judgement).text }}
+                </span>
+              </div>
+
+              <!-- Outcome Detail Text -->
+              <p class="text-xs leading-relaxed" :class="isDarkMode ? 'text-slate-300' : 'text-slate-700'">
+                {{ res.detail }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div
+            class="flex items-center justify-between p-3.5 sm:p-4 border-t shrink-0 transition-colors"
+            :class="isDarkMode ? 'border-slate-800 bg-slate-950/80' : 'border-slate-100 bg-slate-50'"
+          >
+            <span class="text-[0.7rem]" :class="isDarkMode ? 'text-slate-500' : 'text-slate-400'">
+              Presiona Esc o haz clic afuera para salir
+            </span>
+            <button
+              type="button"
+              class="rounded-xl px-4 py-2 text-xs font-bold transition cursor-pointer"
+              :class="
+                isDarkMode
+                  ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white'
+                  : 'bg-slate-200 text-slate-800 hover:bg-slate-300'
+              "
+              @click="closeInstructorModal"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
