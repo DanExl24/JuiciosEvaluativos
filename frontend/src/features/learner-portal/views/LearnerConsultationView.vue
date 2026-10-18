@@ -717,7 +717,7 @@ const evaluatorsList = computed(() => {
           <!-- ============================================== -->
           <!-- LEFT SIDEBAR: Key Indicators, Progress & Stats -->
           <!-- ============================================== -->
-          <aside class="lg:col-span-4 xl:col-span-4 space-y-4">
+          <aside class="lg:col-span-4 xl:col-span-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto space-y-4 pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-track]:bg-transparent">
             <!-- 1. Academic Paz y Salvo / Status Diagnostic -->
             <div
               v-if="academicDiagnosis"
